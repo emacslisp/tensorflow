@@ -1,21 +1,20 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // TODO(josh11b): Probably not needed for OpKernel authors, so doesn't
 // need to be as publicly accessible as other files in framework/.
-
 #ifndef TENSORFLOW_FRAMEWORK_OP_DEF_UTIL_H_
 #define TENSORFLOW_FRAMEWORK_OP_DEF_UTIL_H_
 
@@ -35,7 +34,7 @@ Status CheckOpDeprecation(const OpDef& op_def, int graph_def_version);
 // Validates that attr_value satisfies the type and constraints from attr.
 // REQUIRES: attr has already been validated.
 Status ValidateAttrValue(const AttrValue& attr_value,
-                         const OpDef::AttrDef& attr);
+		const OpDef::AttrDef& attr);
 
 // The following search through op_def for an attr with the indicated name.
 // Returns nullptr if no such attr is found.
@@ -55,8 +54,7 @@ Status OpDefCompatible(const OpDef& old_op, const OpDef& new_op);
 // has a different default value in new_op.  In general it is not safe
 // to change the default for an attr that has been added to an op.
 Status OpDefAddedDefaultsUnchanged(const OpDef& old_op,
-                                   const OpDef& penultimate_op,
-                                   const OpDef& new_op);
+		const OpDef& penultimate_op, const OpDef& new_op);
 
 // Remove all docs from *op_def / *op_list.
 void RemoveDescriptionsFromOpDef(OpDef* op_def);

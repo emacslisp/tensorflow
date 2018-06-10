@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_JAVA_GRAPH_JNI_H_
 #define TENSORFLOW_JAVA_GRAPH_JNI_H_
@@ -35,7 +35,7 @@ JNIEXPORT jlong JNICALL Java_org_tensorflow_Graph_allocate(JNIEnv *, jclass);
  * Signature: (J)V
  */
 JNIEXPORT void JNICALL Java_org_tensorflow_Graph_delete(JNIEnv *, jclass,
-                                                        jlong);
+		jlong);
 
 /*
  * Class:     org_tensorflow_Graph
@@ -43,7 +43,7 @@ JNIEXPORT void JNICALL Java_org_tensorflow_Graph_delete(JNIEnv *, jclass,
  * Signature: (JLjava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_org_tensorflow_Graph_operation(JNIEnv *, jclass,
-                                                            jlong, jstring);
+		jlong, jstring);
 
 /*
  * Class:     org_tensorflow_Graph
@@ -51,9 +51,9 @@ JNIEXPORT jlong JNICALL Java_org_tensorflow_Graph_operation(JNIEnv *, jclass,
  * Signature: (J[BLjava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_org_tensorflow_Graph_importGraphDef(JNIEnv *,
-                                                                jclass, jlong,
-                                                                jbyteArray,
-                                                                jstring);
+		jclass, jlong,
+		jbyteArray,
+		jstring);
 
 /*
  * Class:     org_tensorflow_Graph
@@ -61,8 +61,7 @@ JNIEXPORT void JNICALL Java_org_tensorflow_Graph_importGraphDef(JNIEnv *,
  * Signature: (J)[B
  */
 JNIEXPORT jbyteArray JNICALL Java_org_tensorflow_Graph_toGraphDef(JNIEnv *,
-                                                                  jclass,
-                                                                  jlong);
+		jclass, jlong);
 
 #ifdef __cplusplus
 }  // extern "C"

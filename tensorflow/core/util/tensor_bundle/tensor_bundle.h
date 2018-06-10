@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // A tensor bundle is a set of immutable persistent files storing a set of named
 // tensors.  It is designed for checkpointing TensorFlow tensors.
@@ -57,7 +57,6 @@ limitations under the License.
 //        "/fs/model/train/ckpt-step/tmp/worker1-step"},
 //       "/fs/model/train/ckpt-step/ckpt" /* merged prefix */);
 //
-
 #ifndef TENSORFLOW_UTIL_TENSOR_BUNDLE_TENSOR_BUNDLE_H_
 #define TENSORFLOW_UTIL_TENSOR_BUNDLE_TENSOR_BUNDLE_H_
 
@@ -102,50 +101,54 @@ extern const char* const kHeaderEntryKey;
 // Builds a string-string table of tensor names to BundleEntryProto (metadata).
 // All threads accessing the same BundleWriter must synchronize.
 class BundleWriter {
- public:
-  BundleWriter(Env* env, StringPiece prefix);
-  ~BundleWriter();
+public:
+	BundleWriter(Env* env, StringPiece prefix);
+	~BundleWriter();
 
-  // Adds the tensor "val" under key "key".
-  // Across calls "key" must be unique but can be added in any order.
-  Status Add(StringPiece key, const Tensor& val);
+	// Adds the tensor "val" under key "key".
+	// Across calls "key" must be unique but can be added in any order.
+	Status Add(StringPiece key, const Tensor& val);
 
-  // Partitioned variables support.
-  // A slice of a full tensor is stored in two entries in the metadata table:
-  //
-  //   full_tensor_key   -> BundleEntryProto, describing all stored slices
-  //                        of this full tensor.  Does not append to the data
-  //                        file.
-  //   encoded slice key -> BundleEntryProto, describing one particular slice.
-  //                        Appends values of this slice to the data file.
-  //
-  // Slices of a full tensor can be added in any order.
-  //
-  // If a full tensor has slices placed on N devices and N BundleWriter's are
-  // concurrently used, the caller must use MergeBundles() to ensure that a
-  // consistent entry for "full_tensor_key" is produced.
-  //
-  // Returns an error if the same slice is added the second time.
-  Status AddSlice(StringPiece full_tensor_key,
-                  const TensorShape& full_tensor_shape,
-                  const TensorSlice& slice_spec, const Tensor& slice_tensor);
+	// Partitioned variables support.
+	// A slice of a full tensor is stored in two entries in the metadata table:
+	//
+	//   full_tensor_key   -> BundleEntryProto, describing all stored slices
+	//                        of this full tensor.  Does not append to the data
+	//                        file.
+	//   encoded slice key -> BundleEntryProto, describing one particular slice.
+	//                        Appends values of this slice to the data file.
+	//
+	// Slices of a full tensor can be added in any order.
+	//
+	// If a full tensor has slices placed on N devices and N BundleWriter's are
+	// concurrently used, the caller must use MergeBundles() to ensure that a
+	// consistent entry for "full_tensor_key" is produced.
+	//
+	// Returns an error if the same slice is added the second time.
+	Status AddSlice(StringPiece full_tensor_key,
+			const TensorShape& full_tensor_shape, const TensorSlice& slice_spec,
+			const Tensor& slice_tensor);
 
-  // Finishes the writer and flushes.
-  Status Finish() TF_MUST_USE_RESULT;
+	// Finishes the writer and flushes.
+	Status Finish()
+	TF_MUST_USE_RESULT;
 
-  Status status() const { return status_; }
+	Status status() const
+	{
+		return status_;
+	}
 
- private:
-  Env* const env_;  // Not owned.
-  const string prefix_;
-  const string tmp_metadata_path_;
-  const string tmp_data_path_;
-  std::unique_ptr<FileOutputBuffer> out_;
-  int64 size_;  // Number of bytes written into out_.
-  std::map<string, BundleEntryProto> entries_;
-  Status status_;
+private:
+	Env* const env_;  // Not owned.
+	const string prefix_;
+	const string tmp_metadata_path_;
+	const string tmp_data_path_;
+	std::unique_ptr<FileOutputBuffer> out_;
+	int64 size_;  // Number of bytes written into out_.
+	std::map<string, BundleEntryProto> entries_;
+	Status status_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(BundleWriter);
+	TF_DISALLOW_COPY_AND_ASSIGN (BundleWriter);
 };
 
 // Merges a set of bundles (given their prefixes) into a single bundle with the
@@ -162,154 +165,182 @@ class BundleWriter {
 // Once merged, makes a best effort to delete the old metadata files.
 // Returns OK iff all bundles are successfully merged.
 Status MergeBundles(Env* env, gtl::ArraySlice<string> prefixes,
-                    StringPiece merged_prefix);
+		StringPiece merged_prefix);
 
 // On construction, silently attempts to read the metadata associated with
 // "prefix".  If caller intends to call any function afterwards, "status()"
 // must be checked.
 // All threads accessing the same BundleReader must synchronize.
 class BundleReader {
- public:
-  BundleReader(Env* const env, StringPiece prefix);
-  ~BundleReader();
+public:
+	BundleReader(Env* const env, StringPiece prefix);
+	~BundleReader();
 
-  // Is ok() iff the reader construction is successful (completed the read of
-  // the metadata).
-  Status status() const { return status_; }
+	// Is ok() iff the reader construction is successful (completed the read of
+	// the metadata).
+	Status status() const
+	{
+		return status_;
+	}
 
-  // Queries whether the bundle contains an entry keyed by "key".  Calls Seek()
-  // internally, so this call invalidates the reader's current position.
-  // REQUIRES: status().ok()
-  bool Contains(StringPiece key);
+	// Queries whether the bundle contains an entry keyed by "key".  Calls Seek()
+	// internally, so this call invalidates the reader's current position.
+	// REQUIRES: status().ok()
+	bool Contains(StringPiece key);
 
-  // Looks up the dtype and the shape of the tensor keyed by "key".
-  // REQUIRES: status().ok()
-  Status LookupDtypeAndShape(StringPiece key, DataType* dtype,
-                             TensorShape* shape) TF_MUST_USE_RESULT;
+	// Looks up the dtype and the shape of the tensor keyed by "key".
+	// REQUIRES: status().ok()
+	Status LookupDtypeAndShape(StringPiece key, DataType* dtype,
+			TensorShape* shape)
+	TF_MUST_USE_RESULT;
 
-  // Looks up the shape of the tensor keyed by "key".
-  // Clears "shape" if not found.
-  // REQUIRES: status().ok()
-  Status LookupTensorShape(StringPiece key,
-                           TensorShape* shape) TF_MUST_USE_RESULT;
+	// Looks up the shape of the tensor keyed by "key".
+	// Clears "shape" if not found.
+	// REQUIRES: status().ok()
+	Status LookupTensorShape(StringPiece key, TensorShape* shape)
+	TF_MUST_USE_RESULT;
 
-  // Looks up the tensor keyed by "key".  If "key" refers to a partitioned
-  // tensor, attempts to look up the full contents using all stored slices.
-  //
-  // Caller must make sure "val" has the same shape and dtype as the
-  // corresponding contents, so that its buffer can be filled without needing
-  // extra allocation.  These can be queried via "LookupDtypeAndShape()".
-  //
-  // On error, "val" may contain nonsense data.  Returns a NotFound error if
-  // tensor keyed by "key" does not exist in this bundle.
-  //
-  // Validates the stored crc32c checksum against the restored bytes.
-  // REQUIRES: status().ok()
-  Status Lookup(StringPiece key, Tensor* val) TF_MUST_USE_RESULT;
+	// Looks up the tensor keyed by "key".  If "key" refers to a partitioned
+	// tensor, attempts to look up the full contents using all stored slices.
+	//
+	// Caller must make sure "val" has the same shape and dtype as the
+	// corresponding contents, so that its buffer can be filled without needing
+	// extra allocation.  These can be queried via "LookupDtypeAndShape()".
+	//
+	// On error, "val" may contain nonsense data.  Returns a NotFound error if
+	// tensor keyed by "key" does not exist in this bundle.
+	//
+	// Validates the stored crc32c checksum against the restored bytes.
+	// REQUIRES: status().ok()
+	Status Lookup(StringPiece key, Tensor* val)
+	TF_MUST_USE_RESULT;
 
-  // Looks up a specific slice of a partitioned tensor.
-  // It is only required that the stored slices cover the requested slice,
-  // namely "slice_spec" is a subset of the union of the stored slices.
-  // REQUIRES: status().ok()
-  Status LookupSlice(StringPiece full_tensor_key, const TensorSlice& slice_spec,
-                     Tensor* val) TF_MUST_USE_RESULT;
+	// Looks up a specific slice of a partitioned tensor.
+	// It is only required that the stored slices cover the requested slice,
+	// namely "slice_spec" is a subset of the union of the stored slices.
+	// REQUIRES: status().ok()
+	Status LookupSlice(StringPiece full_tensor_key,
+			const TensorSlice& slice_spec, Tensor* val)
+	TF_MUST_USE_RESULT;
 
-  // Seeks to the first position in the bundle whose key is no less than "key".
-  // REQUIRES: status().ok()
-  void Seek(StringPiece key) { return iter_->Seek(key); }
-  // Moves to the next position in the bundle.
-  // REQUIRES: status().ok()
-  void Next() const { iter_->Next(); }
-  // Returns true iff the reader is positioned to a key/val pair.
-  // REQUIRES: status().ok()
-  bool Valid() const { return iter_->Valid(); }
+	// Seeks to the first position in the bundle whose key is no less than "key".
+	// REQUIRES: status().ok()
+	void Seek(StringPiece key)
+	{
+		return iter_->Seek(key);
+	}
+	// Moves to the next position in the bundle.
+	// REQUIRES: status().ok()
+	void Next() const
+	{
+		iter_->Next();
+	}
+	// Returns true iff the reader is positioned to a key/val pair.
+	// REQUIRES: status().ok()
+	bool Valid() const
+	{
+		return iter_->Valid();
+	}
 
-  // Returns the key at the current position.
-  // REQUIRES: status().ok() && Valid()
-  StringPiece key() const { return iter_->key(); }
-  // Returns the raw value at the current position.
-  // REQUIRES: status().ok() && Valid()
-  StringPiece value() const { return iter_->value(); }
+	// Returns the key at the current position.
+	// REQUIRES: status().ok() && Valid()
+	StringPiece key() const
+	{
+		return iter_->key();
+	}
+	// Returns the raw value at the current position.
+	// REQUIRES: status().ok() && Valid()
+	StringPiece value() const
+	{
+		return iter_->value();
+	}
 
-  string DebugString();
+	string DebugString();
 
- private:
-  // Seeks for "key" and reads the metadata proto.
-  // On non-OK return, clears "entry" for the caller.
-  // REQUIRES: status().ok()
-  Status GetBundleEntryProto(StringPiece key,
-                             BundleEntryProto* entry) TF_MUST_USE_RESULT;
+private:
+	// Seeks for "key" and reads the metadata proto.
+	// On non-OK return, clears "entry" for the caller.
+	// REQUIRES: status().ok()
+	Status GetBundleEntryProto(StringPiece key, BundleEntryProto* entry)
+	TF_MUST_USE_RESULT;
 
-  // Reads the tensor value described by the metadata proto "entry".
-  // Usage for "val" follows the comment of "Lookup()".
-  Status GetValue(const BundleEntryProto& entry,
-                  Tensor* val) TF_MUST_USE_RESULT;
+	// Reads the tensor value described by the metadata proto "entry".
+	// Usage for "val" follows the comment of "Lookup()".
+	Status GetValue(const BundleEntryProto& entry, Tensor* val)
+	TF_MUST_USE_RESULT;
 
-  // Reads the slice described by "slice_spec".  The corresponding full tensor
-  // has key "ful_tensor_key" and metadata proto "full_tensor_entry".
-  // REQUIRES: full_tensor_entry.slices_size() > 0
-  Status GetSliceValue(StringPiece full_tensor_key,
-                       const BundleEntryProto& full_tensor_entry,
-                       const TensorSlice& slice_spec,
-                       Tensor* val) TF_MUST_USE_RESULT;
+	// Reads the slice described by "slice_spec".  The corresponding full tensor
+	// has key "ful_tensor_key" and metadata proto "full_tensor_entry".
+	// REQUIRES: full_tensor_entry.slices_size() > 0
+	Status GetSliceValue(StringPiece full_tensor_key,
+			const BundleEntryProto& full_tensor_entry,
+			const TensorSlice& slice_spec, Tensor* val)
+	TF_MUST_USE_RESULT;
 
-  Env* env_;  // Not owned.
-  const string prefix_;
+	Env* env_;  // Not owned.
+	const string prefix_;
 
-  Status status_;
-  RandomAccessFile* metadata_;  // Owned.
-  table::Table* table_;
-  table::Iterator* iter_;
-  std::unordered_map<int32, io::InputBuffer*> data_;
+	Status status_;
+	RandomAccessFile* metadata_;  // Owned.
+	table::Table* table_;
+	table::Iterator* iter_;
+	std::unordered_map<int32, io::InputBuffer*> data_;
 
-  // Maps each partitioned tensor's key to its stored slices (represented in a
-  // TensorSliceSet).  Populated on-demand.
-  std::unordered_map<string, checkpoint::TensorSliceSet*> tensor_slices_;
+	// Maps each partitioned tensor's key to its stored slices (represented in a
+	// TensorSliceSet).  Populated on-demand.
+	std::unordered_map<string, checkpoint::TensorSliceSet*> tensor_slices_;
 
-  // Expected number of data file shards in the bundle.  Extracted by reading
-  // the header entry in the metadata table.
-  int num_shards_;
+	// Expected number of data file shards in the bundle.  Extracted by reading
+	// the header entry in the metadata table.
+	int num_shards_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(BundleReader);
+	TF_DISALLOW_COPY_AND_ASSIGN (BundleReader);
 };
 
 // A buffering wrapper for a WritableFile.  Useful if the caller wishes to issue
 // small writes to a file (e.g. writing out a list of small varints).
 // External synchronization must be used in the presence of concurrent callers.
 class FileOutputBuffer {
- public:
-  FileOutputBuffer(WritableFile* file, size_t buffer_size)
-      : file_(file), position_(0), buffer_size_(buffer_size) {
-    DCHECK_GT(buffer_size, 0);
-    buffer_.resize(buffer_size);
-  }
-  ~FileOutputBuffer();
+public:
+	FileOutputBuffer(WritableFile* file, size_t buffer_size) :
+			file_(file), position_(0), buffer_size_(buffer_size)
+	{
+		DCHECK_GT(buffer_size, 0);
+		buffer_.resize(buffer_size);
+	}
+	~FileOutputBuffer();
 
-  // Buffered append.
-  Status Append(StringPiece data);
+	// Buffered append.
+	Status Append(StringPiece data);
 
-  // Returns the running crc32c checksum of all currently appended bytes.
-  uint32 crc32c() { return crc32c_; }
-  // Clears the running crc32c checksum.
-  void clear_crc32c() { crc32c_ = 0; }
+	// Returns the running crc32c checksum of all currently appended bytes.
+	uint32 crc32c()
+	{
+		return crc32c_;
+	}
+	// Clears the running crc32c checksum.
+	void clear_crc32c()
+	{
+		crc32c_ = 0;
+	}
 
-  // Appends the buffered data, then closes the underlying file.
-  Status Close();
+	// Appends the buffered data, then closes the underlying file.
+	Status Close();
 
- private:
-  // Appends the buffered data to the underlying file. Does NOT flush the file.
-  Status FlushBuffer();
+private:
+	// Appends the buffered data to the underlying file. Does NOT flush the file.
+	Status FlushBuffer();
 
-  WritableFile* file_;  // Owned.
+	WritableFile* file_;  // Owned.
 
-  // buffer_[0, position_) holds the buffered data not yet appended to the
-  // underlying file.
-  size_t position_;
-  const size_t buffer_size_;
-  std::vector<char> buffer_;
+	// buffer_[0, position_) holds the buffered data not yet appended to the
+	// underlying file.
+	size_t position_;
+	const size_t buffer_size_;
+	std::vector<char> buffer_;
 
-  // Checksum of all appended bytes since construction or last clear_crc32c().
-  uint32 crc32c_ = 0;
+	// Checksum of all appended bytes since construction or last clear_crc32c().
+	uint32 crc32c_ = 0;
 };
 
 }  // namespace tensorflow

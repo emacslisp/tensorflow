@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMMON_RUNTIME_FUNCTION_H_
 #define TENSORFLOW_COMMON_RUNTIME_FUNCTION_H_
@@ -34,9 +34,9 @@ namespace tensorflow {
 // takes ownership of the returned OpKernel.
 //
 // TODO(zhifengc/phawkins): b/32379046
-typedef std::function<Status(FunctionLibraryRuntime*, const NodeDef&,
-                             std::unique_ptr<OpKernel>*)>
-    CustomKernelCreator;
+typedef std::function<
+		Status(FunctionLibraryRuntime*, const NodeDef&,
+				std::unique_ptr<OpKernel>*)> CustomKernelCreator;
 void RegisterDefaultCustomKernelCreator(CustomKernelCreator cb);
 
 // Creates a FunctionLibraryRuntime, which instantiates functions
@@ -48,35 +48,37 @@ void RegisterDefaultCustomKernelCreator(CustomKernelCreator cb);
 // The returned object does not take ownerships of "device" or
 // "lib_def".  The caller must ensure "device" and "lib_def" outlives
 // the returned object.
-FunctionLibraryRuntime* NewFunctionLibraryRuntime(
-    const DeviceMgr* device_mgr, Env* env, Device* device,
-    int graph_def_version, const FunctionLibraryDefinition* lib_def,
-    const OptimizerOptions& optimizer_options,
-    CustomKernelCreator custom_kernel_creator);
+FunctionLibraryRuntime* NewFunctionLibraryRuntime(const DeviceMgr* device_mgr,
+		Env* env, Device* device, int graph_def_version,
+		const FunctionLibraryDefinition* lib_def,
+		const OptimizerOptions& optimizer_options,
+		CustomKernelCreator custom_kernel_creator);
 
 // Same as above except that the returned runtime consults with the
 // global default custom kernel creator registered by
 // RegisterDefaultCustomKernelCreator.
-FunctionLibraryRuntime* NewFunctionLibraryRuntime(
-    const DeviceMgr* device_mgr, Env* env, Device* device,
-    int graph_def_version, const FunctionLibraryDefinition* lib_def,
-    const OptimizerOptions& optimizer_options);
+FunctionLibraryRuntime* NewFunctionLibraryRuntime(const DeviceMgr* device_mgr,
+		Env* env, Device* device, int graph_def_version,
+		const FunctionLibraryDefinition* lib_def,
+		const OptimizerOptions& optimizer_options);
 
 // FunctionLibraryRuntime::GetFunctionBody returns a description of an
 // instantiated function that is represented as a Graph with arg/ret
 // nodes annotated.
 struct FunctionBody {
-  FunctionDef fdef;
-  Graph* graph = nullptr;  // owned.
-  DataTypeVector arg_types;
-  DataTypeVector ret_types;
-  gtl::InlinedVector<Node*, 4> arg_nodes;
-  gtl::InlinedVector<Node*, 4> ret_nodes;
+	FunctionDef fdef;
+	Graph* graph = nullptr;  // owned.
+	DataTypeVector arg_types;
+	DataTypeVector ret_types;
+	gtl::InlinedVector<Node*, 4> arg_nodes;
+	gtl::InlinedVector<Node*, 4> ret_nodes;
 
-  FunctionBody() {}
-  FunctionBody(const FunctionDef& f, DataTypeSlice arg_types,
-               DataTypeSlice ret_types, Graph* g);
-  ~FunctionBody();
+	FunctionBody()
+	{
+	}
+	FunctionBody(const FunctionDef& f, DataTypeSlice arg_types,
+			DataTypeSlice ret_types, Graph* g);
+	~FunctionBody();
 };
 
 // Debugging facility.  Returns a debug string for a graph

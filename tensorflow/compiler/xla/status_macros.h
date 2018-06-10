@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_STATUS_MACROS_H_
 #define TENSORFLOW_COMPILER_XLA_STATUS_MACROS_H_
@@ -45,132 +45,159 @@ namespace status_macros {
 // MakeErrorStreamWithOutput to check that the error stream gets at least one
 // item of input.
 class MakeErrorStream {
- public:
-  // Wrapper around MakeErrorStream that only allows for output. This
-  // is created as output of the first operator<< call on
-  // MakeErrorStream. The bare MakeErrorStream does not have a
-  // Status operator. The net effect of that is that you
-  // have to call operator<< at least once or else you'll get a
-  // compile time error.
-  class MakeErrorStreamWithOutput {
-   public:
-    explicit MakeErrorStreamWithOutput(MakeErrorStream* error_stream)
-        : wrapped_error_stream_(error_stream) {}
+public:
+	// Wrapper around MakeErrorStream that only allows for output. This
+	// is created as output of the first operator<< call on
+	// MakeErrorStream. The bare MakeErrorStream does not have a
+	// Status operator. The net effect of that is that you
+	// have to call operator<< at least once or else you'll get a
+	// compile time error.
+	class MakeErrorStreamWithOutput {
+	public:
+		explicit MakeErrorStreamWithOutput(MakeErrorStream* error_stream) :
+				wrapped_error_stream_(error_stream)
+		{
+		}
 
-    template <typename T>
-    MakeErrorStreamWithOutput& operator<<(const T& value) {
-      *wrapped_error_stream_ << value;
-      return *this;
-    }
+		template<typename T>
+		MakeErrorStreamWithOutput& operator<<(const T& value)
+		{
+			*wrapped_error_stream_ << value;
+			return *this;
+		}
 
-    // Implicit cast operators to Status and StatusOr.
-    // Exactly one of these must be called exactly once before destruction.
-    operator Status() { return wrapped_error_stream_->GetStatus(); }
-    template <typename T>
-    operator xla::StatusOr<T>() {
-      return wrapped_error_stream_->GetStatus();
-    }
+		// Implicit cast operators to Status and StatusOr.
+		// Exactly one of these must be called exactly once before destruction.
+		operator Status()
+		{
+			return wrapped_error_stream_->GetStatus();
+		}
+		template<typename T>
+		operator xla::StatusOr<T>()
+		{
+			return wrapped_error_stream_->GetStatus();
+		}
 
-   private:
-    MakeErrorStream* wrapped_error_stream_;
+	private:
+		MakeErrorStream* wrapped_error_stream_;
 
-    TF_DISALLOW_COPY_AND_ASSIGN(MakeErrorStreamWithOutput);
-  };
+		TF_DISALLOW_COPY_AND_ASSIGN (MakeErrorStreamWithOutput);
+	};
 
-  // When starting from an existing error status, this determines whether we'll
-  // append or prepend to that status's error message.
-  enum PriorMessageHandling { kAppendToPriorMessage, kPrependToPriorMessage };
+	// When starting from an existing error status, this determines whether we'll
+	// append or prepend to that status's error message.
+	enum PriorMessageHandling {
+		kAppendToPriorMessage, kPrependToPriorMessage
+	};
 
-  // Make an error with the given code.
-  template <typename ERROR_CODE_TYPE>
-  MakeErrorStream(const char* file, int line, ERROR_CODE_TYPE code)
-      : impl_(new Impl(file, line, code, this, true)) {}
+	// Make an error with the given code.
+	template<typename ERROR_CODE_TYPE>
+	MakeErrorStream(const char* file, int line, ERROR_CODE_TYPE code) :
+			impl_(new Impl(file, line, code, this, true))
+	{
+	}
 
-  template <typename T>
-  MakeErrorStreamWithOutput& operator<<(const T& value) {
-    CheckNotDone();
-    impl_->stream_ << value;
-    return impl_->make_error_stream_with_output_wrapper_;
-  }
+	template<typename T>
+	MakeErrorStreamWithOutput& operator<<(const T& value)
+	{
+		CheckNotDone();
+		impl_->stream_ << value;
+		return impl_->make_error_stream_with_output_wrapper_;
+	}
 
-  // When this message is logged (see with_logging()), include the stack trace.
-  MakeErrorStream& with_log_stack_trace() {
-    impl_->should_log_stack_trace_ = true;
-    return *this;
-  }
+	// When this message is logged (see with_logging()), include the stack trace.
+	MakeErrorStream& with_log_stack_trace()
+	{
+		impl_->should_log_stack_trace_ = true;
+		return *this;
+	}
 
-  // Adds RET_CHECK failure text to error message.
-  MakeErrorStreamWithOutput& add_ret_check_failure(const char* condition) {
-    return *this << "RET_CHECK failure (" << impl_->file_ << ":" << impl_->line_
-                 << ") " << condition << " ";
-  }
+	// Adds RET_CHECK failure text to error message.
+	MakeErrorStreamWithOutput& add_ret_check_failure(const char* condition)
+	{
+		return *this << "RET_CHECK failure (" << impl_->file_ << ":"
+				<< impl_->line_ << ") " << condition << " ";
+	}
 
- private:
-  class Impl {
-   public:
-    Impl(const char* file, int line, tensorflow::error::Code code,
-         MakeErrorStream* error_stream, bool is_logged_by_default = true);
-    Impl(const Status& status, PriorMessageHandling prior_message_handling,
-         const char* file, int line, MakeErrorStream* error_stream);
+private:
+	class Impl {
+	public:
+		Impl(const char* file, int line, tensorflow::error::Code code,
+				MakeErrorStream* error_stream,
+				bool is_logged_by_default = true);
+		Impl(const Status& status, PriorMessageHandling prior_message_handling,
+				const char* file, int line, MakeErrorStream* error_stream);
 
-    ~Impl();
+		~Impl();
 
-    // This must be called exactly once before destruction.
-    Status GetStatus();
+		// This must be called exactly once before destruction.
+		Status GetStatus();
 
-    void CheckNotDone() const;
+		void CheckNotDone() const;
 
-   private:
-    const char* file_;
-    int line_;
-    tensorflow::error::Code code_;
+	private:
+		const char* file_;
+		int line_;
+		tensorflow::error::Code code_;
 
-    PriorMessageHandling prior_message_handling_ = kAppendToPriorMessage;
-    string prior_message_;
-    bool is_done_;  // true after Status object has been returned
-    std::ostringstream stream_;
-    bool should_log_;
-    int log_severity_;
-    bool should_log_stack_trace_;
+		PriorMessageHandling prior_message_handling_ = kAppendToPriorMessage;
+		string prior_message_;
+		bool is_done_;  // true after Status object has been returned
+		std::ostringstream stream_;
+		bool should_log_;
+		int log_severity_;
+		bool should_log_stack_trace_;
 
-    // Wrapper around the MakeErrorStream object that has a
-    // Status conversion. The first << operator called on
-    // MakeErrorStream will return this object, and only this object
-    // can implicitly convert to Status. The net effect of
-    // this is that you'll get a compile time error if you call
-    // MAKE_ERROR etc. without adding any output.
-    MakeErrorStreamWithOutput make_error_stream_with_output_wrapper_;
+		// Wrapper around the MakeErrorStream object that has a
+		// Status conversion. The first << operator called on
+		// MakeErrorStream will return this object, and only this object
+		// can implicitly convert to Status. The net effect of
+		// this is that you'll get a compile time error if you call
+		// MAKE_ERROR etc. without adding any output.
+		MakeErrorStreamWithOutput make_error_stream_with_output_wrapper_;
 
-    friend class MakeErrorStream;
-    TF_DISALLOW_COPY_AND_ASSIGN(Impl);
-  };
+		friend class MakeErrorStream;
+		TF_DISALLOW_COPY_AND_ASSIGN (Impl);
+	};
 
-  void CheckNotDone() const;
+	void CheckNotDone() const;
 
-  // Returns the status. Used by MakeErrorStreamWithOutput.
-  Status GetStatus() const { return impl_->GetStatus(); }
+	// Returns the status. Used by MakeErrorStreamWithOutput.
+	Status GetStatus() const
+	{
+		return impl_->GetStatus();
+	}
 
-  // Store the actual data on the heap to reduce stack frame sizes.
-  std::unique_ptr<Impl> impl_;
+	// Store the actual data on the heap to reduce stack frame sizes.
+	std::unique_ptr<Impl> impl_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(MakeErrorStream);
+	TF_DISALLOW_COPY_AND_ASSIGN (MakeErrorStream);
 };
 
 // Provides a conversion to bool so that it can be used inside an if statement
 // that declares a variable.
 class StatusAdaptorForMacros {
- public:
-  explicit StatusAdaptorForMacros(Status status) : status_(std::move(status)) {}
+public:
+	explicit StatusAdaptorForMacros(Status status) :
+			status_(std::move(status))
+	{
+	}
 
-  StatusAdaptorForMacros(const StatusAdaptorForMacros&) = delete;
-  StatusAdaptorForMacros& operator=(const StatusAdaptorForMacros&) = delete;
+	StatusAdaptorForMacros(const StatusAdaptorForMacros&) = delete;
+	StatusAdaptorForMacros& operator=(const StatusAdaptorForMacros&) = delete;
 
-  explicit operator bool() const { return TF_PREDICT_TRUE(status_.ok()); }
+	explicit operator bool() const
+	{
+		return TF_PREDICT_TRUE(status_.ok());
+	}
 
-  Status&& Consume() { return std::move(status_); }
+	Status&& Consume()
+	{
+		return std::move(status_);
+	}
 
- private:
-  Status status_;
+private:
+	Status status_;
 };
 
 }  // namespace status_macros

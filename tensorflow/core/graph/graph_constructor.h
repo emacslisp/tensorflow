@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_GRAPH_GRAPH_CONSTRUCTOR_H_
 #define TENSORFLOW_GRAPH_GRAPH_CONSTRUCTOR_H_
@@ -28,9 +28,9 @@ class ShapeRefiner;
 //
 // TODO(ashankar,vrv): This should move to where constant folding is done.
 struct ConstantFoldingOptions {
-  // If "consider" is not a nullptr, then only constant fold a node "n" if
-  // consider(n) returns true.
-  std::function<bool(const Node*)> consider = nullptr;
+	// If "consider" is not a nullptr, then only constant fold a node "n" if
+	// consider(n) returns true.
+	std::function<bool(const Node*)> consider = nullptr;
 };
 
 // Construct a Graph *g out of a GraphDef gdef. Returns non-OK on
@@ -40,20 +40,22 @@ struct ConstantFoldingOptions {
 // nodes) when provided to ConvertGraphDefToGraph. To enhance an existing Graph,
 // see ImportGraphDef.
 struct GraphConstructorOptions {
-  GraphConstructorOptions() {}
+	GraphConstructorOptions()
+	{
+	}
 
-  // If true, allows internal ops in the GraphDef.
-  bool allow_internal_ops = false;
+	// If true, allows internal ops in the GraphDef.
+	bool allow_internal_ops = false;
 
-  // If true, the graph def is expected to have fully specified
-  // devices for all nodes. A node in the resulting graph "g" has the
-  // device name set accordingly.
-  //
-  // TODO(zhifengc): if possible, consider removing this option.
-  bool expect_device_spec = false;
+	// If true, the graph def is expected to have fully specified
+	// devices for all nodes. A node in the resulting graph "g" has the
+	// device name set accordingly.
+	//
+	// TODO(zhifengc): if possible, consider removing this option.
+	bool expect_device_spec = false;
 };
 extern Status ConvertGraphDefToGraph(const GraphConstructorOptions& opts,
-                                     const GraphDef& gdef, Graph* g);
+		const GraphDef& gdef, Graph* g);
 
 // Add the graph in GraphDef gdef into an existing Graph *g.
 //
@@ -67,44 +69,45 @@ extern Status ConvertGraphDefToGraph(const GraphConstructorOptions& opts,
 // TODO(ashankar): Push this mechanism and get rid of Session::Extend()
 // as a means of enhancing an existing Graph.
 struct ImportGraphDefOptions {
-  ImportGraphDefOptions() {}
+	ImportGraphDefOptions()
+	{
+	}
 
-  // Name prefix to use for nodes imported from the GraphDef.  For example, if
-  // prefix="animals" and GraphDef contains a node "bunny" then the node will be
-  // named "animals/bunny" in *g.
-  string prefix;
+	// Name prefix to use for nodes imported from the GraphDef.  For example, if
+	// prefix="animals" and GraphDef contains a node "bunny" then the node will be
+	// named "animals/bunny" in *g.
+	string prefix;
 
-  // Maps tensors in `gdef` to existing tensors in `g`. Inputs in `gdef`
-  // corresponding to `input_map` keys will be remapped to the nodes in `g`
-  // corresponding to the values.
-  //
-  // Keys should not include `prefix`, i.e., a key TensorId's name should be the
-  // name as it originally appears in `gdef`.
-  //
-  // If this is non-empty, ImportGraphDef must be called with the shape refiner
-  // used to create the existing nodes referenced in `input_map`.
-  // TODO(skyewm): can we remove this requirement? How do we access the original
-  // shape refiner?
-  //
-  // TODO(skyewm): add functionality to retrieve unused `input_map` keys
-  std::map<TensorId, TensorId> input_map;
+	// Maps tensors in `gdef` to existing tensors in `g`. Inputs in `gdef`
+	// corresponding to `input_map` keys will be remapped to the nodes in `g`
+	// corresponding to the values.
+	//
+	// Keys should not include `prefix`, i.e., a key TensorId's name should be the
+	// name as it originally appears in `gdef`.
+	//
+	// If this is non-empty, ImportGraphDef must be called with the shape refiner
+	// used to create the existing nodes referenced in `input_map`.
+	// TODO(skyewm): can we remove this requirement? How do we access the original
+	// shape refiner?
+	//
+	// TODO(skyewm): add functionality to retrieve unused `input_map` keys
+	std::map<TensorId, TensorId> input_map;
 
-  // The names of existing nodes in `g` that the imported graph should have
-  // control dependencies on.
-  //
-  // Note that to avoid creating many redundant control edges, ImportGraphDef()
-  // won't add control edges to nodes that will inherit the dependencies from
-  // other nodes in `gdef`.
-  std::vector<string> control_dependencies;
+	// The names of existing nodes in `g` that the imported graph should have
+	// control dependencies on.
+	//
+	// Note that to avoid creating many redundant control edges, ImportGraphDef()
+	// won't add control edges to nodes that will inherit the dependencies from
+	// other nodes in `gdef`.
+	std::vector<string> control_dependencies;
 
-  // TODO(ashankar): Enable handling of GraphDefs produced by newer binaries
-  // with ops that are not defined in the binary calling ImportGraphDef.
-  // Similar to the producer_op_list argument to import_graph_def in the
-  // python API.
+	// TODO(ashankar): Enable handling of GraphDefs produced by newer binaries
+	// with ops that are not defined in the binary calling ImportGraphDef.
+	// Similar to the producer_op_list argument to import_graph_def in the
+	// python API.
 };
 extern Status ImportGraphDef(const ImportGraphDefOptions& opts,
-                             const GraphDef& gdef, Graph* g,
-                             ShapeRefiner* refiner);
+		const GraphDef& gdef, Graph* g, ShapeRefiner* refiner);
 
 // Make a copy of "src" into "*dest".
 //

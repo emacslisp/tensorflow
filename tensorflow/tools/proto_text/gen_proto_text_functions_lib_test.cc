@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/tools/proto_text/gen_proto_text_functions_lib.h"
 
@@ -27,12 +27,14 @@ namespace {
 
 // Convert <input> to text depending on <short_debug>, then parse that into a
 // new message using the generated parse function. Return the new message.
-template <typename T>
-T RoundtripParseProtoOrDie(const T& input, bool short_debug) {
-  const string s = short_debug ? input.ShortDebugString() : input.DebugString();
-  T t;
-  EXPECT_TRUE(ProtoParseFromString(s, &t)) << "Failed to parse " << s;
-  return t;
+template<typename T>
+T RoundtripParseProtoOrDie(const T& input, bool short_debug)
+{
+	const string s =
+			short_debug ? input.ShortDebugString() : input.DebugString();
+	T t;
+	EXPECT_TRUE(ProtoParseFromString(s, &t)) << "Failed to parse " << s;
+	return t;
 }
 
 // Macro that takes <proto> and verifies the proto text string output
@@ -183,36 +185,31 @@ TEST(CreateProtoDebugStringLibTest, ValidSimpleTypes) {
 
   // Proto supports [] for list values as well.
   EXPECT_PARSE_SUCCESS("repeated_int32: 1 repeated_int32: 2 repeated_int32: 3",
-                       "repeated_int32: [1, 2 , 3]");
+		"repeated_int32: [1, 2 , 3]");
 
-  // Test [] and also interesting bool values.
-  EXPECT_PARSE_SUCCESS(("repeated_bool: false repeated_bool: false "
-                        "repeated_bool: true repeated_bool: true "
-                        "repeated_bool: false repeated_bool: true"),
-                       "repeated_bool: [false, 0, 1, true, False, True]");
+// Test [] and also interesting bool values.
+EXPECT_PARSE_SUCCESS(
+		("repeated_bool: false repeated_bool: false " "repeated_bool: true repeated_bool: true " "repeated_bool: false repeated_bool: true"),
+		"repeated_bool: [false, 0, 1, true, False, True]");
 
-  EXPECT_PARSE_SUCCESS(("repeated_string: \"a,b\" "
-                        "repeated_string: \"cdef\""),
-                       "repeated_string:   [  'a,b', 'cdef'  ]  ");
+EXPECT_PARSE_SUCCESS(("repeated_string: \"a,b\" " "repeated_string: \"cdef\""),
+		"repeated_string:   [  'a,b', 'cdef'  ]  ");
 
-  // Proto supports ' as quote character.
-  EXPECT_PARSE_SUCCESS("optional_string: \"123\\\" \\'xyz\"",
-                       "optional_string: '123\\\" \\'xyz'  ");
+// Proto supports ' as quote character.
+EXPECT_PARSE_SUCCESS("optional_string: \"123\\\" \\'xyz\"",
+		"optional_string: '123\\\" \\'xyz'  ");
 
-  EXPECT_PARSE_SUCCESS("optional_double: 10000", "optional_double: 1e4");
+EXPECT_PARSE_SUCCESS("optional_double: 10000", "optional_double: 1e4");
 
-  // Error cases.
-  EXPECT_PARSE_FAILURE("optional_string: '1' optional_string: '2'");
-  EXPECT_PARSE_FAILURE("optional_double: 123 optional_double: 456");
-  EXPECT_PARSE_FAILURE("optional_double: 0001");
-  EXPECT_PARSE_FAILURE("optional_double: 000.1");
-  EXPECT_PARSE_FAILURE("optional_double: a");
-  EXPECT_PARSE_FAILURE("optional_double: x123");
-  EXPECT_PARSE_FAILURE("optional_double: '123'");
-  EXPECT_PARSE_FAILURE("optional_double: --111");
-  EXPECT_PARSE_FAILURE("optional_string: 'abc\"");
-  EXPECT_PARSE_FAILURE("optional_bool: truE");
-  EXPECT_PARSE_FAILURE("optional_bool: FALSE");
+// Error cases.
+EXPECT_PARSE_FAILURE("optional_string: '1' optional_string: '2'");EXPECT_PARSE_FAILURE(
+		"optional_double: 123 optional_double: 456");EXPECT_PARSE_FAILURE(
+		"optional_double: 0001");EXPECT_PARSE_FAILURE("optional_double: 000.1");EXPECT_PARSE_FAILURE(
+		"optional_double: a");EXPECT_PARSE_FAILURE("optional_double: x123");EXPECT_PARSE_FAILURE(
+		"optional_double: '123'");EXPECT_PARSE_FAILURE(
+		"optional_double: --111");EXPECT_PARSE_FAILURE(
+		"optional_string: 'abc\"");EXPECT_PARSE_FAILURE("optional_bool: truE");EXPECT_PARSE_FAILURE(
+		"optional_bool: FALSE");
 }
 
 TEST(CreateProtoDebugStringLibTest, NestedMessages) {
@@ -272,70 +269,66 @@ TEST(CreateProtoDebugStringLibTest, NestedMessages) {
 
   // text format allows use of <> for messages.
   EXPECT_PARSE_SUCCESS("optional_nested_message { optional_int32: 123 }",
-                       "optional_nested_message: < optional_int32: 123   >");
+		"optional_nested_message: < optional_int32: 123   >");
 
-  // <> and {} must use same style for closing.
-  EXPECT_PARSE_FAILURE("optional_nested_message: < optional_int32: 123   }");
-  EXPECT_PARSE_FAILURE("optional_nested_message: { optional_int32: 123   >");
+// <> and {} must use same style for closing.
+EXPECT_PARSE_FAILURE("optional_nested_message: < optional_int32: 123   }");EXPECT_PARSE_FAILURE(
+		"optional_nested_message: { optional_int32: 123   >");
 
-  // colon after identifier is optional for messages.
-  EXPECT_PARSE_SUCCESS("optional_nested_message { optional_int32: 123 }",
-                       "optional_nested_message < optional_int32: 123   >");
+// colon after identifier is optional for messages.
+EXPECT_PARSE_SUCCESS("optional_nested_message { optional_int32: 123 }",
+		"optional_nested_message < optional_int32: 123   >");
 
-  EXPECT_PARSE_SUCCESS("optional_nested_message { optional_int32: 123 }",
-                       "optional_nested_message{ optional_int32: 123   }  ");
+EXPECT_PARSE_SUCCESS("optional_nested_message { optional_int32: 123 }",
+		"optional_nested_message{ optional_int32: 123   }  ");
 
-  // Proto supports [] for list values as well.
-  EXPECT_PARSE_SUCCESS(
-      ("repeated_nested_message { } "
-       "repeated_nested_message { optional_int32: 123 }"),
-      "repeated_nested_message: [ { }, { optional_int32: 123  } ]");
+// Proto supports [] for list values as well.
+EXPECT_PARSE_SUCCESS(
+		("repeated_nested_message { } " "repeated_nested_message { optional_int32: 123 }"),
+		"repeated_nested_message: [ { }, { optional_int32: 123  } ]");
 
-  // Colon after repeated_nested_message is optional.
-  EXPECT_PARSE_SUCCESS(
-      ("repeated_nested_message { } "
-       "repeated_nested_message { optional_int32: 123 }"),
-      "repeated_nested_message [ { }, { optional_int32: 123  } ]");
+// Colon after repeated_nested_message is optional.
+EXPECT_PARSE_SUCCESS(
+		("repeated_nested_message { } " "repeated_nested_message { optional_int32: 123 }"),
+		"repeated_nested_message [ { }, { optional_int32: 123  } ]");
 
-  // Using the list format a:[..] twice, like a:[..] a:[..] joins the two
-  // arrays.
-  EXPECT_PARSE_SUCCESS(
-      ("repeated_nested_message { } "
-       "repeated_nested_message { optional_int32: 123 } "
-       "repeated_nested_message { optional_int32: 456 }"),
-      ("repeated_nested_message [ { }, { optional_int32: 123  } ]"
-       "repeated_nested_message [ { optional_int32: 456  } ]"));
+// Using the list format a:[..] twice, like a:[..] a:[..] joins the two
+// arrays.
+EXPECT_PARSE_SUCCESS(
+		("repeated_nested_message { } " "repeated_nested_message { optional_int32: 123 } " "repeated_nested_message { optional_int32: 456 }"),
+		("repeated_nested_message [ { }, { optional_int32: 123  } ]" "repeated_nested_message [ { optional_int32: 456  } ]"));
 
-  // Parse errors on nested messages.
-  EXPECT_PARSE_FAILURE("optional_nested_message: {optional_int32: 'abc' }");
+// Parse errors on nested messages.
+EXPECT_PARSE_FAILURE("optional_nested_message: {optional_int32: 'abc' }");
 
-  // Optional_nested_message appearing twice is an error.
-  EXPECT_PARSE_FAILURE(
-      ("optional_nested_message { optional_int32: 123 } "
-       "optional_nested_message { optional_int64: 456 }"));
+// Optional_nested_message appearing twice is an error.
+EXPECT_PARSE_FAILURE(
+		("optional_nested_message { optional_int32: 123 } " "optional_nested_message { optional_int64: 456 }"));
 }
 
 TEST(CreateProtoDebugStringLibTest, RecursiveMessage) {
-  NestedTestAllTypes proto;
+NestedTestAllTypes proto;
 
-  NestedTestAllTypes* cur = &proto;
-  for (int depth = 0; depth < 20; ++depth) {
-    cur->mutable_payload()->set_optional_int32(1000 + depth);
-    cur = cur->mutable_child();
-  }
-  EXPECT_TEXT_TRANSFORMS_MATCH();
+NestedTestAllTypes* cur = &proto;
+for (int depth = 0; depth < 20; ++depth) {
+	cur->mutable_payload()->set_optional_int32(1000 + depth);
+	cur = cur->mutable_child();
+}
+EXPECT_TEXT_TRANSFORMS_MATCH();
 }
 
-template <typename T>
-T ParseProto(const string& value_text_proto) {
-  T value;
-  EXPECT_TRUE(protobuf::TextFormat::ParseFromString(value_text_proto, &value))
-      << value_text_proto;
-  return value;
+template<typename T>
+T ParseProto(const string& value_text_proto)
+{
+T value;
+EXPECT_TRUE(protobuf::TextFormat::ParseFromString(value_text_proto, &value))
+		<< value_text_proto;
+return value;
 }
 
-TestAllTypes::NestedMessage ParseNestedMessage(const string& value_text_proto) {
-  return ParseProto<TestAllTypes::NestedMessage>(value_text_proto);
+TestAllTypes::NestedMessage ParseNestedMessage(const string& value_text_proto)
+{
+return ParseProto<TestAllTypes::NestedMessage>(value_text_proto);
 }
 
 TEST(CreateProtoDebugStringLibTest, Map) {
@@ -410,14 +403,9 @@ TEST(CreateProtoDebugStringLibTest, Map) {
   EXPECT_TEXT_TRANSFORMS_MATCH();
 
   // Test a map with the same key multiple times.
-  EXPECT_PARSE_SUCCESS(("map_string_to_int64 { key: \"abc\" value: 5 } "
-                        "map_string_to_int64 { key: \"def\" value: 2 } "
-                        "map_string_to_int64 { key: \"ghi\" value: 4 }"),
-                       ("map_string_to_int64: { key: 'abc' value: 1 } "
-                        "map_string_to_int64: { key: 'def' value: 2 } "
-                        "map_string_to_int64: { key: 'ghi' value: 3 } "
-                        "map_string_to_int64: { key: 'ghi' value: 4 } "
-                        "map_string_to_int64: { key: 'abc' value: 5 } "));
+  EXPECT_PARSE_SUCCESS(
+	("map_string_to_int64 { key: \"abc\" value: 5 } " "map_string_to_int64 { key: \"def\" value: 2 } " "map_string_to_int64 { key: \"ghi\" value: 4 }"),
+	("map_string_to_int64: { key: 'abc' value: 1 } " "map_string_to_int64: { key: 'def' value: 2 } " "map_string_to_int64: { key: 'ghi' value: 3 } " "map_string_to_int64: { key: 'ghi' value: 4 } " "map_string_to_int64: { key: 'abc' value: 5 } "));
 }
 
 TEST(CreateProtoDebugStringLibTest, Enums) {
@@ -442,22 +430,19 @@ TEST(CreateProtoDebugStringLibTest, Enums) {
 
   // Parsing from numbers works as well.
   EXPECT_PARSE_SUCCESS(
-      "optional_nested_enum: BAR "   // 2
-      "repeated_nested_enum: BAR "   // 2
-      "repeated_nested_enum: ZERO "  // 0
-      "repeated_nested_enum: FOO",   // 1
-      ("repeated_nested_enum: 2 "
-       "repeated_nested_enum: 0 "
-       "optional_nested_enum: 2 "
-       "repeated_nested_enum: 1"));
+	"optional_nested_enum: BAR "   // 2
+	"repeated_nested_enum: BAR "// 2
+	"repeated_nested_enum: ZERO "// 0
+	"repeated_nested_enum: FOO",// 1
+	("repeated_nested_enum: 2 " "repeated_nested_enum: 0 " "optional_nested_enum: 2 " "repeated_nested_enum: 1"));
 
-  EXPECT_PARSE_SUCCESS("", "optional_nested_enum: -0");
-  EXPECT_PARSE_FAILURE("optional_nested_enum: 6");
-  EXPECT_PARSE_FAILURE("optional_nested_enum: BARNONE");
-  EXPECT_PARSE_FAILURE("optional_nested_enum: 'BAR'");
-  EXPECT_PARSE_FAILURE("optional_nested_enum: \"BAR\" ");
+EXPECT_PARSE_SUCCESS("", "optional_nested_enum: -0");EXPECT_PARSE_FAILURE(
+	"optional_nested_enum: 6");EXPECT_PARSE_FAILURE(
+	"optional_nested_enum: BARNONE");EXPECT_PARSE_FAILURE(
+	"optional_nested_enum: 'BAR'");EXPECT_PARSE_FAILURE(
+	"optional_nested_enum: \"BAR\" ");
 
-  EXPECT_EQ(string("BAR"),
+EXPECT_EQ(string("BAR"),
             string(EnumName_TestAllTypes_NestedEnum(TestAllTypes::BAR)));
   // out of range - returns empty string (see NameOfEnum in proto library).
   EXPECT_EQ(string(""), string(EnumName_TestAllTypes_NestedEnum(
@@ -494,26 +479,27 @@ TEST(CreateProtoDebugStringLibTest, Oneof) {
   EXPECT_TEXT_TRANSFORMS_MATCH();
 
   // Parse a text format that lists multiple members of the oneof.
-  EXPECT_PARSE_FAILURE("oneof_string: \"abc\" oneof_uint32: 13 ");
-  EXPECT_PARSE_FAILURE("oneof_string: \"abc\" oneof_string: \"def\" ");
+  EXPECT_PARSE_FAILURE("oneof_string: \"abc\" oneof_uint32: 13 ");EXPECT_PARSE_FAILURE(
+	"oneof_string: \"abc\" oneof_string: \"def\" ");
 }
 
 TEST(CreateProtoDebugStringLibTest, Comments) {
-  TestAllTypes proto;
+TestAllTypes proto;
 
-  EXPECT_PARSE_SUCCESS("optional_int64: 123 optional_string: \"#text\"",
-                       ("#leading comment \n"
-                        "optional_int64# comment\n"
-                        ":# comment\n"
-                        "123# comment\n"
-                        "optional_string  # comment\n"
-                        ":   # comment\n"
-                        "\"#text\"#comment####\n"));
+EXPECT_PARSE_SUCCESS("optional_int64: 123 optional_string: \"#text\"",
+		("#leading comment \n"
+				"optional_int64# comment\n"
+				":# comment\n"
+				"123# comment\n"
+				"optional_string  # comment\n"
+				":   # comment\n"
+				"\"#text\"#comment####\n"));
 
-  EXPECT_PARSE_FAILURE("optional_int64:// not a valid comment\n123");
-  EXPECT_PARSE_FAILURE("optional_int64:/* not a valid comment */\n123");
+EXPECT_PARSE_FAILURE("optional_int64:// not a valid comment\n123");
+EXPECT_PARSE_FAILURE("optional_int64:/* not a valid comment */\n123");
 }
 
-}  // namespace
-}  // namespace test
+}
+  // namespace
+} // namespace test
 }  // namespace tensorflow

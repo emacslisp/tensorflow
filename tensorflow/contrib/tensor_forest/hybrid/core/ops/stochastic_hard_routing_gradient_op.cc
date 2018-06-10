@@ -42,32 +42,32 @@ using tensorforest::LeftProbability;
 // This op computes the derivative of the routing loss with respect to each
 // decision node.
 REGISTER_OP("StochasticHardRoutingGradient")
-    .Attr("tree_depth: int")
-    .Input("input_data: float")
-    .Input("tree_parameters: float")
-    .Input("tree_biases: float")
-    .Input("path_probability: float")
-    .Input("path: int32")
-    .Output("routing_gradient: float")
-    .Output("data_gradient: float")
-    .Output("parameter_gradient: float")
-    .Output("bias_gradient: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle input, params;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &input));
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &params));
+.Attr("tree_depth: int")
+.Input("input_data: float")
+.Input("tree_parameters: float")
+.Input("tree_biases: float")
+.Input("path_probability: float")
+.Input("path: int32")
+.Output("routing_gradient: float")
+.Output("data_gradient: float")
+.Output("parameter_gradient: float")
+.Output("bias_gradient: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle input, params;
+			TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 2, &input));
+			TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &params));
 
-      auto num_points = c->Dim(input, 0);
-      auto num_features = c->Dim(input, 1);
-      auto num_nodes = c->Dim(params, 0);
+			auto num_points = c->Dim(input, 0);
+			auto num_features = c->Dim(input, 1);
+			auto num_nodes = c->Dim(params, 0);
 
-      c->set_output(0, c->Matrix(num_points, num_nodes));
-      c->set_output(1, c->Matrix(num_nodes, num_features));
-      c->set_output(2, c->MakeShape({num_points, num_nodes, num_features}));
-      c->set_output(3, c->Vector(num_nodes));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, c->Matrix(num_points, num_nodes));
+			c->set_output(1, c->Matrix(num_nodes, num_features));
+			c->set_output(2, c->MakeShape( {num_points, num_nodes, num_features}));
+			c->set_output(3, c->Vector(num_nodes));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Computes the derivative of the routing loss with respect to each decision
   node.
 
@@ -107,124 +107,134 @@ REGISTER_OP("StochasticHardRoutingGradient")
      du / db = du / df * df / db.
 )doc");
 
-class StochasticHardRoutingGradient : public OpKernel {
- public:
-  explicit StochasticHardRoutingGradient(OpKernelConstruction* context)
-      : OpKernel(context) {
-    OP_REQUIRES_OK(context, context->GetAttr("tree_depth", &tree_depth_));
-  }
+class StochasticHardRoutingGradient: public OpKernel {
+public:
+	explicit StochasticHardRoutingGradient(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+		OP_REQUIRES_OK(context, context->GetAttr("tree_depth", &tree_depth_));
+	}
 
-  void Compute(OpKernelContext* context) override {
-    VLOG(1) << "stochastic gradient start";
-    const Tensor& input_data = context->input(0);
-    const Tensor& tree_parameters_tensor = context->input(1);
-    const Tensor& tree_biases_tensor = context->input(2);
+	void Compute(OpKernelContext* context) override
+	{
+		VLOG(1) << "stochastic gradient start";
+		const Tensor& input_data = context->input(0);
+		const Tensor& tree_parameters_tensor = context->input(1);
+		const Tensor& tree_biases_tensor = context->input(2);
 
-    const Tensor& path_probability_tensor = context->input(3);
-    const Tensor& path_tensor = context->input(4);
+		const Tensor& path_probability_tensor = context->input(3);
+		const Tensor& path_tensor = context->input(4);
 
-    const int32 num_data = static_cast<int32>(input_data.shape().dim_size(0));
-    const int32 num_features =
-        static_cast<int32>(input_data.shape().dim_size(1));
-    const int32 num_nodes =
-        static_cast<int32>(tree_parameters_tensor.shape().dim_size(0));
+		const int32 num_data =
+				static_cast<int32>(input_data.shape().dim_size(0));
+		const int32 num_features =
+				static_cast<int32>(input_data.shape().dim_size(1));
+		const int32 num_nodes =
+				static_cast<int32>(tree_parameters_tensor.shape().dim_size(0));
 
-    Tensor* output_routing = nullptr;
-    TensorShape output_routing_shape;
-    output_routing_shape.AddDim(num_data);
-    output_routing_shape.AddDim(num_nodes);
+		Tensor* output_routing = nullptr;
+		TensorShape output_routing_shape;
+		output_routing_shape.AddDim(num_data);
+		output_routing_shape.AddDim(num_nodes);
 
-    Tensor* output_data = nullptr;
-    TensorShape output_data_shape;
-    output_data_shape.AddDim(num_nodes);
-    output_data_shape.AddDim(num_features);
+		Tensor* output_data = nullptr;
+		TensorShape output_data_shape;
+		output_data_shape.AddDim(num_nodes);
+		output_data_shape.AddDim(num_features);
 
-    Tensor* output_parameters = nullptr;
-    TensorShape output_parameters_shape;
-    output_parameters_shape.AddDim(num_data);
-    output_parameters_shape.AddDim(num_nodes);
-    output_parameters_shape.AddDim(num_features);
+		Tensor* output_parameters = nullptr;
+		TensorShape output_parameters_shape;
+		output_parameters_shape.AddDim(num_data);
+		output_parameters_shape.AddDim(num_nodes);
+		output_parameters_shape.AddDim(num_features);
 
-    Tensor* output_bias = nullptr;
-    TensorShape output_bias_shape;
-    output_bias_shape.AddDim(num_data);
+		Tensor* output_bias = nullptr;
+		TensorShape output_bias_shape;
+		output_bias_shape.AddDim(num_data);
 
-    OP_REQUIRES_OK(context, context->allocate_output(
-        0, output_routing_shape, &output_routing));
-    OP_REQUIRES_OK(context, context->allocate_output(
-        1, output_data_shape, &output_data));
-    OP_REQUIRES_OK(context, context->allocate_output(
-        2, output_parameters_shape, &output_parameters));
-    OP_REQUIRES_OK(context, context->allocate_output(
-        3, output_bias_shape, &output_bias));
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, output_routing_shape,
+						&output_routing));
+		OP_REQUIRES_OK(context,
+				context->allocate_output(1, output_data_shape, &output_data));
+		OP_REQUIRES_OK(context,
+				context->allocate_output(2, output_parameters_shape,
+						&output_parameters));
+		OP_REQUIRES_OK(context,
+				context->allocate_output(3, output_bias_shape, &output_bias));
 
-    tensorforest::Initialize(*output_routing, 0.0);
-    tensorforest::Initialize(*output_data, 0.0);
-    tensorforest::Initialize(*output_parameters, 0.0);
-    tensorforest::Initialize(*output_bias, 0.0);
+		tensorforest::Initialize(*output_routing, 0.0);
+		tensorforest::Initialize(*output_data, 0.0);
+		tensorforest::Initialize(*output_parameters, 0.0);
+		tensorforest::Initialize(*output_bias, 0.0);
 
-    auto out_routing = output_routing->tensor<float, 2>();
-    auto out_data = output_data->tensor<float, 2>();
-    auto out_parameters = output_parameters->tensor<float, 3>();
-    auto out_bias = output_bias->tensor<float, 1>();
+		auto out_routing = output_routing->tensor<float, 2>();
+		auto out_data = output_data->tensor<float, 2>();
+		auto out_parameters = output_parameters->tensor<float, 3>();
+		auto out_bias = output_bias->tensor<float, 1>();
 
-    const auto data = input_data.tensor<float, 2>();
-    const auto tree_parameters = tree_parameters_tensor.tensor<float, 2>();
-    const auto tree_biases = tree_biases_tensor.tensor<float, 1>();
-    const auto path_probability = path_probability_tensor.tensor<float, 2>();
-    const auto path = path_tensor.tensor<int32, 2>();
+		const auto data = input_data.tensor<float, 2>();
+		const auto tree_parameters = tree_parameters_tensor.tensor<float, 2>();
+		const auto tree_biases = tree_biases_tensor.tensor<float, 1>();
+		const auto path_probability =
+				path_probability_tensor.tensor<float, 2>();
+		const auto path = path_tensor.tensor<int32, 2>();
 
-    for (int i = 0; i < num_data; i++) {
-      const Tensor point = input_data.Slice(i, i + 1);
+		for (int i = 0; i < num_data; i++) {
+			const Tensor point = input_data.Slice(i, i + 1);
 
-      // Traverses the tree from the bottom up.
-      for (int j = tree_depth_-1; j > -1; j--) {
-        int32 node = path(i, j);
+			// Traverses the tree from the bottom up.
+			for (int j = tree_depth_ - 1; j > -1; j--) {
+				int32 node = path(i, j);
 
-        CHECK_LT(node, num_nodes);
-        CHECK_GT(node, -1);
+				CHECK_LT(node, num_nodes);
+				CHECK_GT(node, -1);
 
-        // Compute data, parameter, and bias gradients.
-        // TODO(atwoodj): Should these be normalized?  Loss looks pretty large.
-        for (int k = 0; k < num_features; k++) {
-          out_data(node, k) = tree_parameters(node, k);
-          out_parameters(i, node, k) = out_parameters(i, node, k) + data(i, k);
-        }
-        out_bias(node) = out_bias(node) + 1.0;
+				// Compute data, parameter, and bias gradients.
+				// TODO(atwoodj): Should these be normalized?  Loss looks pretty large.
+				for (int k = 0; k < num_features; k++) {
+					out_data(node, k) = tree_parameters(node, k);
+					out_parameters(i, node, k) = out_parameters(i, node, k)
+							+ data(i, k);
+				}
+				out_bias(node) = out_bias(node) + 1.0;
 
-        // Compute decision gradient.
-        // node is a leaf
-        if (node >= num_nodes / 2) {
-          CHECK_LT(node, num_nodes);
-          out_routing(i, node) = path_probability(i, j);
-        } else {  // node is not a leaf
-          int32 left_child = 2 * j + 1;
+				// Compute decision gradient.
+				// node is a leaf
+				if (node >= num_nodes / 2) {
+					CHECK_LT(node, num_nodes);
+					out_routing(i, node) = path_probability(i, j);
+				} else {  // node is not a leaf
+					int32 left_child = 2 * j + 1;
 
-          float left_prob =
-              LeftProbability(point, tree_parameters_tensor.Slice(j, j + 1),
-                              tree_biases(j), num_features);
+					float left_prob = LeftProbability(point,
+							tree_parameters_tensor.Slice(j, j + 1),
+							tree_biases(j), num_features);
 
-          float right_prob = 1 - left_prob;
+					float right_prob = 1 - left_prob;
 
-          CHECK_GT(j - 1, -1);
-          if (path(i, j - 1) == left_child) {
-            CHECK_LT(node, num_nodes);
-            out_routing(i, node) = right_prob * path_probability(i, j - 1);
-          } else {
-            CHECK_LT(node, num_nodes);
-            out_routing(i, node) = left_prob * path_probability(i, j - 1);
-          }
-        }
-      }
-    }
-    VLOG(1) << "stochastic gradient end";
-  }
+					CHECK_GT(j - 1, -1);
+					if (path(i, j - 1) == left_child) {
+						CHECK_LT(node, num_nodes);
+						out_routing(i, node) = right_prob
+								* path_probability(i, j - 1);
+					} else {
+						CHECK_LT(node, num_nodes);
+						out_routing(i, node) = left_prob
+								* path_probability(i, j - 1);
+					}
+				}
+			}
+		}
+		VLOG(1) << "stochastic gradient end";
+	}
 
- private:
-  int32 tree_depth_;
+private:
+	int32 tree_depth_;
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("StochasticHardRoutingGradient").Device(DEVICE_CPU),
-    StochasticHardRoutingGradient);
-}  // namespace tensorflow
+		Name("StochasticHardRoutingGradient").Device(DEVICE_CPU),
+		StochasticHardRoutingGradient);
+}
+  // namespace tensorflow

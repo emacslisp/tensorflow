@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_EXAMPLE_EXAMPLE_PARSER_CONFIGURATION_H_
 #define THIRD_PARTY_TENSORFLOW_CORE_EXAMPLE_EXAMPLE_PARSER_CONFIGURATION_H_
@@ -37,19 +37,18 @@ namespace tensorflow {
 
 // Given a graph and the node_name of a ParseExample op,
 // extract the FixedLenFeature/VarLenFeature configurations.
-Status ExtractExampleParserConfiguration(
-    const tensorflow::GraphDef& graph, const string& node_name,
-    tensorflow::Session* session,
-    std::vector<FixedLenFeature>* fixed_len_features,
-    std::vector<VarLenFeature>* var_len_features);
+Status ExtractExampleParserConfiguration(const tensorflow::GraphDef& graph,
+		const string& node_name, tensorflow::Session* session,
+		std::vector<FixedLenFeature>* fixed_len_features,
+		std::vector<VarLenFeature>* var_len_features);
 
 // Given a config proto, ostensibly extracted via python,
 // fill a vector of C++ structs suitable for calling
 // the tensorflow.Example -> Tensor conversion code.
 Status ExampleParserConfigurationProtoToFeatureVectors(
-    const ExampleParserConfiguration& config_proto,
-    std::vector<FixedLenFeature>* fixed_len_features,
-    std::vector<VarLenFeature>* var_len_features);
+		const ExampleParserConfiguration& config_proto,
+		std::vector<FixedLenFeature>* fixed_len_features,
+		std::vector<VarLenFeature>* var_len_features);
 
 }  // namespace tensorflow
 

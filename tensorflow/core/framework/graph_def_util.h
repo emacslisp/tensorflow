@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_FRAMEWORK_GRAPH_DEF_UTIL_H_
 #define TENSORFLOW_FRAMEWORK_GRAPH_DEF_UTIL_H_
@@ -52,8 +52,7 @@ Status ValidateExternalGraphDefSyntax(const GraphDef& graph_def);
 //
 // REQUIRES: 'graph_def' and 'op_registry' are not nullptr.
 Status AddDefaultAttrsToGraphDef(GraphDef* graph_def,
-                                 const OpRegistryInterface& op_registry,
-                                 int node_offset);
+		const OpRegistryInterface& op_registry, int node_offset);
 
 // Remove attrs from 'graph_def' that have the default value according
 // to 'producer_op_registry', but don't exist according to
@@ -85,16 +84,16 @@ Status AddDefaultAttrsToGraphDef(GraphDef* graph_def,
 //   OpListOpRegistry producer_op_registry(producer_stripped_op_list);
 //   TF_RETURN_IF_ERROR(RemoveNewDefaultAttrsFromGraphDef(
 //       &graph_def, *OpRegistry::Global(), producer_op_registry, nullptr));
-Status RemoveNewDefaultAttrsFromGraphDef(
-    GraphDef* graph_def, const OpRegistryInterface& consumer_op_registry,
-    const OpRegistryInterface& producer_op_registry,
-    std::set<std::pair<string, string>>* op_attr_removed);
+Status RemoveNewDefaultAttrsFromGraphDef(GraphDef* graph_def,
+		const OpRegistryInterface& consumer_op_registry,
+		const OpRegistryInterface& producer_op_registry,
+		std::set<std::pair<string, string>>* op_attr_removed);
 
 // Two functions that collect the ops used by a graph.
 //
 // This returns the ops used as a set of strings.
 void OpsUsedByGraph(const GraphDef& graph_def,
-                    std::set<string>* ops_used_in_graph);
+		std::set<string>* ops_used_in_graph);
 
 // This function computes the stripped_op_list field of MetaGraphDef
 // and similar protos.  The op_registry should contain the ops used to
@@ -106,8 +105,7 @@ void OpsUsedByGraph(const GraphDef& graph_def,
 // Most users will pass *OpRegistry::Global() for op_registry to strip against
 // the list of ops registered in this process.
 Status StrippedOpListForGraph(const GraphDef& graph_def,
-                              const OpRegistryInterface& op_registry,
-                              OpList* stripped_op_list);
+		const OpRegistryInterface& op_registry, OpList* stripped_op_list);
 
 }  // namespace tensorflow
 

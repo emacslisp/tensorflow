@@ -18,12 +18,12 @@
 namespace tensorflow {
 
 REGISTER_OP("KmeansPlusPlusInitialization")
-    .Input("points: float32")
-    .Input("num_to_sample: int64")
-    .Input("seed: int64")
-    .Input("num_retries_per_sample: int64")
-    .Output("samples: float32")
-    .Doc(R"(
+.Input("points: float32")
+.Input("num_to_sample: int64")
+.Input("seed: int64")
+.Input("num_retries_per_sample: int64")
+.Output("samples: float32")
+.Doc(R"(
 Selects num_to_sample rows of input using the KMeans++ criterion.
 
 Rows of points are assumed to be input points. One row is selected at random.
@@ -43,12 +43,12 @@ samples: Matrix of shape (num_to_sample, d). The sampled rows.
 )");
 
 REGISTER_OP("NearestNeighbors")
-    .Input("points: float32")
-    .Input("centers: float32")
-    .Input("k: int64")
-    .Output("nearest_center_indices: int64")
-    .Output("nearest_center_distances: float32")
-    .Doc(R"(
+.Input("points: float32")
+.Input("centers: float32")
+.Input("k: int64")
+.Output("nearest_center_indices: int64")
+.Output("nearest_center_distances: float32")
+.Doc(R"(
 Selects the k nearest centers for each point.
 
 Rows of points are assumed to be input points. Rows of centers are assumed to be
@@ -66,4 +66,5 @@ nearest_center_distances: Matrix of shape (n, min(m, k)). Each row contains the
   squared L2 distance to the corresponding center in nearest_center_indices.
 )");
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

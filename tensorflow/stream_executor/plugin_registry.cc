@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/stream_executor/plugin_registry.h"
 
@@ -25,154 +25,161 @@ namespace gputools {
 const PluginId kNullPlugin = nullptr;
 
 // Returns the string representation of the specified PluginKind.
-string PluginKindString(PluginKind plugin_kind) {
-  switch (plugin_kind) {
-    case PluginKind::kBlas:
-      return "BLAS";
-    case PluginKind::kDnn:
-      return "DNN";
-    case PluginKind::kFft:
-      return "FFT";
-    case PluginKind::kRng:
-      return "RNG";
-    case PluginKind::kInvalid:
-    default:
-      return "kInvalid";
-  }
+string PluginKindString(PluginKind plugin_kind)
+{
+	switch (plugin_kind) {
+	case PluginKind::kBlas:
+		return "BLAS";
+	case PluginKind::kDnn:
+		return "DNN";
+	case PluginKind::kFft:
+		return "FFT";
+	case PluginKind::kRng:
+		return "RNG";
+	case PluginKind::kInvalid:
+	default:
+		return "kInvalid";
+	}
 }
 
 PluginRegistry::DefaultFactories::DefaultFactories() :
-    blas(kNullPlugin), dnn(kNullPlugin), fft(kNullPlugin), rng(kNullPlugin) { }
-
-static mutex& GetPluginRegistryMutex() {
-  static mutex* mu = new mutex;
-  return *mu;
+		blas(kNullPlugin), dnn(kNullPlugin), fft(kNullPlugin), rng(kNullPlugin)
+{
 }
 
-/* static */ PluginRegistry* PluginRegistry::instance_ = nullptr;
+static mutex& GetPluginRegistryMutex()
+{
+	static mutex* mu = new mutex;
+	return *mu;
+}
 
-PluginRegistry::PluginRegistry() {}
+/* static */PluginRegistry* PluginRegistry::instance_ = nullptr;
 
-/* static */ PluginRegistry* PluginRegistry::Instance() {
-  mutex_lock lock{GetPluginRegistryMutex()};
-  if (instance_ == nullptr) {
-    instance_ = new PluginRegistry();
-  }
-  return instance_;
+PluginRegistry::PluginRegistry()
+{
+}
+
+/* static */PluginRegistry* PluginRegistry::Instance()
+{
+	mutex_lock lock { GetPluginRegistryMutex() };
+	if (instance_ == nullptr) {
+		instance_ = new PluginRegistry();
+	}
+	return instance_;
 }
 
 void PluginRegistry::MapPlatformKindToId(PlatformKind platform_kind,
-                                         Platform::Id platform_id) {
-  platform_id_by_kind_[platform_kind] = platform_id;
+		Platform::Id platform_id)
+{
+	platform_id_by_kind_[platform_kind] = platform_id;
 }
 
-template <typename FACTORY_TYPE>
-port::Status PluginRegistry::RegisterFactoryInternal(
-    PluginId plugin_id, const string& plugin_name, FACTORY_TYPE factory,
-    std::map<PluginId, FACTORY_TYPE>* factories) {
-  mutex_lock lock{GetPluginRegistryMutex()};
+template<typename FACTORY_TYPE>
+port::Status PluginRegistry::RegisterFactoryInternal(PluginId plugin_id,
+		const string& plugin_name, FACTORY_TYPE factory,
+		std::map<PluginId, FACTORY_TYPE>* factories)
+{
+	mutex_lock lock { GetPluginRegistryMutex() };
 
-  if (factories->find(plugin_id) != factories->end()) {
-    return port::Status{
-        port::error::ALREADY_EXISTS,
-        port::Printf("Attempting to register factory for plugin %s when "
-                     "one has already been registered",
-                     plugin_name.c_str())};
-  }
+	if (factories->find(plugin_id) != factories->end()) {
+		return port::Status { port::error::ALREADY_EXISTS, port::Printf(
+				"Attempting to register factory for plugin %s when "
+						"one has already been registered", plugin_name.c_str()) };
+	}
 
-  (*factories)[plugin_id] = factory;
-  plugin_names_[plugin_id] = plugin_name;
-  return port::Status::OK();
+	(*factories)[plugin_id] = factory;
+	plugin_names_[plugin_id] = plugin_name;
+	return port::Status::OK();
 }
 
-template <typename FACTORY_TYPE>
+template<typename FACTORY_TYPE>
 port::StatusOr<FACTORY_TYPE> PluginRegistry::GetFactoryInternal(
-    PluginId plugin_id, const std::map<PluginId, FACTORY_TYPE>& factories,
-    const std::map<PluginId, FACTORY_TYPE>& generic_factories) const {
-  auto iter = factories.find(plugin_id);
-  if (iter == factories.end()) {
-    iter = generic_factories.find(plugin_id);
-    if (iter == generic_factories.end()) {
-      return port::Status{
-          port::error::NOT_FOUND,
-          port::Printf("Plugin ID %p not registered.", plugin_id)};
-    }
-  }
+		PluginId plugin_id, const std::map<PluginId, FACTORY_TYPE>& factories,
+		const std::map<PluginId, FACTORY_TYPE>& generic_factories) const
+{
+	auto iter = factories.find(plugin_id);
+	if (iter == factories.end()) {
+		iter = generic_factories.find(plugin_id);
+		if (iter == generic_factories.end()) {
+			return port::Status { port::error::NOT_FOUND, port::Printf(
+					"Plugin ID %p not registered.", plugin_id) };
+		}
+	}
 
-  return iter->second;
+	return iter->second;
 }
 
 bool PluginRegistry::SetDefaultFactory(Platform::Id platform_id,
-                                       PluginKind plugin_kind,
-                                       PluginId plugin_id) {
-  if (!HasFactory(platform_id, plugin_kind, plugin_id)) {
-    port::StatusOr<Platform*> status =
-        MultiPlatformManager::PlatformWithId(platform_id);
-    string platform_name = "<unregistered platform>";
-    if (status.ok()) {
-      platform_name = status.ValueOrDie()->Name();
-    }
+		PluginKind plugin_kind, PluginId plugin_id)
+{
+	if (!HasFactory(platform_id, plugin_kind, plugin_id)) {
+		port::StatusOr<Platform*> status = MultiPlatformManager::PlatformWithId(
+				platform_id);
+		string platform_name = "<unregistered platform>";
+		if (status.ok()) {
+			platform_name = status.ValueOrDie()->Name();
+		}
 
-    LOG(ERROR) << "A factory must be registered for a platform before being "
-               << "set as default! "
-               << "Platform name: " << platform_name
-               << ", PluginKind: " << PluginKindString(plugin_kind)
-               << ", PluginId: " << plugin_id;
-    return false;
-  }
+		LOG(ERROR)
+				<< "A factory must be registered for a platform before being "
+				<< "set as default! " << "Platform name: " << platform_name
+				<< ", PluginKind: " << PluginKindString(plugin_kind)
+				<< ", PluginId: " << plugin_id;
+		return false;
+	}
 
-  switch (plugin_kind) {
-    case PluginKind::kBlas:
-      default_factories_[platform_id].blas = plugin_id;
-      break;
-    case PluginKind::kDnn:
-      default_factories_[platform_id].dnn = plugin_id;
-      break;
-    case PluginKind::kFft:
-      default_factories_[platform_id].fft = plugin_id;
-      break;
-    case PluginKind::kRng:
-      default_factories_[platform_id].rng = plugin_id;
-      break;
-    default:
-      LOG(ERROR) << "Invalid plugin kind specified: "
-                 << static_cast<int>(plugin_kind);
-      return false;
-  }
+	switch (plugin_kind) {
+	case PluginKind::kBlas:
+		default_factories_[platform_id].blas = plugin_id;
+		break;
+	case PluginKind::kDnn:
+		default_factories_[platform_id].dnn = plugin_id;
+		break;
+	case PluginKind::kFft:
+		default_factories_[platform_id].fft = plugin_id;
+		break;
+	case PluginKind::kRng:
+		default_factories_[platform_id].rng = plugin_id;
+		break;
+	default:
+		LOG(ERROR) << "Invalid plugin kind specified: "
+				<< static_cast<int>(plugin_kind);
+		return false;
+	}
 
-  return true;
+	return true;
 }
 
 bool PluginRegistry::HasFactory(const PluginFactories& factories,
-                                PluginKind plugin_kind,
-                                PluginId plugin_id) const {
-  switch (plugin_kind) {
-    case PluginKind::kBlas:
-      return factories.blas.find(plugin_id) != factories.blas.end();
-    case PluginKind::kDnn:
-      return factories.dnn.find(plugin_id) != factories.dnn.end();
-    case PluginKind::kFft:
-      return factories.fft.find(plugin_id) != factories.fft.end();
-    case PluginKind::kRng:
-      return factories.rng.find(plugin_id) != factories.rng.end();
-    default:
-      LOG(ERROR) << "Invalid plugin kind specified: "
-                 << PluginKindString(plugin_kind);
-      return false;
-  }
+		PluginKind plugin_kind, PluginId plugin_id) const
+{
+	switch (plugin_kind) {
+	case PluginKind::kBlas:
+		return factories.blas.find(plugin_id) != factories.blas.end();
+	case PluginKind::kDnn:
+		return factories.dnn.find(plugin_id) != factories.dnn.end();
+	case PluginKind::kFft:
+		return factories.fft.find(plugin_id) != factories.fft.end();
+	case PluginKind::kRng:
+		return factories.rng.find(plugin_id) != factories.rng.end();
+	default:
+		LOG(ERROR) << "Invalid plugin kind specified: "
+				<< PluginKindString(plugin_kind);
+		return false;
+	}
 }
 
 bool PluginRegistry::HasFactory(Platform::Id platform_id,
-                                PluginKind plugin_kind,
-                                PluginId plugin_id) const {
-  auto iter = factories_.find(platform_id);
-  if (iter != factories_.end()) {
-    if (HasFactory(iter->second, plugin_kind, plugin_id)) {
-      return true;
-    }
-  }
+		PluginKind plugin_kind, PluginId plugin_id) const
+{
+	auto iter = factories_.find(platform_id);
+	if (iter != factories_.end()) {
+		if (HasFactory(iter->second, plugin_kind, plugin_id)) {
+			return true;
+		}
+	}
 
-  return HasFactory(generic_factories_, plugin_kind, plugin_id);
+	return HasFactory(generic_factories_, plugin_kind, plugin_id);
 }
 
 // Explicit instantiations to support types exposed in user/public API.

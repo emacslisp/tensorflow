@@ -43,21 +43,21 @@ using tensorforest::LeftProbability;
 // This op computes the derivative of the routing loss with respect to each
 // decision node.
 REGISTER_OP("RoutingGradient")
-    .Attr("max_nodes: int")
-    .Input("input_data: float")
-    .Input("tree_parameters: float")
-    .Input("tree_biases: float")
-    .Input("routes: float")
-    .Output("routing_gradient: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle input, params;
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 1, &input));
-      TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &params));
+.Attr("max_nodes: int")
+.Input("input_data: float")
+.Input("tree_parameters: float")
+.Input("tree_biases: float")
+.Input("routes: float")
+.Output("routing_gradient: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle input, params;
+			TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), 1, &input));
+			TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &params));
 
-      c->set_output(0, c->Matrix(c->Dim(input, 0), c->Dim(params, 0)));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, c->Matrix(c->Dim(input, 0), c->Dim(params, 0)));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Computes the derivative of the routing loss with respect to each decision
   node.
 
@@ -84,64 +84,70 @@ REGISTER_OP("RoutingGradient")
      du / db = du / df * df / db.
 )doc");
 
-class RoutingGradient : public OpKernel {
- public:
-  explicit RoutingGradient(OpKernelConstruction* context) : OpKernel(context) {
-    OP_REQUIRES_OK(context, context->GetAttr("max_nodes", &max_nodes_));
-  }
+class RoutingGradient: public OpKernel {
+public:
+	explicit RoutingGradient(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+		OP_REQUIRES_OK(context, context->GetAttr("max_nodes", &max_nodes_));
+	}
 
-  void Compute(OpKernelContext* context) override {
-    const Tensor& input_data = context->input(0);
-    const Tensor& tree_parameters_tensor = context->input(1);
-    const Tensor& tree_biases_tensor = context->input(2);
-    const Tensor& routing_tensor = context->input(3);
+	void Compute(OpKernelContext* context) override
+	{
+		const Tensor& input_data = context->input(0);
+		const Tensor& tree_parameters_tensor = context->input(1);
+		const Tensor& tree_biases_tensor = context->input(2);
+		const Tensor& routing_tensor = context->input(3);
 
-    // TODO(atwoodj): Add dimension checks.
+		// TODO(atwoodj): Add dimension checks.
 
-    const int32 num_data = static_cast<int32>(input_data.shape().dim_size(0));
-    const int32 num_features =
-        static_cast<int32>(input_data.shape().dim_size(1));
+		const int32 num_data =
+				static_cast<int32>(input_data.shape().dim_size(0));
+		const int32 num_features =
+				static_cast<int32>(input_data.shape().dim_size(1));
 
-    Tensor* output = nullptr;
-    TensorShape output_shape;
-    output_shape.AddDim(num_data);
-    output_shape.AddDim(max_nodes_);
+		Tensor* output = nullptr;
+		TensorShape output_shape;
+		output_shape.AddDim(num_data);
+		output_shape.AddDim(max_nodes_);
 
-    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, output_shape, &output));
 
-    auto out = output->tensor<float, 2>();
-    const auto tree_biases = tree_biases_tensor.tensor<float, 1>();
-    const auto routes = routing_tensor.tensor<float, 2>();
+		auto out = output->tensor<float, 2>();
+		const auto tree_biases = tree_biases_tensor.tensor<float, 1>();
+		const auto routes = routing_tensor.tensor<float, 2>();
 
-    // A derivation of the gradient can be found at go/routingderivation.
-    for (int i = 0; i < num_data; i++) {
-      const Tensor point = input_data.Slice(i, i + 1);
+		// A derivation of the gradient can be found at go/routingderivation.
+		for (int i = 0; i < num_data; i++) {
+			const Tensor point = input_data.Slice(i, i + 1);
 
-      // Traverses the tree from the bottom up.
-      for (int j = max_nodes_ - 1; j >= 0; j--) {
-        // j is a leaf node
-        if (j >= max_nodes_ / 2) {
-          out(i, j) = routes(i, j);
-        } else {  // j is not a leaf node
-          int32 left_child = 2 * j + 1;
-          int32 right_child = left_child + 1;
-          float left_prob =
-              LeftProbability(point, tree_parameters_tensor.Slice(j, j + 1),
-                              tree_biases(j), num_features);
+			// Traverses the tree from the bottom up.
+			for (int j = max_nodes_ - 1; j >= 0; j--) {
+				// j is a leaf node
+				if (j >= max_nodes_ / 2) {
+					out(i, j) = routes(i, j);
+				} else {  // j is not a leaf node
+					int32 left_child = 2 * j + 1;
+					int32 right_child = left_child + 1;
+					float left_prob = LeftProbability(point,
+							tree_parameters_tensor.Slice(j, j + 1),
+							tree_biases(j), num_features);
 
-          float right_prob = 1 - left_prob;
+					float right_prob = 1 - left_prob;
 
-          out(i, j) = (right_prob * routes(i, left_child) +
-                       left_prob * routes(i, right_child));
-        }
-      }
-    }
-  }
+					out(i, j) = (right_prob * routes(i, left_child)
+							+ left_prob * routes(i, right_child));
+				}
+			}
+		}
+	}
 
- private:
-  int32 max_nodes_;
+private:
+	int32 max_nodes_;
 };
 
 REGISTER_KERNEL_BUILDER(Name("RoutingGradient").Device(DEVICE_CPU),
-                        RoutingGradient);
-}  // namespace tensorflow
+		RoutingGradient);
+}
+  // namespace tensorflow

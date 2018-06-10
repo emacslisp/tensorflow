@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_GPU_HLO_SCHEDULE_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_GPU_HLO_SCHEDULE_H_
@@ -35,30 +35,32 @@ namespace gpu {
 // minimize allocations), and also by ThunkSchedule to determine the thunk
 // launch order.
 class HloSchedule {
- public:
-  // Constructs an HloSchedule for the given module, based on the given stream
-  // assignment.
-  static StatusOr<std::unique_ptr<HloSchedule>> Build(
-      const HloModule& module, const StreamAssignment& stream_assignment);
+public:
+	// Constructs an HloSchedule for the given module, based on the given stream
+	// assignment.
+	static StatusOr<std::unique_ptr<HloSchedule>> Build(const HloModule& module,
+			const StreamAssignment& stream_assignment);
 
-  // Returns the total order of thunk launches, represented in terms of HLO
-  // instructions.
-  const std::vector<const HloInstruction*>& ThunkLaunchOrder() const {
-    return thunk_launch_order_;
-  }
+	// Returns the total order of thunk launches, represented in terms of HLO
+	// instructions.
+	const std::vector<const HloInstruction*>& ThunkLaunchOrder() const
+	{
+		return thunk_launch_order_;
+	}
 
-  // Returns the partial order of HLO instructions. This method may only be
-  // called once. The order is based on the total order of thunk lanches, the
-  // stream assignment, and the data dependencies in the HLO DAG.
-  std::unique_ptr<HloOrdering> ConsumeHloOrdering() {
-    return std::move(hlo_ordering_);
-  }
+	// Returns the partial order of HLO instructions. This method may only be
+	// called once. The order is based on the total order of thunk lanches, the
+	// stream assignment, and the data dependencies in the HLO DAG.
+	std::unique_ptr<HloOrdering> ConsumeHloOrdering()
+	{
+		return std::move(hlo_ordering_);
+	}
 
- private:
-  HloSchedule();
+private:
+	HloSchedule();
 
-  std::vector<const HloInstruction*> thunk_launch_order_;
-  std::unique_ptr<HloOrdering> hlo_ordering_;
+	std::vector<const HloInstruction*> thunk_launch_order_;
+	std::unique_ptr<HloOrdering> hlo_ordering_;
 };
 
 }  // namespace gpu

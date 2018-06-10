@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/kernels/control_flow_ops.h"
 
@@ -23,20 +23,20 @@ limitations under the License.
 
 namespace tensorflow {
 
-void SwitchOp::Compute(OpKernelContext* context) {
-  const Tensor& outputPorts = context->input(1);
-  OP_REQUIRES(context, TensorShapeUtils::IsScalar(outputPorts.shape()),
-              errors::InvalidArgument("The second input must be a scalar, "
-                                      "but it has shape ",
-                                      outputPorts.shape().DebugString()));
+void SwitchOp::Compute(OpKernelContext* context)
+{
+	const Tensor& outputPorts = context->input(1);
+	OP_REQUIRES(context, TensorShapeUtils::IsScalar(outputPorts.shape()),
+			errors::InvalidArgument("The second input must be a scalar, "
+					"but it has shape ", outputPorts.shape().DebugString()));
 
-  bool pred = outputPorts.scalar<bool>()();
-  int port = (pred) ? 1 : 0;
-  if (IsRefType(context->input_dtype(0))) {
-    context->forward_ref_input_to_ref_output(0, port);
-  } else {
-    context->set_output(port, context->input(0));
-  }
+	bool pred = outputPorts.scalar<bool>()();
+	int port = (pred) ? 1 : 0;
+	if (IsRefType(context->input_dtype(0))) {
+		context->forward_ref_input_to_ref_output(0, port);
+	} else {
+		context->set_output(port, context->input(0));
+	}
 }
 
 #define REGISTER_CPU_SWITCH(type)                         \
@@ -67,12 +67,12 @@ void SwitchOp::Compute(OpKernelContext* context) {
                               .TypeConstraint<type>("T"), \
                           SwitchOp)
 
-TF_CALL_ALL_TYPES(REGISTER_CPU_SWITCH);
-TF_CALL_ALL_TYPES(REGISTER_CPU_REF_SWITCH);
-TF_CALL_QUANTIZED_TYPES(REGISTER_CPU_SWITCH);
+TF_CALL_ALL_TYPES (REGISTER_CPU_SWITCH);
+TF_CALL_ALL_TYPES (REGISTER_CPU_REF_SWITCH);
+TF_CALL_QUANTIZED_TYPES (REGISTER_CPU_SWITCH);
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_SWITCH);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_REF_SWITCH);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_SWITCH);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_REF_SWITCH);
 
 #undef REGISTER_CPU_SWITCH
 #undef REGISTER_CPU_REF_SWITCH
@@ -136,35 +136,43 @@ TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_REF_SWITCH);
 
 #endif // TENSORFLOW_USE_SYCL
 
-class RefSelectOp : public OpKernel {
- public:
-  explicit RefSelectOp(OpKernelConstruction* context) : OpKernel(context) {
-    OP_REQUIRES_OK(context, context->GetAttr("N", &num_ref_inputs_));
-  }
+class RefSelectOp: public OpKernel {
+public:
+	explicit RefSelectOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+		OP_REQUIRES_OK(context, context->GetAttr("N", &num_ref_inputs_));
+	}
 
-  void Compute(OpKernelContext* context) override {
-    const Tensor& index_tensor = context->input(0);
-    OP_REQUIRES(context, TensorShapeUtils::IsScalar(index_tensor.shape()),
-                errors::InvalidArgument("Index must be a scalar, "
-                                        "but it has shape ",
-                                        index_tensor.shape().DebugString()));
+	void Compute(OpKernelContext* context) override
+	{
+		const Tensor& index_tensor = context->input(0);
+		OP_REQUIRES(context, TensorShapeUtils::IsScalar(index_tensor.shape()),
+				errors::InvalidArgument("Index must be a scalar, "
+						"but it has shape ",
+						index_tensor.shape().DebugString()));
 
-    int32 index = index_tensor.scalar<int32>()();
+		int32 index = index_tensor.scalar<int32>()();
 
-    OP_REQUIRES(context, index >= 0 && index < num_ref_inputs_,
-                errors::InvalidArgument("Index must be in the range [0, ",
-                                        num_ref_inputs_, ") but got ", index));
-    context->forward_ref_input_to_ref_output(index + 1, 0);
-  }
+		OP_REQUIRES(context, index >= 0 && index < num_ref_inputs_,
+				errors::InvalidArgument("Index must be in the range [0, ",
+						num_ref_inputs_, ") but got ", index));
+		context->forward_ref_input_to_ref_output(index + 1, 0);
+	}
 
-  bool IsExpensive() override { return false; }
+	bool IsExpensive() override
+	{
+		return false;
+	}
 
-  ~RefSelectOp() override {}
+	~RefSelectOp() override
+	{
+	}
 
-  TF_DISALLOW_COPY_AND_ASSIGN(RefSelectOp);
+	TF_DISALLOW_COPY_AND_ASSIGN (RefSelectOp);
 
- private:
-  int num_ref_inputs_;
+private:
+	int num_ref_inputs_;
 };
 
 #define REGISTER_CPU_REF_SELECT(type)                     \
@@ -173,39 +181,45 @@ class RefSelectOp : public OpKernel {
                               .HostMemory("index")        \
                               .TypeConstraint<type>("T"), \
                           RefSelectOp)
-TF_CALL_ALL_TYPES(REGISTER_CPU_REF_SELECT);
+TF_CALL_ALL_TYPES (REGISTER_CPU_REF_SELECT);
 
 #undef REGISTER_CPU_REF_SWITCH
 
-MergeOp::MergeOp(OpKernelConstruction* context) : OpKernel(context) {
-  const DataType dt = context->input_type(0);
-  const int num_in = context->num_inputs();
-  OP_REQUIRES_OK(context, context->MatchSignature(DataTypeVector(num_in, dt),
-                                                  {dt, DT_INT32}));
+MergeOp::MergeOp(OpKernelConstruction* context) :
+		OpKernel(context)
+{
+	const DataType dt = context->input_type(0);
+	const int num_in = context->num_inputs();
+	OP_REQUIRES_OK(context,
+			context->MatchSignature(DataTypeVector(num_in, dt),
+					{ dt, DT_INT32 }));
 }
 
-void MergeOp::Compute(OpKernelContext* context) {
-  bool input_seen = false;
-  for (int i = 0; i < context->num_inputs(); ++i) {
-    if (context->has_input(i)) {
-      if (input_seen) {
-        context->SetStatus(
-            errors::Internal("Merge can not have more than one valid input."));
-        return;
-      }
-      input_seen = true;
+void MergeOp::Compute(OpKernelContext* context)
+{
+	bool input_seen = false;
+	for (int i = 0; i < context->num_inputs(); ++i) {
+		if (context->has_input(i)) {
+			if (input_seen) {
+				context->SetStatus(
+						errors::Internal(
+								"Merge can not have more than one valid input."));
+				return;
+			}
+			input_seen = true;
 
-      if (IsRefType(context->input_dtype(i))) {
-        context->forward_ref_input_to_ref_output(i, 0);
-      } else {
-        context->set_output(0, context->input(i));
-      }
-      Tensor* value_index = nullptr;
-      OP_REQUIRES_OK(
-          context, context->allocate_output(1, TensorShape({}), &value_index));
-      value_index->scalar<int32>()() = i;
-    }
-  }
+			if (IsRefType(context->input_dtype(i))) {
+				context->forward_ref_input_to_ref_output(i, 0);
+			} else {
+				context->set_output(0, context->input(i));
+			}
+			Tensor* value_index = nullptr;
+			OP_REQUIRES_OK(context,
+					context->allocate_output(1, TensorShape( { }),
+							&value_index));
+			value_index->scalar<int32>()() = i;
+		}
+	}
 }
 
 REGISTER_KERNEL_BUILDER(Name("Merge").Device(DEVICE_CPU), MergeOp);
@@ -225,8 +239,8 @@ REGISTER_KERNEL_BUILDER(Name("RefMerge").Device(DEVICE_CPU), MergeOp);
                               .HostMemory("value_index"), \
                           MergeOp);
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_REF_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_REF_KERNEL);
 REGISTER_GPU_KERNEL(bool);
 REGISTER_GPU_REF_KERNEL(bool);
 
@@ -280,12 +294,13 @@ REGISTER_GPU_HOST_KERNEL(ResourceHandle);
 
 #undef REGISTER_GPU_HOST_KERNEL
 
-void EnterOp::Compute(OpKernelContext* context) {
-  if (IsRefType(context->input_dtype(0))) {
-    context->forward_ref_input_to_ref_output(0, 0);
-  } else {
-    context->set_output(0, context->input(0));
-  }
+void EnterOp::Compute(OpKernelContext* context)
+{
+	if (IsRefType(context->input_dtype(0))) {
+		context->forward_ref_input_to_ref_output(0, 0);
+	} else {
+		context->set_output(0, context->input(0));
+	}
 }
 
 REGISTER_KERNEL_BUILDER(Name("Enter").Device(DEVICE_CPU), EnterOp);
@@ -298,8 +313,8 @@ REGISTER_KERNEL_BUILDER(Name("RefEnter").Device(DEVICE_CPU), EnterOp);
   REGISTER_KERNEL_BUILDER(            \
       Name("RefEnter").Device(DEVICE_GPU).TypeConstraint<type>("T"), EnterOp)
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_REF_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_REF_KERNEL);
 REGISTER_GPU_KERNEL(bool);
 REGISTER_GPU_REF_KERNEL(bool);
 
@@ -351,12 +366,13 @@ REGISTER_GPU_HOST_KERNEL(ResourceHandle);
 #undef REGISTER_GPU_HOST_KERNEL
 #undef REGISTER_GPU_HOST_REF_KERNEL
 
-void ExitOp::Compute(OpKernelContext* context) {
-  if (IsRefType(context->input_dtype(0))) {
-    context->forward_ref_input_to_ref_output(0, 0);
-  } else {
-    context->set_output(0, context->input(0));
-  }
+void ExitOp::Compute(OpKernelContext* context)
+{
+	if (IsRefType(context->input_dtype(0))) {
+		context->forward_ref_input_to_ref_output(0, 0);
+	} else {
+		context->set_output(0, context->input(0));
+	}
 }
 
 REGISTER_KERNEL_BUILDER(Name("Exit").Device(DEVICE_CPU), ExitOp);
@@ -369,7 +385,7 @@ REGISTER_KERNEL_BUILDER(Name("RefExit").Device(DEVICE_CPU), ExitOp);
   REGISTER_KERNEL_BUILDER(            \
       Name("RefExit").Device(DEVICE_GPU).TypeConstraint<type>("T"), ExitOp);
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
 REGISTER_GPU_KERNEL(bool);
 
 #undef REGISTER_GPU_KERNEL
@@ -435,18 +451,19 @@ REGISTER_GPU_HOST_KERNEL(string);
 
 #undef REGISTER_GPU_HOST_KERNEL
 
-void NextIterationOp::Compute(OpKernelContext* context) {
-  if (IsRefType(context->input_dtype(0))) {
-    context->forward_ref_input_to_ref_output(0, 0);
-  } else {
-    context->set_output(0, context->input(0));
-  }
+void NextIterationOp::Compute(OpKernelContext* context)
+{
+	if (IsRefType(context->input_dtype(0))) {
+		context->forward_ref_input_to_ref_output(0, 0);
+	} else {
+		context->set_output(0, context->input(0));
+	}
 }
 
 REGISTER_KERNEL_BUILDER(Name("NextIteration").Device(DEVICE_CPU),
-                        NextIterationOp);
+		NextIterationOp);
 REGISTER_KERNEL_BUILDER(Name("RefNextIteration").Device(DEVICE_CPU),
-                        NextIterationOp);
+		NextIterationOp);
 
 #define REGISTER_GPU_KERNEL(type)                                            \
   REGISTER_KERNEL_BUILDER(                                                   \
@@ -456,7 +473,7 @@ REGISTER_KERNEL_BUILDER(Name("RefNextIteration").Device(DEVICE_CPU),
       Name("RefNextIteration").Device(DEVICE_GPU).TypeConstraint<type>("T"), \
       NextIterationOp)
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
 REGISTER_GPU_KERNEL(bool);
 
 #undef REGISTER_GPU_KERNEL
@@ -491,8 +508,8 @@ REGISTER_GPU_HOST_KERNEL(string);
                               .HostMemory("output")       \
                               .TypeConstraint<type>("T"), \
                           NextIterationOp)
-  REGISTER_SYCL_KERNEL(bool);
-  TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
+REGISTER_SYCL_KERNEL(bool);
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
 #define REGISTER_SYCL_REF_KERNEL(type)                    \
   REGISTER_KERNEL_BUILDER(Name("RefNextIteration")        \
                               .Device(DEVICE_SYCL)        \
@@ -500,8 +517,8 @@ REGISTER_GPU_HOST_KERNEL(string);
                               .HostMemory("output")       \
                               .TypeConstraint<type>("T"), \
                           NextIterationOp)
-  REGISTER_SYCL_REF_KERNEL(bool);
-  TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_REF_KERNEL);
+REGISTER_SYCL_REF_KERNEL(bool);
+TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_REF_KERNEL);
 #undef REGISTER_SYCL_KERNEL
 #undef REGISTER_SYCL_REF_KERNEL
 
@@ -531,72 +548,85 @@ REGISTER_SYCL_HOST_KERNEL(string);
 // scalar representing the taken branches of the "pivot" Switch that
 // determines loop termination. As a contract, any high-level front-end
 // should always use port '0' of the "pivot" switches for loop exit.
-class LoopCondOp : public OpKernel {
- public:
-  explicit LoopCondOp(OpKernelConstruction* context) : OpKernel(context) {}
+class LoopCondOp: public OpKernel {
+public:
+	explicit LoopCondOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+	}
 
-  void Compute(OpKernelContext* context) override {
-    context->set_output(0, context->input(0));
-  }
+	void Compute(OpKernelContext* context) override
+	{
+		context->set_output(0, context->input(0));
+	}
 
-  bool IsExpensive() override { return false; }
+	bool IsExpensive() override
+	{
+		return false;
+	}
 
-  ~LoopCondOp() override {}
+	~LoopCondOp() override
+	{
+	}
 
-  TF_DISALLOW_COPY_AND_ASSIGN(LoopCondOp);
+	TF_DISALLOW_COPY_AND_ASSIGN (LoopCondOp);
 };
 
 REGISTER_KERNEL_BUILDER(Name("LoopCond").Device(DEVICE_CPU), LoopCondOp);
 REGISTER_KERNEL_BUILDER(Name("LoopCond")
-                            .Device(DEVICE_GPU)
-                            .HostMemory("input")
-                            .HostMemory("output"),
-                        LoopCondOp);
+		.Device(DEVICE_GPU)
+		.HostMemory("input")
+		.HostMemory("output"),
+		LoopCondOp);
 
 #ifdef TENSORFLOW_USE_SYCL
 REGISTER_KERNEL_BUILDER(Name("LoopCond")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("input")
-                            .HostMemory("output"),
-                        LoopCondOp);
+		.Device(DEVICE_SYCL)
+		.HostMemory("input")
+		.HostMemory("output"),
+		LoopCondOp);
 #endif // TENSORFLOW_USE_SYCL
 
 // ControlTrigger kernels
 REGISTER_KERNEL_BUILDER(Name("ControlTrigger").Device(DEVICE_CPU),
-                        ControlTriggerOp);
+		ControlTriggerOp);
 
 REGISTER_KERNEL_BUILDER(Name("ControlTrigger").Device(DEVICE_GPU),
-                        ControlTriggerOp);
+		ControlTriggerOp);
 
 #ifdef TENSORFLOW_USE_SYCL
 REGISTER_KERNEL_BUILDER(Name("ControlTrigger").Device(DEVICE_SYCL),
-                        ControlTriggerOp);
+		ControlTriggerOp);
 #endif // TENSORFLOW_USE_SYCL
 
 // When called, abort op will abort the current process. This can be used to
 // abort remote PSs when needed.
-class AbortOp : public OpKernel {
- public:
-  explicit AbortOp(OpKernelConstruction* context) : OpKernel(context) {
-    OP_REQUIRES_OK(context, context->GetAttr("error_msg", &error_msg_));
-    OP_REQUIRES_OK(
-        context, context->GetAttr("exit_without_error", &exit_without_error_));
-  }
+class AbortOp: public OpKernel {
+public:
+	explicit AbortOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+		OP_REQUIRES_OK(context, context->GetAttr("error_msg", &error_msg_));
+		OP_REQUIRES_OK(context,
+				context->GetAttr("exit_without_error", &exit_without_error_));
+	}
 
-  void Compute(OpKernelContext* context) override {
-    if (!exit_without_error_) {
-      CHECK(false) << "Abort_op intentional failure; " << error_msg_;
-    } else {
-      LOG(WARNING) << "Exiting the process: " << error_msg_;
-      exit(0);
-    }
-  }
+	void Compute(OpKernelContext* context) override
+	{
+		if (!exit_without_error_) {
+			CHECK(false) << "Abort_op intentional failure; " << error_msg_;
+		} else {
+			LOG(WARNING) << "Exiting the process: " << error_msg_;
+			exit(0);
+		}
+	}
 
- private:
-  string error_msg_;
-  bool exit_without_error_;
+private:
+	string error_msg_;
+	bool exit_without_error_;
 };
 
 REGISTER_KERNEL_BUILDER(Name("Abort").Device(DEVICE_CPU), AbortOp);
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

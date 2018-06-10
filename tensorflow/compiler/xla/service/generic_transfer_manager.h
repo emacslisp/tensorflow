@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_GENERIC_TRANSFER_MANAGER_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_GENERIC_TRANSFER_MANAGER_H_
@@ -34,44 +34,47 @@ namespace xla {
 // to do except memcpy the result. There is a CpuTransferManager that
 // inherits from GenericTransferManager and handles CPU-specific
 // infeed.
-class GenericTransferManager : public TransferManager {
- public:
-  explicit GenericTransferManager(
-      perftools::gputools::Platform::Id platform_id);
-  ~GenericTransferManager() override {}
+class GenericTransferManager: public TransferManager {
+public:
+	explicit GenericTransferManager(
+			perftools::gputools::Platform::Id platform_id);
+	~GenericTransferManager() override
+	{
+	}
 
-  perftools::gputools::Platform::Id PlatformId() const override;
+	perftools::gputools::Platform::Id PlatformId() const override;
 
-  Status TransferLiteralFromDevice(
-      perftools::gputools::StreamExecutor* executor,
-      const perftools::gputools::DeviceMemoryBase& source,
-      const Shape& device_shape, const Shape& literal_shape,
-      Literal* literal) override;
+	Status TransferLiteralFromDevice(
+			perftools::gputools::StreamExecutor* executor,
+			const perftools::gputools::DeviceMemoryBase& source,
+			const Shape& device_shape, const Shape& literal_shape,
+			Literal* literal) override;
 
-  Status TransferLiteralToDevice(
-      perftools::gputools::StreamExecutor* executor, const Literal& literal,
-      perftools::gputools::DeviceMemoryBase* destination) override;
+	Status TransferLiteralToDevice(
+			perftools::gputools::StreamExecutor* executor,
+			const Literal& literal,
+			perftools::gputools::DeviceMemoryBase* destination) override;
 
-  Status TransferLiteralToInfeed(perftools::gputools::StreamExecutor* executor,
-                                 const Literal& literal) override;
+	Status TransferLiteralToInfeed(
+			perftools::gputools::StreamExecutor* executor,
+			const Literal& literal) override;
 
-  Status ResetDevices(
-      tensorflow::gtl::ArraySlice<perftools::gputools::StreamExecutor*>
-          executors) override;
+	Status ResetDevices(
+			tensorflow::gtl::ArraySlice<perftools::gputools::StreamExecutor*> executors)
+					override;
 
-  StatusOr<std::vector<perftools::gputools::DeviceMemoryBase>>
-  ShallowCopyTupleFromDevice(
-      perftools::gputools::StreamExecutor* executor,
-      const perftools::gputools::DeviceMemoryBase& source,
-      const Shape& shape) override;
+	StatusOr<std::vector<perftools::gputools::DeviceMemoryBase>>
+	ShallowCopyTupleFromDevice(perftools::gputools::StreamExecutor* executor,
+			const perftools::gputools::DeviceMemoryBase& source,
+			const Shape& shape) override;
 
-  int64 GetByteSizeRequirement(const Shape& shape) override;
+	int64 GetByteSizeRequirement(const Shape& shape) override;
 
- private:
-  // The platform this transfer manager targets.
-  perftools::gputools::Platform::Id platform_id_;
+private:
+	// The platform this transfer manager targets.
+	perftools::gputools::Platform::Id platform_id_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(GenericTransferManager);
+	TF_DISALLOW_COPY_AND_ASSIGN (GenericTransferManager);
 };
 
 }  // namespace xla

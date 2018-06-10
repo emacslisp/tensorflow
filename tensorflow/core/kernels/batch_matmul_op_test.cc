@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/common_runtime/kernel_benchmark_testlib.h"
 #include "tensorflow/core/framework/tensor.h"
@@ -20,17 +20,20 @@ limitations under the License.
 
 namespace tensorflow {
 
-template <typename T>
+template<typename T>
 static Graph* BatchMatmul(int b, int m, int k, int n, bool adjoint_a,
-                          bool adjoint_b, DataType type) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor in0(type, adjoint_a ? TensorShape({b, k, m}) : TensorShape({b, m, k}));
-  in0.flat<T>().setRandom();
-  Tensor in1(type, adjoint_b ? TensorShape({b, n, k}) : TensorShape({b, k, n}));
-  in1.flat<T>().setRandom();
-  test::graph::BatchMatmul(g, test::graph::Constant(g, in0),
-                           test::graph::Constant(g, in1), adjoint_a, adjoint_b);
-  return g;
+		bool adjoint_b, DataType type)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor in0(type, adjoint_a ? TensorShape( { b, k, m }) : TensorShape( { b,
+			m, k }));
+	in0.flat<T>().setRandom();
+	Tensor in1(type, adjoint_b ? TensorShape( { b, n, k }) : TensorShape( { b,
+			k, n }));
+	in1.flat<T>().setRandom();
+	test::graph::BatchMatmul(g, test::graph::Constant(g, in0),
+			test::graph::Constant(g, in1), adjoint_a, adjoint_b);
+	return g;
 }
 
 #define BM_BatchMatmulDev(B, M, K, N, TA, TB, T, TFTYPE, DEVICE)                  \
@@ -57,7 +60,6 @@ static Graph* BatchMatmul(int b, int m, int k, int n, bool adjoint_a,
 // BM_BatchMatmulDev(M, K, N, TA, TB, std::complex<double>, DT_COMPLEX128, cpu);  \
 // BM_BatchMatmulDev(M, K, N, TA, TB, double, DT_DOUBLE, gpu);                    \
 // BM_BatchMatmulDev(M, K, N, TA, TB, std::complex<double>, DT_COMPLEX128, gpu);
-
 // Typical fully connected layers
 BM_BatchMatmul(1, 1, 1024, 1024, false, false);
 BM_BatchMatmul(1, 8, 1024, 1024, false, false);

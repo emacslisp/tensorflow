@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #define EIGEN_USE_THREADS
 #include "tensorflow/core/kernels/tensor_array.h"
@@ -38,7 +38,7 @@ namespace tensor_array {
   }
 
 #define TENSOR_ARRAY_WRITE_OR_ADD_CPU(T) TENSOR_ARRAY_WRITE_OR_ADD(CPUDevice, T)
-TF_CALL_NUMBER_TYPES(TENSOR_ARRAY_WRITE_OR_ADD_CPU)
+TF_CALL_NUMBER_TYPES (TENSOR_ARRAY_WRITE_OR_ADD_CPU)
 #undef TENSOR_ARRAY_WRITE_OR_ADD_CPU
 
 #if GOOGLE_CUDA
@@ -60,7 +60,7 @@ TF_CALL_GPU_NUMBER_TYPES(TENSOR_ARRAY_WRITE_OR_ADD_GPU);
   }
 
 #define TENSOR_ARRAY_SET_ZERO_CPU(T) TENSOR_ARRAY_SET_ZERO(CPUDevice, T)
-TF_CALL_NUMBER_TYPES(TENSOR_ARRAY_SET_ZERO_CPU)
+TF_CALL_NUMBER_TYPES (TENSOR_ARRAY_SET_ZERO_CPU)
 #undef TENSOR_ARRAY_SET_ZERO_CPU
 
 #if GOOGLE_CUDA
@@ -73,35 +73,39 @@ TF_CALL_GPU_NUMBER_TYPES(TENSOR_ARRAY_SET_ZERO_GPU);
 
 #undef TENSOR_ARRAY_SET_ZERO
 
-}  // namespace tensor_array
+}
+  // namespace tensor_array
 
-std::atomic<int64> TensorArray::tensor_array_counter{0};
+std::atomic<int64> TensorArray::tensor_array_counter { 0 };
 
-Status TensorArray::CopyShapesFrom(TensorArray* rhs) {
-  mutex_lock l(mu_);
-  mutex_lock l_rhs(rhs->mu_);
-  TF_RETURN_IF_ERROR(LockedReturnIfClosed());
-  TF_RETURN_IF_ERROR(rhs->LockedReturnIfClosed());
-  if (tensors_.size() != rhs->tensors_.size()) {
-    return errors::InvalidArgument(
-        "TensorArray sizes do not match during CopyShapesFrom: ",
-        handle_.vec<string>()(1), " has size ", tensors_.size(), " but rhs ",
-        rhs->handle_.vec<string>()(1), " has size ", rhs->tensors_.size());
-  }
-  for (std::size_t i = 0; i < tensors_.size(); ++i) {
-    // Skip "soft copy" of indices which have not been written.
-    if (!rhs->tensors_[i].written) continue;
+Status TensorArray::CopyShapesFrom(TensorArray* rhs)
+{
+mutex_lock l(mu_);
+mutex_lock l_rhs(rhs->mu_);
+TF_RETURN_IF_ERROR (LockedReturnIfClosed());TF_RETURN_IF_ERROR
+(rhs->LockedReturnIfClosed());
+if (tensors_.size() != rhs->tensors_.size()) {
+	return errors::InvalidArgument(
+			"TensorArray sizes do not match during CopyShapesFrom: ",
+			handle_.vec<string>()(1), " has size ", tensors_.size(),
+			" but rhs ", rhs->handle_.vec<string>()(1), " has size ",
+			rhs->tensors_.size());
+}
+for (std::size_t i = 0; i < tensors_.size(); ++i) {
+	// Skip "soft copy" of indices which have not been written.
+	if (!rhs->tensors_[i].written)
+		continue;
 
-    // Copy the shape over.
-    tensors_[i].shape = rhs->tensors_[i].shape;
-    // Mark as written.  Reads will know that if written is true and
-    // read is false, and cleared is false, to return zeros of the
-    // appropriate shape.  Future aggregating writes will only use the shape
-    // for validation.
-    tensors_[i].written = true;
-  }
+	// Copy the shape over.
+	tensors_[i].shape = rhs->tensors_[i].shape;
+	// Mark as written.  Reads will know that if written is true and
+	// read is false, and cleared is false, to return zeros of the
+	// appropriate shape.  Future aggregating writes will only use the shape
+	// for validation.
+	tensors_[i].written = true;
+}
 
-  return Status::OK();
+return Status::OK();
 }
 
 }  // namespace tensorflow

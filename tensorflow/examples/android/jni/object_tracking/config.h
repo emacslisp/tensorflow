@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef THIRD_PARTY_TENSORFLOW_EXAMPLES_ANDROID_JNI_OBJECT_TRACKING_CONFIG_H_
 #define THIRD_PARTY_TENSORFLOW_EXAMPLES_ANDROID_JNI_OBJECT_TRACKING_CONFIG_H_
@@ -24,41 +24,53 @@ namespace tf_tracking {
 
 // Arbitrary keypoint type ids for labeling the origin of tracked keypoints.
 enum KeypointType {
-  KEYPOINT_TYPE_DEFAULT = 0,
-  KEYPOINT_TYPE_FAST = 1,
-  KEYPOINT_TYPE_INTEREST = 2
+	KEYPOINT_TYPE_DEFAULT = 0,
+	KEYPOINT_TYPE_FAST = 1,
+	KEYPOINT_TYPE_INTEREST = 2
 };
 
 // Struct that can be used to more richly store the results of a detection
 // than a single number, while still maintaining comparability.
 struct MatchScore {
-  explicit MatchScore(double val) : value(val) {}
-  MatchScore() { value = 0.0; }
+	explicit MatchScore(double val) :
+			value(val)
+	{
+	}
+	MatchScore()
+	{
+		value = 0.0;
+	}
 
-  double value;
+	double value;
 
-  MatchScore& operator+(const MatchScore& rhs) {
-    value += rhs.value;
-    return *this;
-  }
+	MatchScore& operator+(const MatchScore& rhs)
+	{
+		value += rhs.value;
+		return *this;
+	}
 
-  friend std::ostream& operator<<(std::ostream& stream,
-                                  const MatchScore& detection) {
-    stream << detection.value;
-    return stream;
-  }
+	friend std::ostream& operator<<(std::ostream& stream,
+			const MatchScore& detection)
+	{
+		stream << detection.value;
+		return stream;
+	}
 };
-inline bool operator< (const MatchScore& cC1, const MatchScore& cC2) {
-    return cC1.value < cC2.value;
+inline bool operator<(const MatchScore& cC1, const MatchScore& cC2)
+{
+	return cC1.value < cC2.value;
 }
-inline bool operator> (const MatchScore& cC1, const MatchScore& cC2) {
-    return cC1.value > cC2.value;
+inline bool operator>(const MatchScore& cC1, const MatchScore& cC2)
+{
+	return cC1.value > cC2.value;
 }
-inline bool operator>= (const MatchScore& cC1, const MatchScore& cC2) {
-    return cC1.value >= cC2.value;
+inline bool operator>=(const MatchScore& cC1, const MatchScore& cC2)
+{
+	return cC1.value >= cC2.value;
 }
-inline bool operator<= (const MatchScore& cC1, const MatchScore& cC2) {
-    return cC1.value <= cC2.value;
+inline bool operator<=(const MatchScore& cC1, const MatchScore& cC2)
+{
+	return cC1.value <= cC2.value;
 }
 
 // Fixed seed used for all random number generators.
@@ -134,8 +146,8 @@ static const int kMinNumPyramidLevelsToUseForAdjustment = 1;
 static const int kFlowIntegrationWindowSize = 3;
 
 // Total area of integration windows.
-static const int kFlowArraySize =
-    (2 * kFlowIntegrationWindowSize + 1) * (2 * kFlowIntegrationWindowSize + 1);
+static const int kFlowArraySize = (2 * kFlowIntegrationWindowSize + 1)
+		* (2 * kFlowIntegrationWindowSize + 1);
 
 // Error that's considered good enough to early abort tracking.
 static const float kTrackingAbortThreshold = 0.03f;
@@ -173,7 +185,6 @@ static const int kMinNumConnectedForFastKeypoint = 8;
 // Size of the window to integrate over for Harris filtering.
 // Compare to kFlowIntegrationWindowSize.
 static const int kHarrisWindowSize = 2;
-
 
 // DETECTOR PARAMETERS
 
@@ -216,7 +227,6 @@ static const float kPositionOverlapThreshold = 0.6f;
 // comes back into a detectable position, it's likely to be found.
 static const int kMaxNumDetectionFailures = 4;
 
-
 // Minimum square size to scan with sliding window.
 static const float kScanMinSquareSize = 16.0f;
 
@@ -228,7 +238,6 @@ static const float kScanScaleFactor = sqrtf(2.0f);
 
 // Step size for sliding window.
 static const int kScanStepSize = 10;
-
 
 // How tightly to pack the descriptor boxes for confirmed exemplars.
 static const float kLockedScaleFactor = 1 / sqrtf(2.0f);
@@ -245,7 +254,6 @@ static const float kLastKnownPositionScaleFactor = 1.0f / sqrtf(2.0f);
 static const float kMinCorrelationForNewExample = 0.75f;
 static const float kMaxCorrelationForNewExample = 0.99f;
 
-
 // The number of safe tries an exemplar has after being created before
 // missed detections count against it.
 static const int kFreeTries = 5;
@@ -254,45 +262,49 @@ static const int kFreeTries = 5;
 static const int kFalsePositivePenalty = 5;
 
 struct ObjectDetectorConfig {
-  const Size image_size;
+	const Size image_size;
 
-  explicit ObjectDetectorConfig(const Size& image_size)
-      : image_size(image_size) {}
-  virtual ~ObjectDetectorConfig() = default;
+	explicit ObjectDetectorConfig(const Size& image_size) :
+			image_size(image_size)
+	{
+	}
+	virtual ~ObjectDetectorConfig() = default;
 };
 
 struct KeypointDetectorConfig {
-  const Size image_size;
+	const Size image_size;
 
-  bool detect_skin;
+	bool detect_skin;
 
-  explicit KeypointDetectorConfig(const Size& image_size)
-      : image_size(image_size),
-        detect_skin(false) {}
+	explicit KeypointDetectorConfig(const Size& image_size) :
+			image_size(image_size), detect_skin(false)
+	{
+	}
 };
 
-
 struct OpticalFlowConfig {
-  const Size image_size;
+	const Size image_size;
 
-  explicit OpticalFlowConfig(const Size& image_size)
-      : image_size(image_size) {}
+	explicit OpticalFlowConfig(const Size& image_size) :
+			image_size(image_size)
+	{
+	}
 };
 
 struct TrackerConfig {
-  const Size image_size;
-  KeypointDetectorConfig keypoint_detector_config;
-  OpticalFlowConfig flow_config;
-  bool always_track;
+	const Size image_size;
+	KeypointDetectorConfig keypoint_detector_config;
+	OpticalFlowConfig flow_config;
+	bool always_track;
 
-  float object_box_scale_factor_for_features;
+	float object_box_scale_factor_for_features;
 
-  explicit TrackerConfig(const Size& image_size)
-      : image_size(image_size),
-        keypoint_detector_config(image_size),
-        flow_config(image_size),
-        always_track(false),
-        object_box_scale_factor_for_features(1.0f) {}
+	explicit TrackerConfig(const Size& image_size) :
+			image_size(image_size), keypoint_detector_config(image_size), flow_config(
+					image_size), always_track(false), object_box_scale_factor_for_features(
+					1.0f)
+	{
+	}
 };
 
 }  // namespace tf_tracking

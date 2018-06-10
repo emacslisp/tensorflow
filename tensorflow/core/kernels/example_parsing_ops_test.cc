@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include <unordered_map>
 
@@ -37,142 +37,157 @@ typedef std::map<std::tuple<int, int, int>, Tensor> ExampleTensorMap;
 
 // Fillers to fill the underlying repeated array in protobuf.
 class BytesFiller {
- public:
-  BytesFiller() {}
-  void operator()(Feature* f, int feature_size) const {
-    for (int i = 0; i < feature_size; ++i) {
-      f->mutable_bytes_list()->add_value("abcd1234abcd1234abcd1234abcd1234!");
-    }
-  }
-  Tensor make_dense_default(int feature_size) {
-    return Tensor(dtype, TensorShape({feature_size}));
-  }
-  DataType dtype = DT_STRING;
+public:
+	BytesFiller()
+	{
+	}
+	void operator()(Feature* f, int feature_size) const
+	{
+		for (int i = 0; i < feature_size; ++i) {
+			f->mutable_bytes_list()->add_value(
+					"abcd1234abcd1234abcd1234abcd1234!");
+		}
+	}
+	Tensor make_dense_default(int feature_size)
+	{
+		return Tensor(dtype, TensorShape( { feature_size }));
+	}
+	DataType dtype = DT_STRING;
 };
 
 class Int64Filler {
- public:
-  Int64Filler() {}
-  void operator()(Feature* f, int feature_size) const {
-    for (int i = 0; i < feature_size; ++i) {
-      f->mutable_int64_list()->add_value(1729);
-    }
-  }
-  Tensor make_dense_default(int feature_size) {
-    return Tensor(dtype, TensorShape({feature_size}));
-  }
-  DataType dtype = DT_INT64;
+public:
+	Int64Filler()
+	{
+	}
+	void operator()(Feature* f, int feature_size) const
+	{
+		for (int i = 0; i < feature_size; ++i) {
+			f->mutable_int64_list()->add_value(1729);
+		}
+	}
+	Tensor make_dense_default(int feature_size)
+	{
+		return Tensor(dtype, TensorShape( { feature_size }));
+	}
+	DataType dtype = DT_INT64;
 };
 
 class FloatFiller {
- public:
-  FloatFiller() {}
-  void operator()(Feature* f, int feature_size) const {
-    for (int i = 0; i < feature_size; ++i) {
-      f->mutable_float_list()->add_value(1.729);
-    }
-  }
-  Tensor make_dense_default(int feature_size) {
-    return Tensor(dtype, TensorShape({feature_size}));
-  }
-  DataType dtype = DT_FLOAT;
+public:
+	FloatFiller()
+	{
+	}
+	void operator()(Feature* f, int feature_size) const
+	{
+		for (int i = 0; i < feature_size; ++i) {
+			f->mutable_float_list()->add_value(1.729);
+		}
+	}
+	Tensor make_dense_default(int feature_size)
+	{
+		return Tensor(dtype, TensorShape( { feature_size }));
+	}
+	DataType dtype = DT_FLOAT;
 };
 
-template <typename T>
+template<typename T>
 struct ExampleStore {
-  typedef T Filler;
-  static void AddExample(ExampleTensorMap* examples, int num_keys,
-                         int batch_size, int feature_size) {
-    Example example;
-    Filler fill;
-    Tensor record_string(DT_STRING, TensorShape({batch_size}));
-    auto string_t = record_string.vec<string>();
-    example.Clear();
-    for (int b = 0; b < batch_size; ++b) {
-      for (int k = 0; k < num_keys; ++k) {
-        string k_str = strings::Printf("feature_%d", k);
-        Feature f;
-        fill(&f, feature_size);
-        Features* features = example.mutable_features();
-        (*features->mutable_feature())[k_str] = f;
-      }
-      CHECK(example.SerializeToString(&string_t(b)));
-    }
-    (*examples)[std::make_tuple(batch_size, num_keys, feature_size)] =
-        record_string;
-  }
-  static ExampleTensorMap GetSerializedExamples() {
-    ExampleTensorMap examples;
-    AddExample(&examples, 10, 128, 1);
-    AddExample(&examples, 100, 128, 1);
-    AddExample(&examples, 1000, 128, 1);
-    AddExample(&examples, 10, 512, 1);
-    AddExample(&examples, 100, 512, 1);
-    AddExample(&examples, 1000, 512, 1);
-    AddExample(&examples, 1, 1, 1000000);
-    return examples;
-  }
-  static ExampleTensorMap serialized_example;
+	typedef T Filler;
+	static void AddExample(ExampleTensorMap* examples, int num_keys,
+			int batch_size, int feature_size)
+	{
+		Example example;
+		Filler fill;
+		Tensor record_string(DT_STRING, TensorShape( { batch_size }));
+		auto string_t = record_string.vec<string>();
+		example.Clear();
+		for (int b = 0; b < batch_size; ++b) {
+			for (int k = 0; k < num_keys; ++k) {
+				string k_str = strings::Printf("feature_%d", k);
+				Feature f;
+				fill(&f, feature_size);
+				Features* features = example.mutable_features();
+				(*features->mutable_feature())[k_str] = f;
+			}
+			CHECK(example.SerializeToString(&string_t(b)));
+		}
+		(*examples)[std::make_tuple(batch_size, num_keys, feature_size)] =
+				record_string;
+	}
+	static ExampleTensorMap GetSerializedExamples()
+	{
+		ExampleTensorMap examples;
+		AddExample(&examples, 10, 128, 1);
+		AddExample(&examples, 100, 128, 1);
+		AddExample(&examples, 1000, 128, 1);
+		AddExample(&examples, 10, 512, 1);
+		AddExample(&examples, 100, 512, 1);
+		AddExample(&examples, 1000, 512, 1);
+		AddExample(&examples, 1, 1, 1000000);
+		return examples;
+	}
+	static ExampleTensorMap serialized_example;
 };
 
-template <>
-ExampleTensorMap ExampleStore<BytesFiller>::serialized_example =
-    ExampleStore<BytesFiller>::GetSerializedExamples();
+template<>
+ExampleTensorMap ExampleStore<BytesFiller>::serialized_example = ExampleStore<
+		BytesFiller>::GetSerializedExamples();
 
-template <>
-ExampleTensorMap ExampleStore<Int64Filler>::serialized_example =
-    ExampleStore<Int64Filler>::GetSerializedExamples();
+template<>
+ExampleTensorMap ExampleStore<Int64Filler>::serialized_example = ExampleStore<
+		Int64Filler>::GetSerializedExamples();
 
-template <>
-ExampleTensorMap ExampleStore<FloatFiller>::serialized_example =
-    ExampleStore<FloatFiller>::GetSerializedExamples();
+template<>
+ExampleTensorMap ExampleStore<FloatFiller>::serialized_example = ExampleStore<
+		FloatFiller>::GetSerializedExamples();
 
-template <typename S, bool BenchmarkDense>
+template<typename S, bool BenchmarkDense>
 struct BenchmarkOptions {
-  bool benchmark_dense = BenchmarkDense;
-  typedef S Store;
-  typename S::Filler filler;
+	bool benchmark_dense = BenchmarkDense;
+	typedef S Store;
+	typename S::Filler filler;
 };
 
-template <typename Options>
-static Graph* ParseExample(int batch_size, int num_keys, int feature_size) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor& serialized = Options::Store::serialized_example[std::make_tuple(
-      batch_size, num_keys, feature_size)];
-  Tensor names(DT_STRING, TensorShape({batch_size}));
+template<typename Options>
+static Graph* ParseExample(int batch_size, int num_keys, int feature_size)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor& serialized = Options::Store::serialized_example[std::make_tuple(
+			batch_size, num_keys, feature_size)];
+	Tensor names(DT_STRING, TensorShape( { batch_size }));
 
-  std::vector<NodeBuilder::NodeOut> sparse_keys;
-  std::vector<NodeBuilder::NodeOut> dense_keys;
-  std::vector<NodeBuilder::NodeOut> dense_defaults;
-  std::vector<DataType> sparse_types;
-  std::vector<TensorShape> dense_shapes;
-  Options opt;
-  for (int i = 0; i < num_keys; ++i) {
-    Tensor key(DT_STRING, TensorShape());
-    key.scalar<string>()() = strings::Printf("feature_%d", i);
-    if (opt.benchmark_dense) {
-      dense_keys.emplace_back(test::graph::Constant(g, key));
-      dense_defaults.emplace_back(test::graph::Constant(
-          g, opt.filler.make_dense_default(feature_size)));
-      dense_shapes.push_back(TensorShape({feature_size}));
-    } else {
-      sparse_keys.emplace_back(test::graph::Constant(g, key));
-      sparse_types.push_back(opt.filler.dtype);
-    }
-  }
+	std::vector<NodeBuilder::NodeOut> sparse_keys;
+	std::vector<NodeBuilder::NodeOut> dense_keys;
+	std::vector<NodeBuilder::NodeOut> dense_defaults;
+	std::vector<DataType> sparse_types;
+	std::vector<TensorShape> dense_shapes;
+	Options opt;
+	for (int i = 0; i < num_keys; ++i) {
+		Tensor key(DT_STRING, TensorShape());
+		key.scalar<string>()() = strings::Printf("feature_%d", i);
+		if (opt.benchmark_dense) {
+			dense_keys.emplace_back(test::graph::Constant(g, key));
+			dense_defaults.emplace_back(
+					test::graph::Constant(g,
+							opt.filler.make_dense_default(feature_size)));
+			dense_shapes.push_back(TensorShape( { feature_size }));
+		} else {
+			sparse_keys.emplace_back(test::graph::Constant(g, key));
+			sparse_types.push_back(opt.filler.dtype);
+		}
+	}
 
-  Node* ret;
-  TF_EXPECT_OK(NodeBuilder(g->NewName("n"), "ParseExample")
-                   .Input(test::graph::Constant(g, serialized))
-                   .Input(test::graph::Constant(g, names))
-                   .Input(sparse_keys)
-                   .Input(dense_keys)
-                   .Input(dense_defaults)
-                   .Attr("sparse_types", sparse_types)
-                   .Attr("dense_shapes", dense_shapes)
-                   .Finalize(g, &ret));
+	Node* ret;
+	TF_EXPECT_OK(
+			NodeBuilder(g->NewName("n"), "ParseExample").Input(
+					test::graph::Constant(g, serialized)).Input(
+					test::graph::Constant(g, names)).Input(sparse_keys).Input(
+					dense_keys).Input(dense_defaults).Attr("sparse_types",
+					sparse_types).Attr("dense_shapes", dense_shapes).Finalize(g,
+					&ret));
 
-  return g;
+	return g;
 }
 
 // Benchmark settings (Sparse, Dense) X (Bytes, Int64, Float)

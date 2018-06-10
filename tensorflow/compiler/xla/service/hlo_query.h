@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_HLO_QUERY_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_HLO_QUERY_H_
@@ -38,24 +38,23 @@ bool IsScalarConstant(const HloInstruction* instruction);
 // multiple matching operands, then the first matching operand is returned. If
 // there are no matching operands then nullptr is returned.
 HloInstruction* GetMatchingOperand(
-    std::function<bool(const HloInstruction*)> matcher,
-    HloInstruction* instruction);
+		std::function<bool(const HloInstruction*)> matcher,
+		HloInstruction* instruction);
 
 // Returns whether a binary instruction has a matching operand. Sets
 // matching_operand to the matching operand and the other operand to
 // other_operand. Note: in the case where both operands match, the first operand
 // of the instruction is returned.
 bool MatchBinaryInstructionOperand(
-    std::function<bool(const HloInstruction*)> matcher,
-    HloInstruction* instruction, HloInstruction** matching_operand,
-    HloInstruction** other_operand);
+		std::function<bool(const HloInstruction*)> matcher,
+		HloInstruction* instruction, HloInstruction** matching_operand,
+		HloInstruction** other_operand);
 
 // Returns whether a binary instruction has a operand with a given opcode.
 // This is a special case of MatchingBinaryInstructionOperand.
 bool MatchBinaryInstructionOperandOpcode(HloOpcode opcode,
-                                         HloInstruction* instruction,
-                                         HloInstruction** matching_operand,
-                                         HloInstruction** other_operand);
+		HloInstruction* instruction, HloInstruction** matching_operand,
+		HloInstruction** other_operand);
 
 }  // namespace hlo_query
 }  // namespace xla

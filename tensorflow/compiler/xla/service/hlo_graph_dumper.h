@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_HLO_GRAPH_DUMPER_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_HLO_GRAPH_DUMPER_H_
@@ -28,8 +28,8 @@ namespace hlo_graph_dumper {
 // Dumps a graph of the computation to the GraphViz server and returns
 // a description of the rendered graph (e.g., a URL).
 string DumpGraph(const HloComputation& computation, const string& label,
-                 bool show_addresses, bool show_layouts,
-                 const HloExecutionProfile* hlo_execution_profile = nullptr);
+		bool show_addresses, bool show_layouts,
+		const HloExecutionProfile* hlo_execution_profile = nullptr);
 
 // Dumps the HloModule::ToString() as a file into the provided directory path
 // suffixed with the provided label.
@@ -38,16 +38,16 @@ string DumpGraph(const HloComputation& computation, const string& label,
 // construct a filename in the directory path; otherwise, the label is used
 // as the filename directly.
 void DumpText(const HloModule& module, const string& label,
-              const string& directory_path, bool do_prefix = true);
+		const string& directory_path, bool do_prefix = true);
 
 // Abstract interface for classes that render DOT graphs.
 class GraphRendererInterface {
- public:
-  virtual ~GraphRendererInterface() = default;
+public:
+	virtual ~GraphRendererInterface() = default;
 
-  // Renders a DOT graph, returning a description of the rendered output
-  // (e.g., a URL)
-  virtual string RenderGraph(const string& graph) = 0;
+	// Renders a DOT graph, returning a description of the rendered output
+	// (e.g., a URL)
+	virtual string RenderGraph(const string& graph) = 0;
 };
 
 // Graph renderers may be added using a registration mechanism, e.g.:
@@ -62,8 +62,8 @@ class GraphRendererInterface {
 // Class that registers a graph renderer. Higher-priority renders are chosen
 // first.
 class Registrar {
- public:
-  Registrar(GraphRendererInterface* dumper, int priority);
+public:
+	Registrar(GraphRendererInterface* dumper, int priority);
 };
 
 #define XLA_INTERNAL_REGISTER_GRAPH_RENDERER(factory, ctr, ...)   \

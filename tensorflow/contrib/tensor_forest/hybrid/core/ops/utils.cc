@@ -25,55 +25,52 @@ namespace tensorforest {
 
 using tensorflow::Tensor;
 
-float LeftProbability(const Tensor& point,
-                      const Tensor& weight,
-                      float bias,
-                      int num_features) {
-  const auto p = point.unaligned_flat<float>();
-  const auto w = weight.unaligned_flat<float>();
-  float dot_product = 0.0;
-  for (int i = 0; i < num_features; i++) {
-    dot_product += w(i) * p(i);
-  }
+float LeftProbability(const Tensor& point, const Tensor& weight, float bias,
+		int num_features)
+{
+	const auto p = point.unaligned_flat<float>();
+	const auto w = weight.unaligned_flat<float>();
+	float dot_product = 0.0;
+	for (int i = 0; i < num_features; i++) {
+		dot_product += w(i) * p(i);
+	}
 
-  // TODO(thomaswc): At some point we should consider
-  // //learning/logistic/logodds-to-prob.h
-  return 1.0 / (1.0 + exp(-dot_product + bias));
+	// TODO(thomaswc): At some point we should consider
+	// //learning/logistic/logodds-to-prob.h
+	return 1.0 / (1.0 + exp(-dot_product + bias));
 }
 
-float LeftProbabilityK(const Tensor& point,
-                       std::vector<int32> feature_set,
-                       const Tensor& weight,
-                       float bias,
-                       int num_features,
-                       int k) {
-  const auto p = point.unaligned_flat<float>();
-  const auto w = weight.unaligned_flat<float>();
+float LeftProbabilityK(const Tensor& point, std::vector<int32> feature_set,
+		const Tensor& weight, float bias, int num_features, int k)
+{
+	const auto p = point.unaligned_flat<float>();
+	const auto w = weight.unaligned_flat<float>();
 
-  float dot_product = 0.0;
+	float dot_product = 0.0;
 
-  for (int32 i = 0; i < k; i++) {
-    CHECK_LT(feature_set[i], num_features);
-    dot_product += p(feature_set[i]) * w(i);
-  }
+	for (int32 i = 0; i < k; i++) {
+		CHECK_LT(feature_set[i], num_features);
+		dot_product += p(feature_set[i]) * w(i);
+	}
 
-  // TODO(thomaswc): At some point we should consider
-  // //learning/logistic/logodds-to-prob.h
-  return 1.0 / (1.0 + exp(-dot_product + bias));
+	// TODO(thomaswc): At some point we should consider
+	// //learning/logistic/logodds-to-prob.h
+	return 1.0 / (1.0 + exp(-dot_product + bias));
 }
 
 void GetFeatureSet(int32 tree_num, int32 node_num, int32 random_seed,
-                   int32 num_features, int32 num_features_to_pick,
-                   std::vector<int32>* features) {
-  features->clear();
-  uint64 seed = node_num ^ (tree_num << 16) ^ random_seed;
-  random::PhiloxRandom rng(seed);
-  for (int i = 0; i < num_features_to_pick; ++i) {
-    // PhiloxRandom returns an array of int32's
-    const random::PhiloxRandom::ResultType rand = rng();
-    const int32 feature = (rand[0] + rand[1]) % num_features;
-    features->push_back(feature);
-  }
+		int32 num_features, int32 num_features_to_pick,
+		std::vector<int32>* features)
+{
+	features->clear();
+	uint64 seed = node_num ^ (tree_num << 16) ^ random_seed;
+	random::PhiloxRandom rng(seed);
+	for (int i = 0; i < num_features_to_pick; ++i) {
+		// PhiloxRandom returns an array of int32's
+		const random::PhiloxRandom::ResultType rand = rng();
+		const int32 feature = (rand[0] + rand[1]) % num_features;
+		features->push_back(feature);
+	}
 }
 
 }  // namespace tensorforest

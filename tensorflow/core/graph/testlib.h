@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // DEPRECATED: Use the C++ API defined in tensorflow/cc instead.
-
 #ifndef TENSORFLOW_GRAPH_TESTLIB_H_
 #define TENSORFLOW_GRAPH_TESTLIB_H_
 
@@ -52,7 +51,7 @@ Node* HostConstant(Graph* g, const Tensor& tensor, const string& name);
 // Adds a variable in "g" of the given "shape" and "dtype".
 Node* Var(Graph* g, const DataType dtype, const TensorShape& shape);
 Node* Var(Graph* g, const DataType dtype, const TensorShape& shape,
-          const string& name);
+		const string& name);
 
 // Adds an assign node in "g" which assigns "val" into "var".
 Node* Assign(Graph* g, Node* var, Node* val);
@@ -60,22 +59,22 @@ Node* Assign(Graph* g, Node* var, Node* val);
 // Adds a send node "g" sending "input" as a named "tensor" from
 // "sender" to "receiver".
 Node* Send(Graph* g, Node* input, const string& tensor, const string& sender,
-           const uint64 sender_incarnation, const string& receiver);
+		const uint64 sender_incarnation, const string& receiver);
 
 // Adds a recv node in "g" receiving a named "tensor" from "sender"
 // to "receiver".
 Node* Recv(Graph* g, const string& tensor, const string& type,
-           const string& sender, const uint64 sender_incarnation,
-           const string& receiver);
+		const string& sender, const uint64 sender_incarnation,
+		const string& receiver);
 
 // Adds a reduction "node" in "g" doing sum(data, axes).  "reduce" is
 // a reduction, e.g., Sum, Max, Min, Mean, etc.
 Node* Reduce(Graph* g, const string& reduce, Node* data, Node* axes,
-             bool keep_dims = false);
+		bool keep_dims = false);
 
 // Adds a Matmul node in g doing in0.contract(in1).
 Node* Matmul(Graph* g, Node* in0, Node* in1, bool transpose_a,
-             bool transpose_b);
+		bool transpose_b);
 
 // Adds a Matmul node in g doing in0.contract(in1).
 Node* BatchMatmul(Graph* g, Node* in0, Node* in1, bool adj_x, bool adj_y);

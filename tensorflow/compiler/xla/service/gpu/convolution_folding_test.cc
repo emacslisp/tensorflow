@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/compiler/xla/service/gpu/convolution_folding.h"
 
@@ -27,328 +27,333 @@ limitations under the License.
 namespace xla {
 namespace gpu {
 
-class ConvolutionFoldingTest : public HloTestBase {
- public:
-  ConvolutionFoldingTest() {
-    for (int i = 0; i < 2; ++i) {
-      WindowDimension* window_dim = default_conv_window_.add_dimensions();
-      window_dim->set_size(1);
-      window_dim->set_stride(1);
-      window_dim->set_padding_low(0);
-      window_dim->set_padding_high(0);
-      window_dim->set_window_dilation(1);
-      window_dim->set_base_dilation(1);
-    }
-    // TF data shapes are by default in the NHWC order, and filter shape is by
-    // default in HWIO order. For backward filter convolution, we need to swap
-    // the batch and feature dimension in the activations, and treat the batch
-    // dimension in gradients as the input feature dimension in the filter.
-    //
-    // TODO(jingyue): Add more tests on NCHW input order which TF also supports.
-    tf_default_dnums_for_backward_filter_.set_batch_dimension(3);
-    tf_default_dnums_for_backward_filter_.set_feature_dimension(0);
-    tf_default_dnums_for_backward_filter_.add_spatial_dimensions(1);
-    tf_default_dnums_for_backward_filter_.add_spatial_dimensions(2);
-    tf_default_dnums_for_backward_filter_.set_kernel_input_feature_dimension(0);
-    tf_default_dnums_for_backward_filter_.set_kernel_output_feature_dimension(
-        3);
-    tf_default_dnums_for_backward_filter_.add_kernel_spatial_dimensions(1);
-    tf_default_dnums_for_backward_filter_.add_kernel_spatial_dimensions(2);
+class ConvolutionFoldingTest: public HloTestBase {
+public:
+	ConvolutionFoldingTest()
+	{
+		for (int i = 0; i < 2; ++i) {
+			WindowDimension* window_dim = default_conv_window_.add_dimensions();
+			window_dim->set_size(1);
+			window_dim->set_stride(1);
+			window_dim->set_padding_low(0);
+			window_dim->set_padding_high(0);
+			window_dim->set_window_dilation(1);
+			window_dim->set_base_dilation(1);
+		}
+		// TF data shapes are by default in the NHWC order, and filter shape is by
+		// default in HWIO order. For backward filter convolution, we need to swap
+		// the batch and feature dimension in the activations, and treat the batch
+		// dimension in gradients as the input feature dimension in the filter.
+		//
+		// TODO(jingyue): Add more tests on NCHW input order which TF also supports.
+		tf_default_dnums_for_backward_filter_.set_batch_dimension(3);
+		tf_default_dnums_for_backward_filter_.set_feature_dimension(0);
+		tf_default_dnums_for_backward_filter_.add_spatial_dimensions(1);
+		tf_default_dnums_for_backward_filter_.add_spatial_dimensions(2);
+		tf_default_dnums_for_backward_filter_.set_kernel_input_feature_dimension(
+				0);
+		tf_default_dnums_for_backward_filter_.set_kernel_output_feature_dimension(
+				3);
+		tf_default_dnums_for_backward_filter_.add_kernel_spatial_dimensions(1);
+		tf_default_dnums_for_backward_filter_.add_kernel_spatial_dimensions(2);
 
-    tf_default_dnums_for_backward_input_.set_batch_dimension(0);
-    tf_default_dnums_for_backward_input_.set_feature_dimension(3);
-    tf_default_dnums_for_backward_input_.add_spatial_dimensions(1);
-    tf_default_dnums_for_backward_input_.add_spatial_dimensions(2);
-    tf_default_dnums_for_backward_input_.set_kernel_input_feature_dimension(3);
-    tf_default_dnums_for_backward_input_.set_kernel_output_feature_dimension(2);
-    tf_default_dnums_for_backward_input_.add_kernel_spatial_dimensions(0);
-    tf_default_dnums_for_backward_input_.add_kernel_spatial_dimensions(1);
-  }
+		tf_default_dnums_for_backward_input_.set_batch_dimension(0);
+		tf_default_dnums_for_backward_input_.set_feature_dimension(3);
+		tf_default_dnums_for_backward_input_.add_spatial_dimensions(1);
+		tf_default_dnums_for_backward_input_.add_spatial_dimensions(2);
+		tf_default_dnums_for_backward_input_.set_kernel_input_feature_dimension(
+				3);
+		tf_default_dnums_for_backward_input_.set_kernel_output_feature_dimension(
+				2);
+		tf_default_dnums_for_backward_input_.add_kernel_spatial_dimensions(0);
+		tf_default_dnums_for_backward_input_.add_kernel_spatial_dimensions(1);
+	}
 
- protected:
-  bool FoldConvolution(HloModule* module) {
-    ConvolutionFolding convolution_folding;
-    return convolution_folding.Run(module).ValueOrDie();
-  }
+protected:
+	bool FoldConvolution(HloModule* module)
+	{
+		ConvolutionFolding convolution_folding;
+		return convolution_folding.Run(module).ValueOrDie();
+	}
 
-  // A convolution window with stride 1 and zero padding. The size fields are
-  // not set.
-  Window default_conv_window_;
-  ConvolutionDimensionNumbers tf_default_dnums_for_backward_filter_;
-  ConvolutionDimensionNumbers tf_default_dnums_for_backward_input_;
+	// A convolution window with stride 1 and zero padding. The size fields are
+	// not set.
+	Window default_conv_window_;
+	ConvolutionDimensionNumbers tf_default_dnums_for_backward_filter_;
+	ConvolutionDimensionNumbers tf_default_dnums_for_backward_input_;
 };
 
 TEST_F(ConvolutionFoldingTest, BackwardFilterConvolveWithoutTranspose) {
-  HloComputation::Builder builder(TestName());
-  HloInstruction* activations =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "activations"));
-  HloInstruction* gradients =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 1, 2, 1}), "gradients"));
-  Window conv_window = default_conv_window_;
-  conv_window.mutable_dimensions(1)->set_size(2);
-  conv_window.mutable_dimensions(1)->set_window_dilation(2);
-  builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeInference::InferConvolveShape(activations->shape(),
-                                         gradients->shape(), conv_window,
-                                         tf_default_dnums_for_backward_filter_)
-          .ConsumeValueOrDie(),
-      activations, gradients, conv_window,
-      tf_default_dnums_for_backward_filter_));
+	HloComputation::Builder builder(TestName());
+	HloInstruction* activations =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "activations"));
+	HloInstruction* gradients =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 1, 2, 1}), "gradients"));
+	Window conv_window = default_conv_window_;
+	conv_window.mutable_dimensions(1)->set_size(2);
+	conv_window.mutable_dimensions(1)->set_window_dilation(2);
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeInference::InferConvolveShape(activations->shape(),
+							gradients->shape(), conv_window,
+							tf_default_dnums_for_backward_filter_)
+					.ConsumeValueOrDie(),
+					activations, gradients, conv_window,
+					tf_default_dnums_for_backward_filter_));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
-              entry_computation->root_instruction()->fusion_kind());
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
+			entry_computation->root_instruction()->fusion_kind());
 }
 
 TEST_F(ConvolutionFoldingTest,
-       BackwardFilterConvolveEquivalentToForwardConvolution) {
-  HloComputation::Builder builder(TestName());
-  HloInstruction* activations =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "activations"));
-  HloInstruction* gradients =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "gradients"));
-  Window conv_window = default_conv_window_;
-  conv_window.mutable_dimensions(1)->set_size(3);
-  builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeInference::InferConvolveShape(activations->shape(),
-                                         gradients->shape(), conv_window,
-                                         tf_default_dnums_for_backward_filter_)
-          .ConsumeValueOrDie(),
-      activations, gradients, conv_window,
-      tf_default_dnums_for_backward_filter_));
+		BackwardFilterConvolveEquivalentToForwardConvolution) {
+	HloComputation::Builder builder(TestName());
+	HloInstruction* activations =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "activations"));
+	HloInstruction* gradients =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "gradients"));
+	Window conv_window = default_conv_window_;
+	conv_window.mutable_dimensions(1)->set_size(3);
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeInference::InferConvolveShape(activations->shape(),
+							gradients->shape(), conv_window,
+							tf_default_dnums_for_backward_filter_)
+					.ConsumeValueOrDie(),
+					activations, gradients, conv_window,
+					tf_default_dnums_for_backward_filter_));
 
-  HloModule module(TestName());
-  module.AddEntryComputation(builder.Build());
-  EXPECT_FALSE(FoldConvolution(&module));
+	HloModule module(TestName());
+	module.AddEntryComputation(builder.Build());
+	EXPECT_FALSE(FoldConvolution(&module));
 }
 
 // Extracted from block35 training.
 TEST_F(ConvolutionFoldingTest, BackwardFilterConvolveWithPaddedActivations) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* activations =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "activations"));
-  HloInstruction* gradients =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "gradients"));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* activations =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "activations"));
+	HloInstruction* gradients =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "gradients"));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(35);
-    conv_window.mutable_dimensions(i)->set_padding_low(1);
-    conv_window.mutable_dimensions(i)->set_padding_high(1);
-  }
-  HloInstruction* convolution =
-      builder.AddInstruction(HloInstruction::CreateConvolve(
-          ShapeUtil::MakeShape(F32, {32, 3, 3, 32}), activations, gradients,
-          conv_window, tf_default_dnums_for_backward_filter_));
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(35);
+		conv_window.mutable_dimensions(i)->set_padding_low(1);
+		conv_window.mutable_dimensions(i)->set_padding_high(1);
+	}
+	HloInstruction* convolution =
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {32, 3, 3, 32}), activations, gradients,
+					conv_window, tf_default_dnums_for_backward_filter_));
 
-  builder.AddInstruction(HloInstruction::CreateTranspose(
-      ShapeUtil::MakeShape(F32, {3, 3, 32, 32}), convolution, {1, 2, 3, 0}));
+	builder.AddInstruction(HloInstruction::CreateTranspose(
+					ShapeUtil::MakeShape(F32, {3, 3, 32, 32}), convolution, {1, 2, 3, 0}));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
-              entry_computation->root_instruction()->fusion_kind());
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
+			entry_computation->root_instruction()->fusion_kind());
 }
 
 // Extracted from inception v3 training.
 TEST_F(ConvolutionFoldingTest, BackwardFilterConvolveWithPaddedGradients) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* activations =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), "activations"));
-  HloInstruction* gradients =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "gradients"));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* activations =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), "activations"));
+	HloInstruction* gradients =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "gradients"));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(4);
-    conv_window.mutable_dimensions(i)->set_padding_high(-1);
-    conv_window.mutable_dimensions(i)->set_window_dilation(2);
-  }
-  HloInstruction* convolution =
-      builder.AddInstruction(HloInstruction::CreateConvolve(
-          ShapeUtil::MakeShape(F32, {320, 3, 3, 192}), activations, gradients,
-          conv_window, tf_default_dnums_for_backward_filter_));
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(4);
+		conv_window.mutable_dimensions(i)->set_padding_high(-1);
+		conv_window.mutable_dimensions(i)->set_window_dilation(2);
+	}
+	HloInstruction* convolution =
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {320, 3, 3, 192}), activations, gradients,
+					conv_window, tf_default_dnums_for_backward_filter_));
 
-  builder.AddInstruction(HloInstruction::CreateTranspose(
-      ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), convolution, {1, 2, 3, 0}));
+	builder.AddInstruction(HloInstruction::CreateTranspose(
+					ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), convolution, {1, 2, 3, 0}));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
-              entry_computation->root_instruction()->fusion_kind());
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
+			entry_computation->root_instruction()->fusion_kind());
 }
 
 TEST_F(ConvolutionFoldingTest, BackwardFilterConvolveWithUnevenPadding) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* activations =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "activations"));
-  HloInstruction* gradients =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "gradients"));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* activations =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "activations"));
+	HloInstruction* gradients =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {20, 35, 35, 32}), "gradients"));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(35);
-    // Uneven padding: padding_low=0, padding_high=1
-    conv_window.mutable_dimensions(i)->set_padding_high(1);
-  }
-  HloInstruction* convolution =
-      builder.AddInstruction(HloInstruction::CreateConvolve(
-          ShapeUtil::MakeShape(F32, {32, 2, 2, 32}), activations, gradients,
-          conv_window, tf_default_dnums_for_backward_filter_));
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(35);
+		// Uneven padding: padding_low=0, padding_high=1
+		conv_window.mutable_dimensions(i)->set_padding_high(1);
+	}
+	HloInstruction* convolution =
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {32, 2, 2, 32}), activations, gradients,
+					conv_window, tf_default_dnums_for_backward_filter_));
 
-  builder.AddInstruction(HloInstruction::CreateTranspose(
-      ShapeUtil::MakeShape(F32, {2, 2, 32, 32}), convolution, {1, 2, 3, 0}));
+	builder.AddInstruction(HloInstruction::CreateTranspose(
+					ShapeUtil::MakeShape(F32, {2, 2, 32, 32}), convolution, {1, 2, 3, 0}));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
-              entry_computation->root_instruction()->fusion_kind());
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardFilter ==
+			entry_computation->root_instruction()->fusion_kind());
 }
 
 TEST_F(ConvolutionFoldingTest, BackwardInputConvolveEvenPadding) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {4, 5, 16, 16}), "output"));
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {5, 3, 7, 7}), "kernel"));
-  HloInstruction* reverse_kernel = builder.AddInstruction(
-      HloInstruction::CreateReverse(kernel->shape(), kernel, {2, 3}));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {4, 5, 16, 16}), "output"));
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {5, 3, 7, 7}), "kernel"));
+	HloInstruction* reverse_kernel = builder.AddInstruction(
+			HloInstruction::CreateReverse(kernel->shape(), kernel, {2, 3}));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(7);
-    conv_window.mutable_dimensions(i)->set_padding_low(3);
-    conv_window.mutable_dimensions(i)->set_padding_high(3);
-  }
-  ConvolutionDimensionNumbers conv_dnums;
-  conv_dnums.set_batch_dimension(0);
-  conv_dnums.set_feature_dimension(1);
-  conv_dnums.add_spatial_dimensions(2);
-  conv_dnums.add_spatial_dimensions(3);
-  conv_dnums.set_kernel_input_feature_dimension(0);
-  conv_dnums.set_kernel_output_feature_dimension(1);
-  conv_dnums.add_kernel_spatial_dimensions(2);
-  conv_dnums.add_kernel_spatial_dimensions(3);
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(7);
+		conv_window.mutable_dimensions(i)->set_padding_low(3);
+		conv_window.mutable_dimensions(i)->set_padding_high(3);
+	}
+	ConvolutionDimensionNumbers conv_dnums;
+	conv_dnums.set_batch_dimension(0);
+	conv_dnums.set_feature_dimension(1);
+	conv_dnums.add_spatial_dimensions(2);
+	conv_dnums.add_spatial_dimensions(3);
+	conv_dnums.set_kernel_input_feature_dimension(0);
+	conv_dnums.set_kernel_output_feature_dimension(1);
+	conv_dnums.add_kernel_spatial_dimensions(2);
+	conv_dnums.add_kernel_spatial_dimensions(3);
 
-  HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeUtil::MakeShape(F32, {4, 3, 16, 16}), /*lhs=*/output,
-      /*rhs=*/reverse_kernel, conv_window, conv_dnums));
-  // Verify the convolution's shape is consistent with ShapeInference.
-  CHECK(ShapeUtil::Compatible(
-      conv->shape(),
-      ShapeInference::InferConvolveShape(
-          output->shape(), reverse_kernel->shape(), conv_window, conv_dnums)
-          .ValueOrDie()));
+	HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {4, 3, 16, 16}), /*lhs=*/output,
+					/*rhs=*/reverse_kernel, conv_window, conv_dnums));
+	// Verify the convolution's shape is consistent with ShapeInference.
+	CHECK(ShapeUtil::Compatible(
+					conv->shape(),
+					ShapeInference::InferConvolveShape(
+							output->shape(), reverse_kernel->shape(), conv_window, conv_dnums)
+					.ValueOrDie()));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
-              entry_computation->root_instruction()->fusion_kind());
-  for (int i = 0; i < 2; ++i) {
-    const WindowDimension& window_dim =
-        entry_computation->root_instruction()->window().dimensions(i);
-    // Low padding of the backward input convolution
-    //   = kernel_size - 1 - low padding on gradients.
-    EXPECT_EQ(3, window_dim.padding_low());
-    EXPECT_EQ(3, window_dim.padding_high());
-    EXPECT_EQ(1, window_dim.stride());
-  }
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
+			entry_computation->root_instruction()->fusion_kind());
+	for (int i = 0; i < 2; ++i) {
+		const WindowDimension& window_dim =
+		entry_computation->root_instruction()->window().dimensions(i);
+		// Low padding of the backward input convolution
+		//   = kernel_size - 1 - low padding on gradients.
+		EXPECT_EQ(3, window_dim.padding_low());
+		EXPECT_EQ(3, window_dim.padding_high());
+		EXPECT_EQ(1, window_dim.stride());
+	}
 }
 
 // Convolve([abc], [x], base_dilation=2)
 //   = Convolve([abc], Reverse([x]), base_dilation=2)
 //   = BackwardInputConvolve([abc], [x], stride=2)
 TEST_F(ConvolutionFoldingTest, BackwardInputConvolve1x1Filter) {
-  auto builder = HloComputation::Builder(TestName());
-  // NHWC dimension order.
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
-  // HWOI dimension order.
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 1, 1, 1}), "kernel"));
+	auto builder = HloComputation::Builder(TestName());
+	// NHWC dimension order.
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
+	// HWOI dimension order.
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 1, 1, 1}), "kernel"));
 
-  Window conv_window = default_conv_window_;
-  conv_window.mutable_dimensions(1)->set_base_dilation(2);
+	Window conv_window = default_conv_window_;
+	conv_window.mutable_dimensions(1)->set_base_dilation(2);
 
-  builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeInference::InferConvolveShape(output->shape(), kernel->shape(),
-                                         conv_window,
-                                         tf_default_dnums_for_backward_input_)
-          .ConsumeValueOrDie(),
-      /*lhs=*/output, /*rhs=*/kernel, conv_window,
-      tf_default_dnums_for_backward_input_));
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeInference::InferConvolveShape(output->shape(), kernel->shape(),
+							conv_window,
+							tf_default_dnums_for_backward_input_)
+					.ConsumeValueOrDie(),
+					/*lhs=*/output, /*rhs=*/kernel, conv_window,
+					tf_default_dnums_for_backward_input_));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
-              entry_computation->root_instruction()->fusion_kind());
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
+			entry_computation->root_instruction()->fusion_kind());
 }
 
 // BackwardInputConvolve([abc], [x], stride=1) is equivalent to
 // ForwardConvolve([abc], [x], stride=1). No need to fold it into backward input
 // convolution.
 TEST_F(ConvolutionFoldingTest,
-       BackwardInputConvolve1x1FilterEquivalentToForwardConvolve) {
-  auto builder = HloComputation::Builder(TestName());
-  // NHWC dimension order.
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
-  // HWOI dimension order.
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 1, 1, 1}), "kernel"));
+		BackwardInputConvolve1x1FilterEquivalentToForwardConvolve) {
+	auto builder = HloComputation::Builder(TestName());
+	// NHWC dimension order.
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
+	// HWOI dimension order.
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 1, 1, 1}), "kernel"));
 
-  builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeInference::InferConvolveShape(output->shape(), kernel->shape(),
-                                         default_conv_window_,
-                                         tf_default_dnums_for_backward_input_)
-          .ConsumeValueOrDie(),
-      /*lhs=*/output, /*rhs=*/kernel, default_conv_window_,
-      tf_default_dnums_for_backward_input_));
+	builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeInference::InferConvolveShape(output->shape(), kernel->shape(),
+							default_conv_window_,
+							tf_default_dnums_for_backward_input_)
+					.ConsumeValueOrDie(),
+					/*lhs=*/output, /*rhs=*/kernel, default_conv_window_,
+					tf_default_dnums_for_backward_input_));
 
-  HloModule module(TestName());
-  module.AddEntryComputation(builder.Build());
-  EXPECT_FALSE(FoldConvolution(&module));
+	HloModule module(TestName());
+	module.AddEntryComputation(builder.Build());
+	EXPECT_FALSE(FoldConvolution(&module));
 }
 
 // Extracted from Inception V3 training.
@@ -366,84 +371,84 @@ TEST_F(ConvolutionFoldingTest,
 //
 // Gradients are padded unevenly.
 TEST_F(ConvolutionFoldingTest, BackwardInputConvolveUnevenPaddingOnGradients) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "output"));
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), "kernel"));
-  HloInstruction* reverse_kernel = builder.AddInstruction(
-      HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "output"));
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), "kernel"));
+	HloInstruction* reverse_kernel = builder.AddInstruction(
+			HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(3);
-    conv_window.mutable_dimensions(i)->set_padding_low(2);
-    conv_window.mutable_dimensions(i)->set_padding_high(3);
-    // Interior padding = 1.
-    conv_window.mutable_dimensions(i)->set_base_dilation(2);
-  }
-  HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), output, reverse_kernel,
-      conv_window, tf_default_dnums_for_backward_input_));
-  // Verify the convolution's shape is consistent with ShapeInference.
-  CHECK(ShapeUtil::Compatible(
-      conv->shape(), ShapeInference::InferConvolveShape(
-                         output->shape(), reverse_kernel->shape(), conv_window,
-                         tf_default_dnums_for_backward_input_)
-                         .ValueOrDie()));
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(3);
+		conv_window.mutable_dimensions(i)->set_padding_low(2);
+		conv_window.mutable_dimensions(i)->set_padding_high(3);
+		// Interior padding = 1.
+		conv_window.mutable_dimensions(i)->set_base_dilation(2);
+	}
+	HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), output, reverse_kernel,
+					conv_window, tf_default_dnums_for_backward_input_));
+	// Verify the convolution's shape is consistent with ShapeInference.
+	CHECK(ShapeUtil::Compatible(
+					conv->shape(), ShapeInference::InferConvolveShape(
+							output->shape(), reverse_kernel->shape(), conv_window,
+							tf_default_dnums_for_backward_input_)
+					.ValueOrDie()));
 
-  HloModule module(TestName());
-  HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  EXPECT_EQ(HloOpcode::kFusion,
-            entry_computation->root_instruction()->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
-              entry_computation->root_instruction()->fusion_kind());
-  for (int i = 0; i < 2; ++i) {
-    const WindowDimension& window_dim =
-        entry_computation->root_instruction()->window().dimensions(i);
-    EXPECT_EQ(0, window_dim.padding_low());
-    EXPECT_EQ(0, window_dim.padding_high());
-    EXPECT_EQ(2, window_dim.stride());
-  }
+	HloModule module(TestName());
+	HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	EXPECT_EQ(HloOpcode::kFusion,
+			entry_computation->root_instruction()->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
+			entry_computation->root_instruction()->fusion_kind());
+	for (int i = 0; i < 2; ++i) {
+		const WindowDimension& window_dim =
+		entry_computation->root_instruction()->window().dimensions(i);
+		EXPECT_EQ(0, window_dim.padding_low());
+		EXPECT_EQ(0, window_dim.padding_high());
+		EXPECT_EQ(2, window_dim.stride());
+	}
 }
 
 // Similar to BackwardInputConvolveUnevenPadding, but the low padding of the
 // gradients exceeds kernel_size - 1. Therefore, this pattern cannot be fused.
 TEST_F(ConvolutionFoldingTest, BackwardInputConvolveLowPaddingTooLarge) {
-  auto builder = HloComputation::Builder(TestName());
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "output"));
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), "kernel"));
-  HloInstruction* reverse_kernel = builder.AddInstruction(
-      HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
+	auto builder = HloComputation::Builder(TestName());
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {20, 4, 4, 320}), "output"));
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {3, 3, 192, 320}), "kernel"));
+	HloInstruction* reverse_kernel = builder.AddInstruction(
+			HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
 
-  Window conv_window = default_conv_window_;
-  for (int i = 0; i < 2; ++i) {
-    conv_window.mutable_dimensions(i)->set_size(3);
-    conv_window.mutable_dimensions(i)->set_padding_low(3);
-    conv_window.mutable_dimensions(i)->set_padding_high(2);
-    conv_window.mutable_dimensions(i)->set_base_dilation(2);
-  }
-  HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), output, reverse_kernel,
-      conv_window, tf_default_dnums_for_backward_input_));
-  // Verify the convolution's shape is consistent with ShapeInference.
-  CHECK(ShapeUtil::Compatible(
-      conv->shape(), ShapeInference::InferConvolveShape(
-                         output->shape(), reverse_kernel->shape(), conv_window,
-                         tf_default_dnums_for_backward_input_)
-                         .ValueOrDie()));
+	Window conv_window = default_conv_window_;
+	for (int i = 0; i < 2; ++i) {
+		conv_window.mutable_dimensions(i)->set_size(3);
+		conv_window.mutable_dimensions(i)->set_padding_low(3);
+		conv_window.mutable_dimensions(i)->set_padding_high(2);
+		conv_window.mutable_dimensions(i)->set_base_dilation(2);
+	}
+	HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {20, 10, 10, 192}), output, reverse_kernel,
+					conv_window, tf_default_dnums_for_backward_input_));
+	// Verify the convolution's shape is consistent with ShapeInference.
+	CHECK(ShapeUtil::Compatible(
+					conv->shape(), ShapeInference::InferConvolveShape(
+							output->shape(), reverse_kernel->shape(), conv_window,
+							tf_default_dnums_for_backward_input_)
+					.ValueOrDie()));
 
-  HloModule module(TestName());
-  module.AddEntryComputation(builder.Build());
-  EXPECT_FALSE(FoldConvolution(&module));
+	HloModule module(TestName());
+	module.AddEntryComputation(builder.Build());
+	EXPECT_FALSE(FoldConvolution(&module));
 }
 
 // Extracted from //learning/brain/google/xla/benchmarks/resnet.py
@@ -461,47 +466,47 @@ TEST_F(ConvolutionFoldingTest, BackwardInputConvolveLowPaddingTooLarge) {
 // We should fuse BC even though padding on activations is uneven, because
 // PadInsertion will canonicalize the fusion HLO.
 TEST_F(ConvolutionFoldingTest,
-       BackwardInputConvolveUnevenPaddingOnActivations) {
-  auto builder = HloComputation::Builder(TestName());
-  // The gradients are in NCHW layout.
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 7, 1}), "output"));
-  // The kernel is in HWIO layout.
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 3, 1, 1}), "kernel"));
-  HloInstruction* reverse_kernel = builder.AddInstruction(
-      HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
+		BackwardInputConvolveUnevenPaddingOnActivations) {
+	auto builder = HloComputation::Builder(TestName());
+	// The gradients are in NCHW layout.
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 7, 1}), "output"));
+	// The kernel is in HWIO layout.
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 3, 1, 1}), "kernel"));
+	HloInstruction* reverse_kernel = builder.AddInstruction(
+			HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
 
-  Window conv_window = default_conv_window_;
-  WindowDimension* forward_conv_col_dim = conv_window.mutable_dimensions(1);
-  forward_conv_col_dim->set_size(3);
-  forward_conv_col_dim->set_padding_low(2);
-  forward_conv_col_dim->set_padding_high(1);
-  forward_conv_col_dim->set_base_dilation(2);
-  HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeUtil::MakeShape(F32, {1, 1, 14, 1}), output, reverse_kernel,
-      conv_window, tf_default_dnums_for_backward_input_));
-  // Verify the convolution's shape is consistent with ShapeInference.
-  CHECK(ShapeUtil::Compatible(
-      conv->shape(), ShapeInference::InferConvolveShape(
-                         output->shape(), reverse_kernel->shape(), conv_window,
-                         tf_default_dnums_for_backward_input_)
-                         .ValueOrDie()));
+	Window conv_window = default_conv_window_;
+	WindowDimension* forward_conv_col_dim = conv_window.mutable_dimensions(1);
+	forward_conv_col_dim->set_size(3);
+	forward_conv_col_dim->set_padding_low(2);
+	forward_conv_col_dim->set_padding_high(1);
+	forward_conv_col_dim->set_base_dilation(2);
+	HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {1, 1, 14, 1}), output, reverse_kernel,
+					conv_window, tf_default_dnums_for_backward_input_));
+	// Verify the convolution's shape is consistent with ShapeInference.
+	CHECK(ShapeUtil::Compatible(
+					conv->shape(), ShapeInference::InferConvolveShape(
+							output->shape(), reverse_kernel->shape(), conv_window,
+							tf_default_dnums_for_backward_input_)
+					.ValueOrDie()));
 
-  HloModule module(TestName());
-  const HloComputation* entry_computation =
-      module.AddEntryComputation(builder.Build());
-  EXPECT_TRUE(FoldConvolution(&module));
-  const HloInstruction* backward_conv = entry_computation->root_instruction();
-  EXPECT_EQ(HloOpcode::kFusion, backward_conv->opcode());
-  EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
-              backward_conv->fusion_kind());
-  const WindowDimension& backward_conv_col_dim =
-      backward_conv->window().dimensions(1);
-  EXPECT_EQ(0, backward_conv_col_dim.padding_low());
-  EXPECT_EQ(1, backward_conv_col_dim.padding_high());
+	HloModule module(TestName());
+	const HloComputation* entry_computation =
+	module.AddEntryComputation(builder.Build());
+	EXPECT_TRUE(FoldConvolution(&module));
+	const HloInstruction* backward_conv = entry_computation->root_instruction();
+	EXPECT_EQ(HloOpcode::kFusion, backward_conv->opcode());
+	EXPECT_TRUE(HloInstruction::FusionKind::kConvBackwardInput ==
+			backward_conv->fusion_kind());
+	const WindowDimension& backward_conv_col_dim =
+	backward_conv->window().dimensions(1);
+	EXPECT_EQ(0, backward_conv_col_dim.padding_low());
+	EXPECT_EQ(1, backward_conv_col_dim.padding_high());
 }
 
 // For simplicity, we focus on the column dimension and ignore other dimensions.
@@ -516,37 +521,38 @@ TEST_F(ConvolutionFoldingTest,
 // We currently don't fuse BC because PadInsertion doesn't support negative
 // padding on the gradients of backward convolution (b/32744257).
 TEST_F(ConvolutionFoldingTest,
-       BackwardInputConvolveNegativePaddingHighOnActivations) {
-  auto builder = HloComputation::Builder(TestName());
-  // The gradients are in NCHW layout.
-  HloInstruction* output =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
-  // The kernel is in HWIO layout.
-  HloInstruction* kernel =
-      builder.AddInstruction(HloInstruction::CreateParameter(
-          1, ShapeUtil::MakeShape(F32, {1, 2, 1, 1}), "kernel"));
-  HloInstruction* reverse_kernel = builder.AddInstruction(
-      HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
+		BackwardInputConvolveNegativePaddingHighOnActivations) {
+	auto builder = HloComputation::Builder(TestName());
+	// The gradients are in NCHW layout.
+	HloInstruction* output =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					0, ShapeUtil::MakeShape(F32, {1, 1, 3, 1}), "output"));
+	// The kernel is in HWIO layout.
+	HloInstruction* kernel =
+	builder.AddInstruction(HloInstruction::CreateParameter(
+					1, ShapeUtil::MakeShape(F32, {1, 2, 1, 1}), "kernel"));
+	HloInstruction* reverse_kernel = builder.AddInstruction(
+			HloInstruction::CreateReverse(kernel->shape(), kernel, {0, 1}));
 
-  Window conv_window = default_conv_window_;
-  WindowDimension* forward_conv_col_dim = conv_window.mutable_dimensions(1);
-  forward_conv_col_dim->set_size(2);
-  forward_conv_col_dim->set_padding_high(2);
-  HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
-      ShapeUtil::MakeShape(F32, {1, 1, 4, 1}), output, reverse_kernel,
-      conv_window, tf_default_dnums_for_backward_input_));
-  // Verify the convolution's shape is consistent with ShapeInference.
-  CHECK(ShapeUtil::Compatible(
-      conv->shape(), ShapeInference::InferConvolveShape(
-                         output->shape(), reverse_kernel->shape(), conv_window,
-                         tf_default_dnums_for_backward_input_)
-                         .ValueOrDie()));
+	Window conv_window = default_conv_window_;
+	WindowDimension* forward_conv_col_dim = conv_window.mutable_dimensions(1);
+	forward_conv_col_dim->set_size(2);
+	forward_conv_col_dim->set_padding_high(2);
+	HloInstruction* conv = builder.AddInstruction(HloInstruction::CreateConvolve(
+					ShapeUtil::MakeShape(F32, {1, 1, 4, 1}), output, reverse_kernel,
+					conv_window, tf_default_dnums_for_backward_input_));
+	// Verify the convolution's shape is consistent with ShapeInference.
+	CHECK(ShapeUtil::Compatible(
+					conv->shape(), ShapeInference::InferConvolveShape(
+							output->shape(), reverse_kernel->shape(), conv_window,
+							tf_default_dnums_for_backward_input_)
+					.ValueOrDie()));
 
-  HloModule module(TestName());
-  module.AddEntryComputation(builder.Build());
-  EXPECT_FALSE(FoldConvolution(&module));
+	HloModule module(TestName());
+	module.AddEntryComputation(builder.Build());
+	EXPECT_FALSE(FoldConvolution(&module));
 }
 
-}  // namespace gpu
-}  // namespace xla
+}
+  // namespace gpu
+} // namespace xla

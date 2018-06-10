@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/nn_ops.cc.
-
 #define EIGEN_USE_THREADS
 
 #include "tensorflow/core/kernels/relu_op.h"
@@ -44,7 +43,7 @@ typedef Eigen::GpuDevice GPUDevice;
       Name("Relu6Grad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       Relu6GradOp<CPUDevice, type>)
 
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_RELU_KERNELS);
+TF_CALL_REAL_NUMBER_TYPES (REGISTER_RELU_KERNELS);
 #undef REGISTER_RELU_KERNELS
 
 #define REGISTER_ELU_KERNELS(type)                                  \
@@ -56,7 +55,7 @@ TF_CALL_REAL_NUMBER_TYPES(REGISTER_RELU_KERNELS);
       EluGradOp<CPUDevice, type>)
 
 // Elu only makes sense with float or double.
-TF_CALL_GPU_NUMBER_TYPES(REGISTER_ELU_KERNELS);
+TF_CALL_GPU_NUMBER_TYPES (REGISTER_ELU_KERNELS);
 #undef REGISTER_ELU_KERNELS
 
 #if GOOGLE_CUDA
@@ -102,7 +101,7 @@ namespace functor {
       typename TTypes<T>::Tensor backprops);                                   \
   extern template struct EluGrad<GPUDevice, T>;
 
-TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
+	TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
@@ -131,4 +130,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_KERNELS);
 
 #endif  // GOOGLE_CUDA
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

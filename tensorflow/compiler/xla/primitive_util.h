@@ -1,20 +1,19 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // Utilities for dealing with XLA primitive types.
-
 #ifndef TENSORFLOW_COMPILER_XLA_PRIMITIVE_UTIL_H_
 #define TENSORFLOW_COMPILER_XLA_PRIMITIVE_UTIL_H_
 
@@ -28,52 +27,53 @@ namespace primitive_util {
 
 // Returns the XLA primitive type (eg, F32) corresponding to the given
 // template parameter native type (eg, float).
-template <typename NativeT>
-PrimitiveType NativeToPrimitiveType() {
-  // Make the expression depend on the template parameter NativeT so
-  // that this compile-time error only apperas if this function is
-  // instantiated with some concrete type that is not specialized
-  // below.
-  static_assert(!std::is_same<NativeT, NativeT>::value,
-                "Cannot map native type to primitive type.");
-  return PRIMITIVE_TYPE_INVALID;
+template<typename NativeT>
+PrimitiveType NativeToPrimitiveType()
+{
+	// Make the expression depend on the template parameter NativeT so
+	// that this compile-time error only apperas if this function is
+	// instantiated with some concrete type that is not specialized
+	// below.
+	static_assert(!std::is_same<NativeT, NativeT>::value,
+			"Cannot map native type to primitive type.");
+	return PRIMITIVE_TYPE_INVALID;
 }
 
 // Declarations of specializations for each native type which correspond to a
 // XLA primitive type.
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<bool>();
 
 // Unsigned integer
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<uint8>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<uint16>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<uint32>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<uint64>();
 
 // Signed integer
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<int8>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<int16>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<int32>();
 
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<int64>();
 
 // Floating point
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<float>();
-template <>
+template<>
 PrimitiveType NativeToPrimitiveType<double>();
 
 bool IsFloatingPointType(PrimitiveType type);
@@ -89,66 +89,66 @@ int BitWidth(PrimitiveType type);
 
 // Returns the native type (eg, float) corresponding to the given template
 // parameter XLA primitive type (eg, F32).
-template <PrimitiveType>
+template<PrimitiveType>
 struct PrimitiveTypeToNative;
 
 // Declarations of specializations for each native type which correspond to a
 // XLA primitive type.
-template <>
+template<>
 struct PrimitiveTypeToNative<PRED> {
-  using type = bool;
+	using type = bool;
 };
 
 // Unsigned integer
-template <>
+template<>
 struct PrimitiveTypeToNative<U8> {
-  using type = uint8;
+	using type = uint8;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<U16> {
-  using type = uint16;
+	using type = uint16;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<U32> {
-  using type = uint32;
+	using type = uint32;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<U64> {
-  using type = uint64;
+	using type = uint64;
 };
 
 // Signed integer
-template <>
+template<>
 struct PrimitiveTypeToNative<S8> {
-  using type = int8;
+	using type = int8;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<S16> {
-  using type = int16;
+	using type = int16;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<S32> {
-  using type = int32;
+	using type = int32;
 };
 
-template <>
+template<>
 struct PrimitiveTypeToNative<S64> {
-  using type = int64;
+	using type = int64;
 };
 
 // Floating point
-template <>
+template<>
 struct PrimitiveTypeToNative<F32> {
-  using type = float;
+	using type = float;
 };
-template <>
+template<>
 struct PrimitiveTypeToNative<F64> {
-  using type = double;
+	using type = double;
 };
 
 }  // namespace primitive_util

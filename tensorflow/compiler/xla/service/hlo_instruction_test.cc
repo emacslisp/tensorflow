@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/compiler/xla/service/hlo_instruction.h"
 
@@ -33,104 +33,112 @@ namespace {
 #define EXPECT_ISET(A, E...) EXPECT_EQ(A, (std::set<HloInstruction*>{E}))
 #define EXPECT_IVEC(A, E...) EXPECT_EQ(A, (std::vector<HloInstruction*>{E}))
 
-class HloInstructionTest : public ::testing::Test {
- protected:
-  HloInstructionTest() {}
+class HloInstructionTest: public ::testing::Test {
+protected:
+	HloInstructionTest()
+	{
+	}
 
-  Shape r0f32_ = ShapeUtil::MakeShape(F32, {});
+	Shape r0f32_ = ShapeUtil::MakeShape(F32, { });
 };
 
 // Simple visitor that collects the number of users and operands for certain HLO
 // nodes. It also verifies some of the DFS visiting invariants (operands visited
 // before their users, nodes not visited twice, etc.)
-class OpAndUserCollectingVisitor : public DfsHloVisitorWithDefault {
- public:
-  Status DefaultAction(HloInstruction* hlo_instruction) override {
-    return Unimplemented("not implemented %s",
-                         HloOpcodeString(hlo_instruction->opcode()).c_str());
-  }
+class OpAndUserCollectingVisitor: public DfsHloVisitorWithDefault {
+public:
+	Status DefaultAction(HloInstruction* hlo_instruction) override
+	{
+		return Unimplemented("not implemented %s",
+				HloOpcodeString(hlo_instruction->opcode()).c_str());
+	}
 
-  Status HandleParameter(HloInstruction* parameter) override {
-    EXPECT_EQ(0, count_.count(parameter));
-    count_[parameter] = GetCountsForNode(parameter);
-    return Status::OK();
-  }
+	Status HandleParameter(HloInstruction* parameter) override
+	{
+		EXPECT_EQ(0, count_.count(parameter));
+		count_[parameter] = GetCountsForNode(parameter);
+		return Status::OK();
+	}
 
-  Status HandleConstant(HloInstruction* constant,
-                        const Literal& literal) override {
-    EXPECT_EQ(0, count_.count(constant));
-    count_[constant] = GetCountsForNode(constant);
-    return Status::OK();
-  }
+	Status HandleConstant(HloInstruction* constant, const Literal& literal) override
+	{
+		EXPECT_EQ(0, count_.count(constant));
+		count_[constant] = GetCountsForNode(constant);
+		return Status::OK();
+	}
 
-  Status HandleAdd(HloInstruction* add, HloInstruction* lhs,
-                   HloInstruction* rhs) override {
-    EXPECT_EQ(0, count_.count(add));
-    EXPECT_GT(count_.count(lhs), 0);
-    EXPECT_GT(count_.count(rhs), 0);
-    count_[add] = GetCountsForNode(add);
-    return Status::OK();
-  }
+	Status HandleAdd(HloInstruction* add, HloInstruction* lhs,
+			HloInstruction* rhs) override
+	{
+		EXPECT_EQ(0, count_.count(add));
+		EXPECT_GT(count_.count(lhs), 0);
+		EXPECT_GT(count_.count(rhs), 0);
+		count_[add] = GetCountsForNode(add);
+		return Status::OK();
+	}
 
-  Status HandleNegate(HloInstruction* negate,
-                      HloInstruction* operand) override {
-    EXPECT_EQ(0, count_.count(negate));
-    EXPECT_GT(count_.count(operand), 0);
-    count_[negate] = GetCountsForNode(negate);
-    return Status::OK();
-  }
+	Status HandleNegate(HloInstruction* negate, HloInstruction* operand) override
+	{
+		EXPECT_EQ(0, count_.count(negate));
+		EXPECT_GT(count_.count(operand), 0);
+		count_[negate] = GetCountsForNode(negate);
+		return Status::OK();
+	}
 
-  Status HandleMap(
-      HloInstruction* map,
-      tensorflow::gtl::ArraySlice<HloInstruction*> operands,
-      HloComputation* /*function*/,
-      tensorflow::gtl::ArraySlice<HloInstruction*> /*static_operands*/)
-      override {
-    EXPECT_EQ(0, count_.count(map));
-    for (HloInstruction* arg : operands) {
-      EXPECT_GT(count_.count(arg), 0);
-    }
-    count_[map] = GetCountsForNode(map);
-    return Status::OK();
-  }
+	Status HandleMap(HloInstruction* map,
+			tensorflow::gtl::ArraySlice<HloInstruction*> operands,
+			HloComputation* /*function*/,
+			tensorflow::gtl::ArraySlice<HloInstruction*> /*static_operands*/) override
+	{
+		EXPECT_EQ(0, count_.count(map));
+		for (HloInstruction* arg : operands) {
+			EXPECT_GT(count_.count(arg), 0);
+		}
+		count_[map] = GetCountsForNode(map);
+		return Status::OK();
+	}
 
-  Status HandleReduce(HloInstruction* reduce, HloInstruction* arg,
-                      HloInstruction* init_value,
-                      tensorflow::gtl::ArraySlice<int64> dimensions,
-                      HloComputation* function) override {
-    EXPECT_EQ(0, count_.count(reduce));
-    EXPECT_GT(count_.count(arg), 0);
-    EXPECT_GT(count_.count(init_value), 0);
-    count_[reduce] = GetCountsForNode(reduce);
-    return Status::OK();
-  }
+	Status HandleReduce(HloInstruction* reduce, HloInstruction* arg,
+			HloInstruction* init_value,
+			tensorflow::gtl::ArraySlice<int64> dimensions,
+			HloComputation* function) override
+	{
+		EXPECT_EQ(0, count_.count(reduce));
+		EXPECT_GT(count_.count(arg), 0);
+		EXPECT_GT(count_.count(init_value), 0);
+		count_[reduce] = GetCountsForNode(reduce);
+		return Status::OK();
+	}
 
-  int64 NumOperands(const HloInstruction* node) {
-    auto count_iterator = count_.find(node);
-    EXPECT_NE(count_.end(), count_iterator);
-    return count_iterator->second.operand_count;
-  }
+	int64 NumOperands(const HloInstruction* node)
+	{
+		auto count_iterator = count_.find(node);
+		EXPECT_NE(count_.end(), count_iterator);
+		return count_iterator->second.operand_count;
+	}
 
-  int64 NumUsers(const HloInstruction* node) {
-    auto count_iterator = count_.find(node);
-    EXPECT_NE(count_.end(), count_iterator);
-    return count_iterator->second.user_count;
-  }
+	int64 NumUsers(const HloInstruction* node)
+	{
+		auto count_iterator = count_.find(node);
+		EXPECT_NE(count_.end(), count_iterator);
+		return count_iterator->second.user_count;
+	}
 
- private:
-  struct NumOpsAndUsers {
-    int64 operand_count;
-    int64 user_count;
-  };
+private:
+	struct NumOpsAndUsers {
+		int64 operand_count;
+		int64 user_count;
+	};
 
-  // Helper function to count operands and users for the given HLO.
-  NumOpsAndUsers GetCountsForNode(const HloInstruction* node) {
-    NumOpsAndUsers counts{node->operand_count(), node->user_count()};
-    return counts;
-  }
+	// Helper function to count operands and users for the given HLO.
+	NumOpsAndUsers GetCountsForNode(const HloInstruction* node)
+	{
+		NumOpsAndUsers counts { node->operand_count(), node->user_count() };
+		return counts;
+	}
 
-  // Counters for HLOs. Maps HLO to a NumOpsAndUsers.
-  std::unordered_map<const HloInstruction*, NumOpsAndUsers> count_;
+	// Counters for HLOs. Maps HLO to a NumOpsAndUsers.
+	std::unordered_map<const HloInstruction*, NumOpsAndUsers> count_;
 };
 
 TEST_F(HloInstructionTest, BasicProperties) {
@@ -151,10 +159,9 @@ TEST_F(HloInstructionTest, UserWithTwoOperands) {
                                           bar.get());
   EXPECT_MATCH(add->operands(), testing::UnorderedMatcher<HloInstruction*>(
                                     foo.get(), bar.get()));
-  EXPECT_ISET(foo->users(), add.get());
-  EXPECT_ISET(bar->users(), add.get());
+  EXPECT_ISET(foo->users(), add.get());EXPECT_ISET(bar->users(), add.get());
 
-  OpAndUserCollectingVisitor visitor;
+OpAndUserCollectingVisitor visitor;
   ASSERT_IS_OK(add->Accept(&visitor));
 
   EXPECT_EQ(2, visitor.NumOperands(add.get()));
@@ -385,12 +392,12 @@ TEST_F(HloInstructionTest, ReplaceUseInBinaryOps) {
   EXPECT_EQ(1, foo->user_count());
   EXPECT_EQ(2, bar->user_count());
 
-  EXPECT_ISET(foo->users(), add_foobar.get());
-  EXPECT_IVEC(add_foobar->operands(), foo.get(), bar.get());
+  EXPECT_ISET(foo->users(), add_foobar.get());EXPECT_IVEC(add_foobar->operands(),
+		foo.get(), bar.get());
 
-  EXPECT_ISET(bar->users(), add_foobar.get(), add_foofoo.get());
-  EXPECT_IVEC(add_foobar->operands(), foo.get(), bar.get());
-  EXPECT_IVEC(add_foofoo->operands(), bar.get(), bar.get());
+EXPECT_ISET(bar->users(), add_foobar.get(), add_foofoo.get());EXPECT_IVEC(
+		add_foobar->operands(), foo.get(), bar.get());EXPECT_IVEC(
+		add_foofoo->operands(), bar.get(), bar.get());
 }
 
 TEST_F(HloInstructionTest, ReplaceUseInVariadicOp) {
@@ -408,13 +415,13 @@ TEST_F(HloInstructionTest, ReplaceUseInVariadicOp) {
   EXPECT_EQ(2, foo->user_count());
   EXPECT_ISET(foo->users(), tuple.get(), add_foobar.get());
 
-  // Replace the use of foo in tuple with bar.
-  ASSERT_IS_OK(foo->ReplaceUseWith(tuple.get(), bar.get()));
+// Replace the use of foo in tuple with bar.
+ASSERT_IS_OK(foo->ReplaceUseWith(tuple.get(), bar.get()));
 
   EXPECT_ISET(foo->users(), add_foobar.get());
 
-  // Both uses of foo in tuple should have been replaced with bar.
-  EXPECT_IVEC(tuple->operands(), bar.get(), bar.get(), baz.get(), bar.get());
+// Both uses of foo in tuple should have been replaced with bar.
+EXPECT_IVEC(tuple->operands(), bar.get(), bar.get(), baz.get(), bar.get());
 }
 
 TEST_F(HloInstructionTest, ReplaceUseInUnaryOp) {
@@ -427,19 +434,18 @@ TEST_F(HloInstructionTest, ReplaceUseInUnaryOp) {
   auto log = HloInstruction::CreateUnary(r0f32_, HloOpcode::kLog, foo.get());
 
   EXPECT_EQ(2, foo->user_count());
-  EXPECT_ISET(foo->users(), exp.get(), log.get());
-  EXPECT_EQ(0, bar->user_count());
+  EXPECT_ISET(foo->users(), exp.get(), log.get());EXPECT_EQ(0, bar->user_count());
 
   // Replace the use of foo in exp with bar.
   ASSERT_IS_OK(foo->ReplaceUseWith(exp.get(), bar.get()));
 
   // The use of foo in log should not have been affected.
   EXPECT_EQ(1, foo->user_count());
-  EXPECT_ISET(foo->users(), log.get());
-  EXPECT_IVEC(log->operands(), foo.get());
+  EXPECT_ISET(foo->users(),
+		log.get());EXPECT_IVEC(log->operands(), foo.get());
 
-  // Bar should now be used in exp.
-  EXPECT_EQ(1, bar->user_count());
+// Bar should now be used in exp.
+EXPECT_EQ(1, bar->user_count());
   EXPECT_EQ(*bar->users().begin(), exp.get());
   EXPECT_EQ(1, exp->operands().size());
   EXPECT_EQ(*exp->operands().begin(), bar.get());
@@ -491,41 +497,47 @@ TEST_F(HloInstructionTest, ReplaceAllUsesInMultipleOps) {
   EXPECT_EQ(0, foo->user_count());
   EXPECT_EQ(3, bar->user_count());
 
-  EXPECT_ISET(bar->users(), add_foobar.get(), exp.get(), tuple.get());
-}
+  EXPECT_ISET(bar->users(), add_foobar.get(), exp.get(), tuple.get()); }
 
 // Simple visitor that collects and post-processes each node in the graph.
-class NodeCollectorAndPostProcessor : public DfsHloVisitorWithDefault {
- public:
-  NodeCollectorAndPostProcessor() {}
+class NodeCollectorAndPostProcessor: public DfsHloVisitorWithDefault {
+public:
+NodeCollectorAndPostProcessor()
+{
+}
 
-  Status Postprocess(HloInstruction* hlo) override {
-    post_processed_nodes_.push_back(hlo);
-    return Status::OK();
-  }
+Status Postprocess(HloInstruction* hlo) override
+{
+	post_processed_nodes_.push_back(hlo);
+	return Status::OK();
+}
 
-  Status DefaultAction(HloInstruction* hlo_instruction) override {
-    visited_nodes_.push_back(hlo_instruction);
-    return Status::OK();
-  }
+Status DefaultAction(HloInstruction* hlo_instruction) override
+{
+	visited_nodes_.push_back(hlo_instruction);
+	return Status::OK();
+}
 
-  const std::vector<const HloInstruction*>& visited_nodes() {
-    return visited_nodes_;
-  }
+const std::vector<const HloInstruction*>& visited_nodes()
+{
+	return visited_nodes_;
+}
 
-  const std::vector<const HloInstruction*>& post_processed_nodes() {
-    return post_processed_nodes_;
-  }
+const std::vector<const HloInstruction*>& post_processed_nodes()
+{
+	return post_processed_nodes_;
+}
 
- private:
-  std::vector<const HloInstruction*> visited_nodes_;
-  std::vector<const HloInstruction*> post_processed_nodes_;
+private:
+std::vector<const HloInstruction*> visited_nodes_;
+std::vector<const HloInstruction*> post_processed_nodes_;
 };
 
 // Returns true if "vec" contains distinct nodes.
-bool Distinct(const std::vector<const HloInstruction*>& vec) {
-  std::set<const HloInstruction*> distinct_nodes(vec.begin(), vec.end());
-  return distinct_nodes.size() == vec.size();
+bool Distinct(const std::vector<const HloInstruction*>& vec)
+{
+std::set<const HloInstruction*> distinct_nodes(vec.begin(), vec.end());
+return distinct_nodes.size() == vec.size();
 }
 
 TEST_F(HloInstructionTest, PostProcessAllVisitedNodes) {
@@ -559,8 +571,8 @@ TEST_F(HloInstructionTest, SingletonFusionOp) {
   auto fusion = HloInstruction::CreateFusion(
       r0f32_, HloInstruction::FusionKind::kLoop, exp.get());
 
-  EXPECT_IVEC(fusion->operands(), constant.get());
-  EXPECT_ISET(constant->users(), fusion.get(), exp.get());
+  EXPECT_IVEC(fusion->operands(), constant.get());EXPECT_ISET(constant->users(),
+	fusion.get(), exp.get());
 }
 
 TEST_F(HloInstructionTest, BinaryFusionOp) {
@@ -575,9 +587,9 @@ TEST_F(HloInstructionTest, BinaryFusionOp) {
   auto fusion = HloInstruction::CreateFusion(
       r0f32_, HloInstruction::FusionKind::kLoop, add.get());
 
-  EXPECT_IVEC(fusion->operands(), constant1.get(), constant2.get());
-  EXPECT_ISET(constant1->users(), fusion.get(), add.get());
-  EXPECT_ISET(constant2->users(), fusion.get(), add.get());
+  EXPECT_IVEC(fusion->operands(), constant1.get(), constant2.get());EXPECT_ISET(
+	constant1->users(), fusion.get(), add.get());EXPECT_ISET(constant2->users(),
+	fusion.get(), add.get());
 }
 
 TEST_F(HloInstructionTest, ChainFusionOp) {
@@ -594,8 +606,8 @@ TEST_F(HloInstructionTest, ChainFusionOp) {
   fusion->FuseInstruction(exp2.get());
   fusion->FuseInstruction(exp1.get());
 
-  EXPECT_IVEC(fusion->operands(), constant.get());
-  EXPECT_ISET(constant->users(), fusion.get(), exp1.get());
+  EXPECT_IVEC(fusion->operands(), constant.get());EXPECT_ISET(constant->users(),
+	fusion.get(), exp1.get());
 }
 
 TEST_F(HloInstructionTest, ComplexFusionOp) {
@@ -636,79 +648,79 @@ TEST_F(HloInstructionTest, ComplexFusionOp) {
 
   // Operands in the fusion instruction's operands() vector should be in the
   // order in which their users were added fused.
-  EXPECT_IVEC(fusion->operands(), c1.get(), c3.get(), c2.get());
-  EXPECT_ISET(c1->users(), add.get(), tuple.get(), fusion.get());
-}
+  EXPECT_IVEC(fusion->operands(), c1.get(), c3.get(), c2.get());EXPECT_ISET(
+	c1->users(), add.get(), tuple.get(), fusion.get()); }
 
 // Convenience function for comparing two HloInstructions inside of
 // std::unique_ptrs.
 static bool Identical(std::unique_ptr<HloInstruction> instruction1,
-                      std::unique_ptr<HloInstruction> instruction2) {
-  // Verify Identical is reflexive for both instructions.
-  EXPECT_TRUE(instruction1->Identical(*instruction1));
-  EXPECT_TRUE(instruction2->Identical(*instruction2));
+std::unique_ptr<HloInstruction> instruction2)
+{
+ // Verify Identical is reflexive for both instructions.
+EXPECT_TRUE(instruction1->Identical(*instruction1));
+EXPECT_TRUE(instruction2->Identical(*instruction2));
 
-  bool is_equal = instruction1->Identical(*instruction2);
-  // Verify Identical is symmetric.
-  EXPECT_EQ(is_equal, instruction2->Identical(*instruction1));
-  return is_equal;
+bool is_equal = instruction1->Identical(*instruction2);
+ // Verify Identical is symmetric.
+EXPECT_EQ(is_equal, instruction2->Identical(*instruction1));
+return is_equal;
 }
 
 TEST_F(HloInstructionTest, IdenticalInstructions) {
-  // Test HloInstruction::Identical with some subset of instructions types.
+ // Test HloInstruction::Identical with some subset of instructions types.
 
-  // Create a set of random constant operands to use below. Make them matrices
-  // so dimensions are interesting.
-  auto operand1 = HloInstruction::CreateConstant(
-      LiteralUtil::CreateR2<float>({{1.0, 2.0}, {3.0, 4.0}}));
-  auto operand2 = HloInstruction::CreateConstant(
-      LiteralUtil::CreateR2<float>({{10.0, 20.0}, {30.0, 40.0}}));
-  auto vector_operand = HloInstruction::CreateConstant(
-      LiteralUtil::CreateR1<float>({42.0, 123.0}));
-  Shape shape = operand1->shape();
+// Create a set of random constant operands to use below. Make them matrices
+// so dimensions are interesting.
+auto operand1 = HloInstruction::CreateConstant(
+	LiteralUtil::CreateR2<float>( { {1.0, 2.0}, {3.0, 4.0}}));
+auto operand2 = HloInstruction::CreateConstant(
+	LiteralUtil::CreateR2<float>( { {10.0, 20.0}, {30.0, 40.0}}));
+auto vector_operand = HloInstruction::CreateConstant(
+	LiteralUtil::CreateR1<float>( {42.0, 123.0}));
+Shape shape = operand1->shape();
 
   // Convenient short names for the operands.
-  HloInstruction* op1 = operand1.get();
-  HloInstruction* op2 = operand2.get();
+HloInstruction* op1 = operand1.get();
+HloInstruction* op2 = operand2.get();
 
   // Operations which only depend on their operands and opcode.
-  EXPECT_TRUE(
-      Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
-                HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1)));
-  EXPECT_FALSE(
-      Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
-                HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op2)));
-  EXPECT_FALSE(
-      Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
-                HloInstruction::CreateUnary(shape, HloOpcode::kNegate, op1)));
+EXPECT_TRUE(
+	Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
+			HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1)));
+EXPECT_FALSE(
+	Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
+			HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op2)));
+EXPECT_FALSE(
+	Identical(HloInstruction::CreateUnary(shape, HloOpcode::kCopy, op1),
+			HloInstruction::CreateUnary(shape, HloOpcode::kNegate, op1)));
 
   // Tuples.
-  EXPECT_TRUE(Identical(HloInstruction::CreateTuple({op1, op2}),
-                        HloInstruction::CreateTuple({op1, op2})));
-  EXPECT_FALSE(Identical(HloInstruction::CreateTuple({op1, op2}),
-                         HloInstruction::CreateTuple({op2, op1})));
+EXPECT_TRUE(Identical(HloInstruction::CreateTuple( {op1, op2}),
+			HloInstruction::CreateTuple( {op1, op2})));
+EXPECT_FALSE(Identical(HloInstruction::CreateTuple( {op1, op2}),
+			HloInstruction::CreateTuple( {op2, op1})));
 
   // Broadcasts.
-  EXPECT_TRUE(Identical(HloInstruction::CreateBroadcast(shape, op1, {0, 1}),
-                        HloInstruction::CreateBroadcast(shape, op1, {0, 1})));
-  EXPECT_FALSE(Identical(HloInstruction::CreateBroadcast(shape, op1, {0, 1}),
-                         HloInstruction::CreateBroadcast(shape, op1, {1, 0})));
-  Shape bcast_shape1 = ShapeUtil::MakeShape(F32, {2, 2, 42});
-  Shape bcast_shape2 = ShapeUtil::MakeShape(F32, {2, 2, 123});
-  EXPECT_FALSE(
-      Identical(HloInstruction::CreateBroadcast(bcast_shape1, op1, {0, 1}),
-                HloInstruction::CreateBroadcast(bcast_shape2, op1, {0, 1})));
+EXPECT_TRUE(Identical(HloInstruction::CreateBroadcast(shape, op1, {0, 1}),
+			HloInstruction::CreateBroadcast(shape, op1, {0, 1})));
+EXPECT_FALSE(Identical(HloInstruction::CreateBroadcast(shape, op1, {0, 1}),
+			HloInstruction::CreateBroadcast(shape, op1, {1, 0})));
+Shape bcast_shape1 = ShapeUtil::MakeShape(F32, {2, 2, 42});
+Shape bcast_shape2 = ShapeUtil::MakeShape(F32, {2, 2, 123});
+EXPECT_FALSE(
+	Identical(HloInstruction::CreateBroadcast(bcast_shape1, op1, {0, 1}),
+			HloInstruction::CreateBroadcast(bcast_shape2, op1, {0, 1})));
 
   // Binary operands.
-  EXPECT_TRUE(Identical(
-      HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
-      HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2)));
-  EXPECT_FALSE(Identical(
-      HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
-      HloInstruction::CreateBinary(shape, HloOpcode::kDivide, op2, op1)));
-  EXPECT_FALSE(Identical(
-      HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
-      HloInstruction::CreateBinary(shape, HloOpcode::kDivide, op1, op2)));
+EXPECT_TRUE(Identical(
+			HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
+			HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2)));
+EXPECT_FALSE(Identical(
+			HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
+			HloInstruction::CreateBinary(shape, HloOpcode::kDivide, op2, op1)));
+EXPECT_FALSE(Identical(
+			HloInstruction::CreateBinary(shape, HloOpcode::kAdd, op1, op2),
+			HloInstruction::CreateBinary(shape, HloOpcode::kDivide, op1, op2)));
 }
 
 TEST_F(HloInstructionTest, FunctionVisitor) {
@@ -720,47 +732,47 @@ TEST_F(HloInstructionTest, FunctionVisitor) {
   //    negate   exp
   //        \    /
   //         add
-  const Shape f32 = ShapeUtil::MakeShape(F32, {});
-  auto param = HloInstruction::CreateParameter(0, f32, "0");
-  auto negate =
-      HloInstruction::CreateUnary(f32, HloOpcode::kNegate, param.get());
-  auto exp = HloInstruction::CreateUnary(f32, HloOpcode::kExp, param.get());
-  auto add = HloInstruction::CreateBinary(f32, HloOpcode::kAdd, negate.get(),
-                                          exp.get());
+const Shape f32 = ShapeUtil::MakeShape(F32, {});
+auto param = HloInstruction::CreateParameter(0, f32, "0");
+auto negate =
+HloInstruction::CreateUnary(f32, HloOpcode::kNegate, param.get());
+auto exp = HloInstruction::CreateUnary(f32, HloOpcode::kExp, param.get());
+auto add = HloInstruction::CreateBinary(f32, HloOpcode::kAdd, negate.get(),
+	exp.get());
 
-  int visit_num = 0;
-  std::unordered_map<HloInstruction*, int> visit_order;
-  EXPECT_IS_OK(add->Accept([&visit_num, &visit_order](HloInstruction* inst) {
-    EXPECT_EQ(0, visit_order.count(inst));
-    visit_order[inst] = visit_num;
-    visit_num++;
-    return Status::OK();
-  }));
+int visit_num = 0;
+std::unordered_map<HloInstruction*, int> visit_order;
+EXPECT_IS_OK(add->Accept([&visit_num, &visit_order](HloInstruction* inst) {
+				EXPECT_EQ(0, visit_order.count(inst));
+				visit_order[inst] = visit_num;
+				visit_num++;
+				return Status::OK();
+			}));
 
-  EXPECT_EQ(0, visit_order.at(param.get()));
+EXPECT_EQ(0, visit_order.at(param.get()));
   // negate and exp can be visited in an arbitrary order.
-  EXPECT_TRUE(visit_order.at(exp.get()) == 1 || visit_order.at(exp.get()) == 2);
-  EXPECT_TRUE(visit_order.at(negate.get()) == 1 ||
-              visit_order.at(negate.get()) == 2);
-  EXPECT_NE(visit_order.at(exp.get()), visit_order.at(negate.get()));
-  EXPECT_EQ(3, visit_order.at(add.get()));
+EXPECT_TRUE(visit_order.at(exp.get()) == 1 || visit_order.at(exp.get()) == 2);
+EXPECT_TRUE(visit_order.at(negate.get()) == 1 ||
+	visit_order.at(negate.get()) == 2);
+EXPECT_NE(visit_order.at(exp.get()), visit_order.at(negate.get()));
+EXPECT_EQ(3, visit_order.at(add.get()));
 }
 
 TEST_F(HloInstructionTest, FullyElementwise) {
-  const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
-  auto x = HloInstruction::CreateParameter(0, r1f32, "x");
-  auto y = HloInstruction::CreateParameter(1, r1f32, "y");
-  auto add =
-      HloInstruction::CreateBinary(r1f32, HloOpcode::kAdd, x.get(), y.get());
-  EXPECT_TRUE(add->IsElementwise());
-  for (int i = 0; i < add->operand_count(); ++i) {
-    EXPECT_TRUE(add->IsElementwiseOnOperand(i));
-  }
+const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
+auto x = HloInstruction::CreateParameter(0, r1f32, "x");
+auto y = HloInstruction::CreateParameter(1, r1f32, "y");
+auto add =
+HloInstruction::CreateBinary(r1f32, HloOpcode::kAdd, x.get(), y.get());
+EXPECT_TRUE(add->IsElementwise());
+for (int i = 0; i < add->operand_count(); ++i) {
+EXPECT_TRUE(add->IsElementwiseOnOperand(i));
+}
 }
 
 TEST_F(HloInstructionTest, PartiallyElementwise) {
-  const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
-  const Shape r2f32 = ShapeUtil::MakeShape(F32, {3, 5});
+const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
+const Shape r2f32 = ShapeUtil::MakeShape(F32, {3, 5});
 
   // Fused expression:
   //
@@ -774,38 +786,38 @@ TEST_F(HloInstructionTest, PartiallyElementwise) {
   //
   // The fusion instruction is not elementwise on p3 because the broadcast is
   // not elementwise.
-  HloComputation::Builder builder("PartiallyElementwise");
-  HloInstruction* p0 =
-      builder.AddInstruction(HloInstruction::CreateParameter(0, r2f32, "p0"));
-  HloInstruction* p1 =
-      builder.AddInstruction(HloInstruction::CreateParameter(1, r2f32, "p1"));
-  HloInstruction* p2 =
-      builder.AddInstruction(HloInstruction::CreateParameter(2, r2f32, "p2"));
-  HloInstruction* p3 =
-      builder.AddInstruction(HloInstruction::CreateParameter(3, r1f32, "p3"));
-  HloInstruction* mul = builder.AddInstruction(
-      HloInstruction::CreateBinary(r2f32, HloOpcode::kMultiply, p0, p1));
-  HloInstruction* div = builder.AddInstruction(
-      HloInstruction::CreateBinary(r2f32, HloOpcode::kDivide, mul, p2));
+HloComputation::Builder builder("PartiallyElementwise");
+HloInstruction* p0 =
+builder.AddInstruction(HloInstruction::CreateParameter(0, r2f32, "p0"));
+HloInstruction* p1 =
+builder.AddInstruction(HloInstruction::CreateParameter(1, r2f32, "p1"));
+HloInstruction* p2 =
+builder.AddInstruction(HloInstruction::CreateParameter(2, r2f32, "p2"));
+HloInstruction* p3 =
+builder.AddInstruction(HloInstruction::CreateParameter(3, r1f32, "p3"));
+HloInstruction* mul = builder.AddInstruction(
+	HloInstruction::CreateBinary(r2f32, HloOpcode::kMultiply, p0, p1));
+HloInstruction* div = builder.AddInstruction(
+	HloInstruction::CreateBinary(r2f32, HloOpcode::kDivide, mul, p2));
   // Dimension 0 of shape [5] is mapped to dimension 1 of shape [3x5].
-  HloInstruction* broadcast =
-      builder.AddInstruction(HloInstruction::CreateBroadcast(r2f32, p3, {1}));
-  HloInstruction* max = builder.AddInstruction(
-      HloInstruction::CreateBinary(r2f32, HloOpcode::kMaximum, div, broadcast));
+HloInstruction* broadcast =
+builder.AddInstruction(HloInstruction::CreateBroadcast(r2f32, p3, {1}));
+HloInstruction* max = builder.AddInstruction(
+	HloInstruction::CreateBinary(r2f32, HloOpcode::kMaximum, div, broadcast));
 
-  auto computation = builder.Build();
-  HloInstruction* fusion = computation->CreateFusionInstruction(
-      {max, broadcast, div, mul}, HloInstruction::FusionKind::kLoop);
-  EXPECT_FALSE(fusion->IsElementwise());
-  for (int64 operand_idx = 0; operand_idx < fusion->operand_count();
-       ++operand_idx) {
-    const HloInstruction* operand = fusion->operand(operand_idx);
-    if (operand == p3) {
-      EXPECT_FALSE(fusion->IsElementwiseOnOperand(operand_idx));
-    } else {
-      EXPECT_TRUE(fusion->IsElementwiseOnOperand(operand_idx));
-    }
-  }
+auto computation = builder.Build();
+HloInstruction* fusion = computation->CreateFusionInstruction(
+	{	max, broadcast, div, mul}, HloInstruction::FusionKind::kLoop);
+EXPECT_FALSE(fusion->IsElementwise());
+for (int64 operand_idx = 0; operand_idx < fusion->operand_count();
+	++operand_idx) {
+const HloInstruction* operand = fusion->operand(operand_idx);
+if (operand == p3) {
+	EXPECT_FALSE(fusion->IsElementwiseOnOperand(operand_idx));
+} else {
+	EXPECT_TRUE(fusion->IsElementwiseOnOperand(operand_idx));
+}
+}
 }
 
 TEST_F(HloInstructionTest, PartiallyElementwiseWithReuse) {
@@ -820,33 +832,33 @@ TEST_F(HloInstructionTest, PartiallyElementwiseWithReuse) {
   // The fusion instruction is elementwise on `x` because the only path from x
   // to sub contains only elementwise operations. It is not elementwise on `y`
   // because the path y->broadcast->sub is not all elementwise.
-  const Shape r0f32 = ShapeUtil::MakeShape(F32, {});
-  const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
+const Shape r0f32 = ShapeUtil::MakeShape(F32, {});
+const Shape r1f32 = ShapeUtil::MakeShape(F32, {5});
 
-  HloComputation::Builder builder("PartiallyElementwiseWithReuse");
-  HloInstruction* x =
-      builder.AddInstruction(HloInstruction::CreateParameter(0, r1f32, "x"));
-  HloInstruction* y =
-      builder.AddInstruction(HloInstruction::CreateParameter(1, r0f32, "y"));
-  HloInstruction* min = builder.AddInstruction(
-      HloInstruction::CreateBinary(r1f32, HloOpcode::kMinimum, x, y));
-  HloInstruction* broadcast =
-      builder.AddInstruction(HloInstruction::CreateBroadcast(r1f32, y, {0}));
-  HloInstruction* sub = builder.AddInstruction(HloInstruction::CreateBinary(
-      r1f32, HloOpcode::kSubtract, min, broadcast));
+HloComputation::Builder builder("PartiallyElementwiseWithReuse");
+HloInstruction* x =
+builder.AddInstruction(HloInstruction::CreateParameter(0, r1f32, "x"));
+HloInstruction* y =
+builder.AddInstruction(HloInstruction::CreateParameter(1, r0f32, "y"));
+HloInstruction* min = builder.AddInstruction(
+	HloInstruction::CreateBinary(r1f32, HloOpcode::kMinimum, x, y));
+HloInstruction* broadcast =
+builder.AddInstruction(HloInstruction::CreateBroadcast(r1f32, y, {0}));
+HloInstruction* sub = builder.AddInstruction(HloInstruction::CreateBinary(
+			r1f32, HloOpcode::kSubtract, min, broadcast));
 
-  auto computation = builder.Build();
-  HloInstruction* fusion = computation->CreateFusionInstruction(
-      {sub, broadcast, min}, HloInstruction::FusionKind::kLoop);
-  EXPECT_FALSE(fusion->IsElementwise());
-  for (int64 operand_idx = 0; operand_idx < fusion->operand_count();
-       ++operand_idx) {
-    if (fusion->operand(operand_idx) == x) {
-      EXPECT_TRUE(fusion->IsElementwiseOnOperand(operand_idx));
-    } else {
-      EXPECT_FALSE(fusion->IsElementwiseOnOperand(operand_idx));
-    }
-  }
+auto computation = builder.Build();
+HloInstruction* fusion = computation->CreateFusionInstruction(
+	{	sub, broadcast, min}, HloInstruction::FusionKind::kLoop);
+EXPECT_FALSE(fusion->IsElementwise());
+for (int64 operand_idx = 0; operand_idx < fusion->operand_count();
+	++operand_idx) {
+if (fusion->operand(operand_idx) == x) {
+	EXPECT_TRUE(fusion->IsElementwiseOnOperand(operand_idx));
+} else {
+	EXPECT_FALSE(fusion->IsElementwiseOnOperand(operand_idx));
+}
+}
 }
 
 TEST_F(HloInstructionTest, CloneOfFusionPreservesShape) {
@@ -859,36 +871,37 @@ TEST_F(HloInstructionTest, CloneOfFusionPreservesShape) {
   //   dot
   //
   // Tests that shapes aren't mangled by Clone().
-  const Shape s1 = ShapeUtil::MakeShape(F32, {5, 10});
-  const Shape s2 = ShapeUtil::MakeShape(F32, {20, 10});
-  const Shape s2t = ShapeUtil::MakeShape(F32, {10, 20});
-  const Shape sout = ShapeUtil::MakeShape(F32, {5, 20});
+const Shape s1 = ShapeUtil::MakeShape(F32, {5, 10});
+const Shape s2 = ShapeUtil::MakeShape(F32, {20, 10});
+const Shape s2t = ShapeUtil::MakeShape(F32, {10, 20});
+const Shape sout = ShapeUtil::MakeShape(F32, {5, 20});
 
-  HloComputation::Builder builder("TransposeDot");
-  HloInstruction* x =
-      builder.AddInstruction(HloInstruction::CreateParameter(0, s1, "x"));
-  HloInstruction* y =
-      builder.AddInstruction(HloInstruction::CreateParameter(1, s2, "y"));
-  HloInstruction* reshape =
-      builder.AddInstruction(HloInstruction::CreateTranspose(s2t, y, {1, 0}));
-  HloInstruction* dot = builder.AddInstruction(
-      HloInstruction::CreateBinary(sout, HloOpcode::kDot, x, reshape));
+HloComputation::Builder builder("TransposeDot");
+HloInstruction* x =
+builder.AddInstruction(HloInstruction::CreateParameter(0, s1, "x"));
+HloInstruction* y =
+builder.AddInstruction(HloInstruction::CreateParameter(1, s2, "y"));
+HloInstruction* reshape =
+builder.AddInstruction(HloInstruction::CreateTranspose(s2t, y, {1, 0}));
+HloInstruction* dot = builder.AddInstruction(
+	HloInstruction::CreateBinary(sout, HloOpcode::kDot, x, reshape));
 
-  auto computation = builder.Build();
-  HloInstruction* fusion = computation->CreateFusionInstruction(
-      {dot, reshape}, HloInstruction::FusionKind::kTransposeDot);
+auto computation = builder.Build();
+HloInstruction* fusion = computation->CreateFusionInstruction(
+	{	dot, reshape}, HloInstruction::FusionKind::kTransposeDot);
 
-  auto fusion2 = fusion->Clone();
-  const HloInstruction* root = fusion->fused_expression_root();
-  const HloInstruction* root2 = fusion2->fused_expression_root();
-  EXPECT_TRUE(ShapeUtil::Equal(root->shape(), root2->shape()));
-  EXPECT_TRUE(
-      ShapeUtil::Equal(root->operand(0)->shape(), root2->operand(0)->shape()));
-  EXPECT_TRUE(
-      ShapeUtil::Equal(root->operand(1)->shape(), root2->operand(1)->shape()));
-  EXPECT_TRUE(ShapeUtil::Equal(root->operand(1)->operand(0)->shape(),
-                               root2->operand(1)->operand(0)->shape()));
+auto fusion2 = fusion->Clone();
+const HloInstruction* root = fusion->fused_expression_root();
+const HloInstruction* root2 = fusion2->fused_expression_root();
+EXPECT_TRUE(ShapeUtil::Equal(root->shape(), root2->shape()));
+EXPECT_TRUE(
+	ShapeUtil::Equal(root->operand(0)->shape(), root2->operand(0)->shape()));
+EXPECT_TRUE(
+	ShapeUtil::Equal(root->operand(1)->shape(), root2->operand(1)->shape()));
+EXPECT_TRUE(ShapeUtil::Equal(root->operand(1)->operand(0)->shape(),
+			root2->operand(1)->operand(0)->shape()));
 }
 
-}  // namespace
-}  // namespace xla
+}
+  // namespace
+} // namespace xla

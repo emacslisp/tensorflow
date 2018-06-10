@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_OPS_COMMON_SHAPE_FNS_H_
 #define THIRD_PARTY_TENSORFLOW_CORE_OPS_COMMON_SHAPE_FNS_H_
 
@@ -71,17 +71,15 @@ namespace tensorflow {
 // GetWindowedOutputSize separately for each dimension.
 //
 Status GetWindowedOutputSize(int64 input_size, int64 filter_size, int64 stride,
-                             Padding padding_type, int64* output_size,
-                             int64* padding_size);
+		Padding padding_type, int64* output_size, int64* padding_size);
 
 // Returns the same output dimensions as in GetWindowedOutputSize, but returns
 // verbose padding dimensions (before/after). Any excess padding
 // (caused by an odd padding size value) is added to the 'padding_after'
 // dimension.
 Status GetWindowedOutputSizeVerbose(int64 input_size, int64 filter_size,
-                                    int64 stride, Padding padding_type,
-                                    int64* output_size, int64* padding_before,
-                                    int64* padding_after);
+		int64 stride, Padding padding_type, int64* output_size,
+		int64* padding_before, int64* padding_after);
 
 // Given an input tensor, kernel, stride and padding type, populates the 3D size
 // of the output tensor and padding to be applied to the input tensor at the
@@ -89,67 +87,70 @@ Status GetWindowedOutputSizeVerbose(int64 input_size, int64 filter_size,
 // is padded with zeros, as well as for 3D avg/max pooling, where the input data
 // is padded with invalid values that are not considered for pooling.
 Status Get3dOutputSize(const std::array<int64, 3>& input,
-                       const std::array<int64, 3>& window,
-                       const std::array<int64, 3>& strides,
-                       Padding padding_type, std::array<int64, 3>* output,
-                       std::array<int64, 3>* padding);
+		const std::array<int64, 3>& window, const std::array<int64, 3>& strides,
+		Padding padding_type, std::array<int64, 3>* output,
+		std::array<int64, 3>* padding);
 
 namespace shape_inference {
 
 // Like GetWindowedOutputSize, but deals with DimensionHandles.
 Status GetWindowedOutputSizeFromDims(InferenceContext* c,
-                                     DimensionHandle input_size,
-                                     DimensionOrConstant filter_size,
-                                     int64 stride, Padding padding_type,
-                                     DimensionHandle* output_size);
+		DimensionHandle input_size, DimensionOrConstant filter_size,
+		int64 stride, Padding padding_type, DimensionHandle* output_size);
 
 // Transfers shape of input(0) to output(0).
 Status UnchangedShape(shape_inference::InferenceContext* c);
 
 // Transfers shape of input(0) to output(0), after asserting its rank is <rank>.
 inline Status UnchangedShapeWithRank(shape_inference::InferenceContext* c,
-                                     int32 rank) {
-  ShapeHandle out;
-  TF_RETURN_IF_ERROR(c->WithRank(c->input(0), rank, &out));
-  c->set_output(0, out);
-  return Status::OK();
+		int32 rank)
+{
+	ShapeHandle out;
+	TF_RETURN_IF_ERROR(c->WithRank(c->input(0), rank, &out));
+	c->set_output(0, out);
+	return Status::OK();
 }
 
 // Transfers shape of input(0) to output(0), after asserting its rank >= <rank>.
 inline Status UnchangedShapeWithRankAtLeast(
-    shape_inference::InferenceContext* c, int32 rank) {
-  ShapeHandle out;
-  TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), rank, &out));
-  c->set_output(0, out);
-  return Status::OK();
+		shape_inference::InferenceContext* c, int32 rank)
+{
+	ShapeHandle out;
+	TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(0), rank, &out));
+	c->set_output(0, out);
+	return Status::OK();
 }
 
 // Transfers shape of input(0) to output(0), after asserting its rank <= <rank>.
 inline Status UnchangedShapeWithRankAtMost(shape_inference::InferenceContext* c,
-                                           int32 rank) {
-  ShapeHandle out;
-  TF_RETURN_IF_ERROR(c->WithRankAtMost(c->input(0), rank, &out));
-  c->set_output(0, out);
-  return Status::OK();
+		int32 rank)
+{
+	ShapeHandle out;
+	TF_RETURN_IF_ERROR(c->WithRankAtMost(c->input(0), rank, &out));
+	c->set_output(0, out);
+	return Status::OK();
 }
 
 // Shape function for use with ops no outputs.
-inline Status NoOutputs(shape_inference::InferenceContext* c) {
-  return Status::OK();
+inline Status NoOutputs(shape_inference::InferenceContext* c)
+{
+	return Status::OK();
 }
 
 // Shape function for ops that output a single scalar value.
-inline Status ScalarShape(shape_inference::InferenceContext* c) {
-  c->set_output(0, c->Scalar());
-  return Status::OK();
+inline Status ScalarShape(shape_inference::InferenceContext* c)
+{
+	c->set_output(0, c->Scalar());
+	return Status::OK();
 }
 
 // Shape function for binary ops where both inputs and the output match.
-inline Status MergeBothInputsShapeFn(InferenceContext* c) {
-  ShapeHandle out;
-  TF_RETURN_IF_ERROR(c->Merge(c->input(0), c->input(1), &out));
-  c->set_output(0, out);
-  return Status::OK();
+inline Status MergeBothInputsShapeFn(InferenceContext* c)
+{
+	ShapeHandle out;
+	TF_RETURN_IF_ERROR(c->Merge(c->input(0), c->input(1), &out));
+	c->set_output(0, out);
+	return Status::OK();
 }
 
 // Shape function for MatMul-like operations.
@@ -190,7 +191,7 @@ Status ReductionShape(shape_inference::InferenceContext* c);
 // from inputs
 // [1,num_inputs_to_concat] of the op.  Input 0 is the concat_dim input.
 Status ConcatShape(shape_inference::InferenceContext* c,
-                   int num_inputs_to_concat);
+		int num_inputs_to_concat);
 
 // Shape function for concat operations.
 Status ConcatV2Shape(shape_inference::InferenceContext* c);
@@ -202,7 +203,7 @@ Status BroadcastBinaryOpShapeFn(InferenceContext* c);
 // Validates the 3 component tensors of a sparse tensor have the proper
 // shapes. This mimics SparseTensor.__init__ in python/framework/ops.py.
 Status ValidateSparseTensor(InferenceContext* c, ShapeHandle indices_shape,
-                            ShapeHandle values_shape, ShapeHandle shape_shape);
+		ShapeHandle values_shape, ShapeHandle shape_shape);
 
 }  // namespace shape_inference
 

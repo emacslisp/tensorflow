@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/math_ops.cc.
-
 #define EIGEN_USE_THREADS
 
 #include "tensorflow/core/kernels/cast_op.h"
@@ -49,130 +48,137 @@ typedef Eigen::GpuDevice GPUDevice;
   FN(arg0, std::complex<float>); \
   FN(arg0, std::complex<double>)
 
-class CastOpBase : public OpKernel {
- public:
-  explicit CastOpBase(OpKernelConstruction* ctx) : OpKernel(ctx) {
-    OP_REQUIRES_OK(ctx, ctx->GetAttr("SrcT", &src_dtype_));
-    OP_REQUIRES_OK(ctx, ctx->GetAttr("DstT", &dst_dtype_));
-  }
+class CastOpBase: public OpKernel {
+public:
+	explicit CastOpBase(OpKernelConstruction* ctx) :
+			OpKernel(ctx)
+	{
+		OP_REQUIRES_OK(ctx, ctx->GetAttr("SrcT", &src_dtype_));
+		OP_REQUIRES_OK(ctx, ctx->GetAttr("DstT", &dst_dtype_));
+	}
 
-  void Compute(OpKernelContext* ctx) override {
-    const Tensor& inp = ctx->input(0);
-    if (work_ == nullptr) {
-      ctx->set_output(0, inp);
-    } else {
-      Tensor* out = nullptr;
-      OP_REQUIRES_OK(ctx, ctx->allocate_output(0, inp.shape(), &out));
-      work_(ctx, inp, out);
-    }
-  }
+	void Compute(OpKernelContext* ctx) override
+	{
+		const Tensor& inp = ctx->input(0);
+		if (work_ == nullptr) {
+			ctx->set_output(0, inp);
+		} else {
+			Tensor* out = nullptr;
+			OP_REQUIRES_OK(ctx, ctx->allocate_output(0, inp.shape(), &out));
+			work_(ctx, inp, out);
+		}
+	}
 
- protected:
-  DataType src_dtype_;
-  DataType dst_dtype_;
-  std::function<void(OpKernelContext*, const Tensor&, Tensor*)> work_ = nullptr;
+protected:
+	DataType src_dtype_;
+	DataType dst_dtype_;
+	std::function<void(OpKernelContext*, const Tensor&, Tensor*)> work_ =
+			nullptr;
 
-  Status Unimplemented() {
-    return errors::Unimplemented("Cast ", DataTypeString(src_dtype_), " to ",
-                                 DataTypeString(dst_dtype_),
-                                 " is not supported");
-  }
+	Status Unimplemented()
+	{
+		return errors::Unimplemented("Cast ", DataTypeString(src_dtype_),
+				" to ", DataTypeString(dst_dtype_), " is not supported");
+	}
 
-  TF_DISALLOW_COPY_AND_ASSIGN(CastOpBase);
+	TF_DISALLOW_COPY_AND_ASSIGN (CastOpBase);
 };
 
-class CpuCastOp : public CastOpBase {
- public:
-  explicit CpuCastOp(OpKernelConstruction* ctx) : CastOpBase(ctx) {
-    OP_REQUIRES_OK(ctx, Prepare());
-  }
+class CpuCastOp: public CastOpBase {
+public:
+	explicit CpuCastOp(OpKernelConstruction* ctx) :
+			CastOpBase(ctx)
+	{
+		OP_REQUIRES_OK(ctx, Prepare());
+	}
 
- private:
-  Status Prepare() {
-    if (src_dtype_ == dst_dtype_) {
-      work_ = nullptr;  // Identity
-      return Status::OK();
-    }
-    if (src_dtype_ == DT_BOOL) {
-      work_ = GetCpuCastFromBool(dst_dtype_);
-    } else if (src_dtype_ == DT_UINT8) {
-      work_ = GetCpuCastFromUint8(dst_dtype_);
-    } else if (src_dtype_ == DT_INT8) {
-      work_ = GetCpuCastFromInt8(dst_dtype_);
-    } else if (src_dtype_ == DT_UINT16) {
-      work_ = GetCpuCastFromUint16(dst_dtype_);
-    } else if (src_dtype_ == DT_INT16) {
-      work_ = GetCpuCastFromInt16(dst_dtype_);
-    } else if (src_dtype_ == DT_INT32) {
-      work_ = GetCpuCastFromInt32(dst_dtype_);
-    } else if (src_dtype_ == DT_INT64) {
-      work_ = GetCpuCastFromInt64(dst_dtype_);
-    } else if (src_dtype_ == DT_HALF) {
-      work_ = GetCpuCastFromHalf(dst_dtype_);
-    } else if (src_dtype_ == DT_FLOAT) {
-      work_ = GetCpuCastFromFloat(dst_dtype_);
-    } else if (src_dtype_ == DT_DOUBLE) {
-      work_ = GetCpuCastFromDouble(dst_dtype_);
-    } else if (src_dtype_ == DT_COMPLEX64) {
-      work_ = GetCpuCastFromComplex64(dst_dtype_);
-    } else if (src_dtype_ == DT_COMPLEX128) {
-      work_ = GetCpuCastFromComplex128(dst_dtype_);
-    } else if (src_dtype_ == DT_BFLOAT16) {
-      work_ = GetCpuCastFromBfloat(dst_dtype_);
-    }
+private:
+	Status Prepare()
+	{
+		if (src_dtype_ == dst_dtype_) {
+			work_ = nullptr;  // Identity
+			return Status::OK();
+		}
+		if (src_dtype_ == DT_BOOL) {
+			work_ = GetCpuCastFromBool(dst_dtype_);
+		} else if (src_dtype_ == DT_UINT8) {
+			work_ = GetCpuCastFromUint8(dst_dtype_);
+		} else if (src_dtype_ == DT_INT8) {
+			work_ = GetCpuCastFromInt8(dst_dtype_);
+		} else if (src_dtype_ == DT_UINT16) {
+			work_ = GetCpuCastFromUint16(dst_dtype_);
+		} else if (src_dtype_ == DT_INT16) {
+			work_ = GetCpuCastFromInt16(dst_dtype_);
+		} else if (src_dtype_ == DT_INT32) {
+			work_ = GetCpuCastFromInt32(dst_dtype_);
+		} else if (src_dtype_ == DT_INT64) {
+			work_ = GetCpuCastFromInt64(dst_dtype_);
+		} else if (src_dtype_ == DT_HALF) {
+			work_ = GetCpuCastFromHalf(dst_dtype_);
+		} else if (src_dtype_ == DT_FLOAT) {
+			work_ = GetCpuCastFromFloat(dst_dtype_);
+		} else if (src_dtype_ == DT_DOUBLE) {
+			work_ = GetCpuCastFromDouble(dst_dtype_);
+		} else if (src_dtype_ == DT_COMPLEX64) {
+			work_ = GetCpuCastFromComplex64(dst_dtype_);
+		} else if (src_dtype_ == DT_COMPLEX128) {
+			work_ = GetCpuCastFromComplex128(dst_dtype_);
+		} else if (src_dtype_ == DT_BFLOAT16) {
+			work_ = GetCpuCastFromBfloat(dst_dtype_);
+		}
 
-    // TODO(sesse): If CPU casting to or from Eigen::half ever becomes a
-    // bottleneck, we could probably implement specialized support for
-    // vectorized versions (not the least based on F16C for Haswell
-    // or newer).
+		// TODO(sesse): If CPU casting to or from Eigen::half ever becomes a
+		// bottleneck, we could probably implement specialized support for
+		// vectorized versions (not the least based on F16C for Haswell
+		// or newer).
 
-    return work_ == nullptr ? Unimplemented() : Status::OK();
-  }
+		return work_ == nullptr ? Unimplemented() : Status::OK();
+	}
 };
 
 #if GOOGLE_CUDA
 class GpuCastOp : public CastOpBase {
- public:
-  explicit GpuCastOp(OpKernelConstruction* ctx) : CastOpBase(ctx) {
-    OP_REQUIRES_OK(ctx, Prepare());
-  }
+public:
+	explicit GpuCastOp(OpKernelConstruction* ctx) : CastOpBase(ctx) {
+		OP_REQUIRES_OK(ctx, Prepare());
+	}
 
- private:
-  Status Prepare() {
-    if (src_dtype_ == dst_dtype_) {
-      work_ = nullptr;  // Identity
-      return Status::OK();
-    }
-    if (src_dtype_ == DT_BOOL) {
-      work_ = GetGpuCastFromBool(dst_dtype_);
-    } else if (src_dtype_ == DT_UINT8) {
-      work_ = GetGpuCastFromUint8(dst_dtype_);
-    } else if (src_dtype_ == DT_INT8) {
-      work_ = GetGpuCastFromInt8(dst_dtype_);
-    } else if (src_dtype_ == DT_UINT16) {
-      work_ = GetGpuCastFromUint16(dst_dtype_);
-    } else if (src_dtype_ == DT_INT16) {
-      work_ = GetGpuCastFromInt16(dst_dtype_);
-    } else if (src_dtype_ == DT_INT32) {
-      work_ = GetGpuCastFromInt32(dst_dtype_);
-    } else if (src_dtype_ == DT_INT64) {
-      work_ = GetGpuCastFromInt64(dst_dtype_);
-    } else if (src_dtype_ == DT_HALF) {
-      work_ = GetGpuCastFromHalf(dst_dtype_);
-    } else if (src_dtype_ == DT_FLOAT) {
-      work_ = GetGpuCastFromFloat(dst_dtype_);
-    } else if (src_dtype_ == DT_DOUBLE) {
-      work_ = GetGpuCastFromDouble(dst_dtype_);
-    } else if (src_dtype_ == DT_COMPLEX64) {
-      work_ = GetGpuCastFromComplex64(dst_dtype_);
-    } else if (src_dtype_ == DT_COMPLEX128) {
-      work_ = GetGpuCastFromComplex128(dst_dtype_);
-    } else if (src_dtype_ == DT_BFLOAT16) {
-      work_ = GetGpuCastFromBfloat(dst_dtype_);
-    }
+private:
+	Status Prepare() {
+		if (src_dtype_ == dst_dtype_) {
+			work_ = nullptr;  // Identity
+			return Status::OK();
+		}
+		if (src_dtype_ == DT_BOOL) {
+			work_ = GetGpuCastFromBool(dst_dtype_);
+		} else if (src_dtype_ == DT_UINT8) {
+			work_ = GetGpuCastFromUint8(dst_dtype_);
+		} else if (src_dtype_ == DT_INT8) {
+			work_ = GetGpuCastFromInt8(dst_dtype_);
+		} else if (src_dtype_ == DT_UINT16) {
+			work_ = GetGpuCastFromUint16(dst_dtype_);
+		} else if (src_dtype_ == DT_INT16) {
+			work_ = GetGpuCastFromInt16(dst_dtype_);
+		} else if (src_dtype_ == DT_INT32) {
+			work_ = GetGpuCastFromInt32(dst_dtype_);
+		} else if (src_dtype_ == DT_INT64) {
+			work_ = GetGpuCastFromInt64(dst_dtype_);
+		} else if (src_dtype_ == DT_HALF) {
+			work_ = GetGpuCastFromHalf(dst_dtype_);
+		} else if (src_dtype_ == DT_FLOAT) {
+			work_ = GetGpuCastFromFloat(dst_dtype_);
+		} else if (src_dtype_ == DT_DOUBLE) {
+			work_ = GetGpuCastFromDouble(dst_dtype_);
+		} else if (src_dtype_ == DT_COMPLEX64) {
+			work_ = GetGpuCastFromComplex64(dst_dtype_);
+		} else if (src_dtype_ == DT_COMPLEX128) {
+			work_ = GetGpuCastFromComplex128(dst_dtype_);
+		} else if (src_dtype_ == DT_BFLOAT16) {
+			work_ = GetGpuCastFromBfloat(dst_dtype_);
+		}
 
-    return work_ == nullptr ? Unimplemented() : Status::OK();
-  }
+		return work_ == nullptr ? Unimplemented() : Status::OK();
+	}
 };
 #endif  // GOOGLE_CUDA
 
@@ -211,7 +217,8 @@ REGISTER_CAST_GPU(bfloat16, float);
 // HostCast differs from Cast in that its input and output are in host memory.
 REGISTER_KERNEL_BUILDER(Name("_HostCast").Device(DEVICE_CPU), CpuCastOp);
 REGISTER_KERNEL_BUILDER(
-    Name("_HostCast").Device(DEVICE_GPU).HostMemory("x").HostMemory("y"),
-    CpuCastOp);
+		Name("_HostCast").Device(DEVICE_GPU).HostMemory("x").HostMemory("y"),
+		CpuCastOp);
 
-}  // end namespace tensorflow
+}
+  // end namespace tensorflow

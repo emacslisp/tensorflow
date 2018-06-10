@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_CLIENT_PADDING_H_
 #define TENSORFLOW_COMPILER_XLA_CLIENT_PADDING_H_
@@ -27,14 +27,14 @@ namespace xla {
 // Describes the padding applied for a windowed operation like
 // convolution, where a window is placed inside a base area.
 enum class Padding {
-  // Make the output have the same dimensions as the base area. For
-  // example, for a 3x3 base area and a 2x2 window, the output will be
-  // 3x3, so that requires padding the 3x3 base area to 4x4.
-  kSame,
+	// Make the output have the same dimensions as the base area. For
+	// example, for a 3x3 base area and a 2x2 window, the output will be
+	// 3x3, so that requires padding the 3x3 base area to 4x4.
+	kSame,
 
-  // Use no padding. For example, for a 4x4 base area and a 2x2
-  // window, the output will be 3x3.
-  kValid,
+	// Use no padding. For example, for a 4x4 base area and a 2x2
+	// window, the output will be 3x3.
+	kValid,
 };
 
 // Returns the padding needed for the base area, given the base area dimensions,
@@ -49,9 +49,9 @@ enum class Padding {
 // window_dimensions, and strides must match, which is equal to the number
 // of elements in the result vector.
 std::vector<std::pair<int64, int64>> MakePadding(
-    tensorflow::gtl::ArraySlice<int64> input_dimensions,
-    tensorflow::gtl::ArraySlice<int64> window_dimensions,
-    tensorflow::gtl::ArraySlice<int64> strides, Padding padding);
+		tensorflow::gtl::ArraySlice<int64> input_dimensions,
+		tensorflow::gtl::ArraySlice<int64> window_dimensions,
+		tensorflow::gtl::ArraySlice<int64> strides, Padding padding);
 
 }  // namespace xla
 

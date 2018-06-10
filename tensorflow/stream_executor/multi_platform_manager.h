@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // This is a registration-oriented interface for multiple platforms. It will
 // replace the MachineManager singleton interface, as MachineManager does not
@@ -60,7 +60,6 @@ limitations under the License.
 //    //perftools/gputools/executor/cuda:cudnn_plugin
 //    //perftools/gputools/executor/cuda:cublas_plugin
 //    //perftools/gputools/executor/cuda:curand_plugin
-
 #ifndef TENSORFLOW_STREAM_EXECUTOR_MULTI_PLATFORM_MANAGER_H_
 #define TENSORFLOW_STREAM_EXECUTOR_MULTI_PLATFORM_MANAGER_H_
 
@@ -80,80 +79,84 @@ namespace gputools {
 
 // Manages multiple platforms that may be present on the current machine.
 class MultiPlatformManager {
- public:
-  // Registers a platform object, returns an error status if the platform is
-  // already registered. The associated listener, if not null, will be used to
-  // trace events for ALL executors for that platform.
-  // Takes ownership of listener.
-  static port::Status RegisterPlatform(std::unique_ptr<Platform> platform);
+public:
+	// Registers a platform object, returns an error status if the platform is
+	// already registered. The associated listener, if not null, will be used to
+	// trace events for ALL executors for that platform.
+	// Takes ownership of listener.
+	static port::Status RegisterPlatform(std::unique_ptr<Platform> platform);
 
-  // Retrieves the platform registered with the given platform name; e.g.
-  // "CUDA", "OpenCL", ...
-  //
-  // If the requested platform is not registered, an error status is returned.
-  // Ownership of the platform is NOT transferred to the caller --
-  // the MultiPlatformManager owns the platforms in a singleton-like fashion.
-  static port::StatusOr<Platform*> PlatformWithName(const string& target);
+	// Retrieves the platform registered with the given platform name; e.g.
+	// "CUDA", "OpenCL", ...
+	//
+	// If the requested platform is not registered, an error status is returned.
+	// Ownership of the platform is NOT transferred to the caller --
+	// the MultiPlatformManager owns the platforms in a singleton-like fashion.
+	static port::StatusOr<Platform*> PlatformWithName(const string& target);
 
-  // Retrieves the platform registered with the given platform ID, which
-  // is an opaque (but comparable) value.
-  //
-  // If the requested platform is not registered, an error status is returned.
-  // Ownership of the platform is NOT transferred to the caller --
-  // the MultiPlatformManager owns the platforms in a singleton-like fashion.
-  static port::StatusOr<Platform*> PlatformWithId(const Platform::Id& id);
+	// Retrieves the platform registered with the given platform ID, which
+	// is an opaque (but comparable) value.
+	//
+	// If the requested platform is not registered, an error status is returned.
+	// Ownership of the platform is NOT transferred to the caller --
+	// the MultiPlatformManager owns the platforms in a singleton-like fashion.
+	static port::StatusOr<Platform*> PlatformWithId(const Platform::Id& id);
 
-  // Clears the set of registered platforms, primarily used for testing.
-  static void ClearPlatformRegistry();
+	// Clears the set of registered platforms, primarily used for testing.
+	static void ClearPlatformRegistry();
 
-  // Although the MultiPlatformManager "owns" its platforms, it holds them as
-  // undecorated pointers to prevent races during program exit (between this
-  // object's data and the underlying platforms (e.g., CUDA, OpenCL).
-  // Because certain platforms have unpredictable deinitialization
-  // times/sequences, it is not possible to strucure a safe deinitialization
-  // sequence. Thus, we intentionally "leak" allocated platforms to defer
-  // cleanup to the OS. This should be acceptable, as these are one-time
-  // allocations per program invocation.
-  // The MultiPlatformManager should be considered the owner
-  // of any platforms registered with it, and leak checking should be disabled
-  // during allocation of such Platforms, to avoid spurious reporting at program
-  // exit.
-  using PlatformMap = std::map<string, Platform*>;
+	// Although the MultiPlatformManager "owns" its platforms, it holds them as
+	// undecorated pointers to prevent races during program exit (between this
+	// object's data and the underlying platforms (e.g., CUDA, OpenCL).
+	// Because certain platforms have unpredictable deinitialization
+	// times/sequences, it is not possible to strucure a safe deinitialization
+	// sequence. Thus, we intentionally "leak" allocated platforms to defer
+	// cleanup to the OS. This should be acceptable, as these are one-time
+	// allocations per program invocation.
+	// The MultiPlatformManager should be considered the owner
+	// of any platforms registered with it, and leak checking should be disabled
+	// during allocation of such Platforms, to avoid spurious reporting at program
+	// exit.
+	using PlatformMap = std::map<string, Platform*>;
 
-  // Provides access to the available set of platforms under a lock.
-  static port::Status WithPlatforms(
-      std::function<port::Status(PlatformMap*)> callback) {
-    mutex_lock lock(GetPlatformsMutex());
-    return callback(GetPlatformMap());
-  }
+	// Provides access to the available set of platforms under a lock.
+	static port::Status WithPlatforms(
+			std::function<port::Status(PlatformMap*)> callback)
+	{
+		mutex_lock lock(GetPlatformsMutex());
+		return callback(GetPlatformMap());
+	}
 
- private:
-  // mutex that guards the platform map.
-  static mutex& GetPlatformsMutex() {
-    static mutex* platforms_mutex = new mutex;
-    return *platforms_mutex;
-  }
+private:
+	// mutex that guards the platform map.
+	static mutex& GetPlatformsMutex()
+	{
+		static mutex* platforms_mutex = new mutex;
+		return *platforms_mutex;
+	}
 
-  // TODO(b/22689637): Clean up these two maps; make sure they coexist nicely.
-  // TODO(b/22689637): Move this (whatever the final/"official" map is) to
-  // plugin_regstry.h, along with the associated functionality.
-  // Platform-name-to-object mapping. These platforms are registered via module
-  // initializers, and linkage determines which platforms are available to a
-  // given target.
-  static PlatformMap* GetPlatformMap() {
-    static PlatformMap* instance = new PlatformMap;
-    return instance;
-  }
+	// TODO(b/22689637): Clean up these two maps; make sure they coexist nicely.
+	// TODO(b/22689637): Move this (whatever the final/"official" map is) to
+	// plugin_regstry.h, along with the associated functionality.
+	// Platform-name-to-object mapping. These platforms are registered via module
+	// initializers, and linkage determines which platforms are available to a
+	// given target.
+	static PlatformMap* GetPlatformMap()
+	{
+		static PlatformMap* instance = new PlatformMap;
+		return instance;
+	}
 
-  // Holds a Platform::Id-to-object mapping.
-  // Unlike platforms_ above, this map does not own its contents.
-  static std::map<Platform::Id, Platform*>* GetPlatformByIdMap() {
-    using PlatformIdMap = std::map<Platform::Id, Platform*>;
-    static PlatformIdMap* instance = new PlatformIdMap;
-    return instance;
-  }
+	// Holds a Platform::Id-to-object mapping.
+	// Unlike platforms_ above, this map does not own its contents.
+	static std::map<Platform::Id, Platform*>* GetPlatformByIdMap()
+	{
+		using PlatformIdMap = std::map<Platform::Id, Platform*>;
+		static PlatformIdMap* instance = new PlatformIdMap;
+		return instance;
+	}
 
-  SE_DISALLOW_COPY_AND_ASSIGN(MultiPlatformManager);
+	SE_DISALLOW_COPY_AND_ASSIGN (MultiPlatformManager);
 };
 
 }  // namespace gputools

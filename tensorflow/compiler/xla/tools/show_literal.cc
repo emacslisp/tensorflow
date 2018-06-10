@@ -1,23 +1,22 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // Usage: show_literal <path-to-serialized-literal-proto>
 //
 // Dumps out the Literal::ToString of a tensorflow::WriteBinaryProto format
 // Literal serialized on disk.
-
 #include <stdio.h>
 #include <string>
 
@@ -29,17 +28,19 @@ limitations under the License.
 #include "tensorflow/core/platform/init_main.h"
 #include "tensorflow/core/platform/logging.h"
 
-int main(int argc, char **argv) {
-  tensorflow::port::InitMain(argv[0], &argc, &argv);
+int main(int argc, char **argv)
+{
+	tensorflow::port::InitMain(argv[0], &argc, &argv);
 
-  if (argc < 2) {
-    LOG(QFATAL) << "Usage: " << argv[0]
-                << " <path-to-serialized-literal-proto>";
-  }
+	if (argc < 2) {
+		LOG(QFATAL) << "Usage: " << argv[0]
+				<< " <path-to-serialized-literal-proto>";
+	}
 
-  xla::Literal literal;
-  TF_CHECK_OK(tensorflow::ReadBinaryProto(tensorflow::Env::Default(), argv[1],
-                                          &literal));
-  LOG(INFO) << "literal: " << literal.ShortDebugString();
-  fprintf(stderr, "%s\n", xla::LiteralUtil::ToString(literal).c_str());
+	xla::Literal literal;
+	TF_CHECK_OK(
+			tensorflow::ReadBinaryProto(tensorflow::Env::Default(), argv[1],
+					&literal));
+	LOG(INFO) << "literal: " << literal.ShortDebugString();
+	fprintf(stderr, "%s\n", xla::LiteralUtil::ToString(literal).c_str());
 }

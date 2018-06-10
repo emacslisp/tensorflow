@@ -18,17 +18,17 @@
 namespace tensorflow {
 
 REGISTER_OP("WALSComputePartialLhsAndRhs")
-    .Input("factors: float32")
-    .Input("factor_weights: float32")
-    .Input("unobserved_weights: float32")
-    .Input("input_weights: float32")
-    .Input("input_indices: int64")
-    .Input("input_values: float32")
-    .Input("input_block_size: int64")
-    .Input("input_is_transpose: bool")
-    .Output("partial_lhs: float32")
-    .Output("partial_rhs: float32")
-    .Doc(R"(
+.Input("factors: float32")
+.Input("factor_weights: float32")
+.Input("unobserved_weights: float32")
+.Input("input_weights: float32")
+.Input("input_indices: int64")
+.Input("input_values: float32")
+.Input("input_block_size: int64")
+.Input("input_is_transpose: bool")
+.Output("partial_lhs: float32")
+.Output("partial_rhs: float32")
+.Doc(R"(
 Computes the partial left-hand side and right-hand side of WALS update.
 
 factors: Matrix of size m * k.
@@ -43,4 +43,5 @@ partial_lhs: 3-D tensor with size input_block_size x k x k.
 partial_rhs: Matrix with size input_block_size x k.
 )");
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

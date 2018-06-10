@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #if GOOGLE_CUDA
 
@@ -23,7 +23,7 @@ limitations under the License.
 
 namespace tensorflow {
 
-typedef Eigen::GpuDevice GPUDevice;
+	typedef Eigen::GpuDevice GPUDevice;
 
 #define DEFINE_REVERSE(T, DIM) \
   template struct functor::Reverse<GPUDevice, T, DIM>;
@@ -38,14 +38,14 @@ typedef Eigen::GpuDevice GPUDevice;
   DEFINE_REVERSE(T, 7) \
   DEFINE_REVERSE(T, 8)
 
-TF_CALL_uint8(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_int8(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_bool(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_half(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_float(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_double(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_complex64(DEFINE_REVERSE_ALL_DIMS);
-TF_CALL_complex128(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_uint8(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_int8(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_bool(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_half(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_float(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_double(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_complex64(DEFINE_REVERSE_ALL_DIMS);
+	TF_CALL_complex128(DEFINE_REVERSE_ALL_DIMS);
 #undef DEFINE_REVERSE
 #undef DEFINE_REVERSE_ALL_DIMS
 

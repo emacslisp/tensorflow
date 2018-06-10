@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_FRAMEWORK_REGISTER_TYPES_TRAITS_H_
 #define TENSORFLOW_FRAMEWORK_REGISTER_TYPES_TRAITS_H_
@@ -29,50 +29,49 @@ namespace tensorflow {
 // Remap POD types by size to equivalent proxy types. This works
 // since all we are doing is copying data around.
 struct UnusableProxyType;
-template <typename Device, int size>
+template<typename Device, int size>
 struct proxy_type_pod {
-  typedef UnusableProxyType type;
+	typedef UnusableProxyType type;
 };
-template <>
+template<>
 struct proxy_type_pod<CPUDevice, 16> {
-  typedef ::tensorflow::complex128 type;
+	typedef ::tensorflow::complex128 type;
 };
-template <>
+template<>
 struct proxy_type_pod<CPUDevice, 8> {
-  typedef ::tensorflow::int64 type;
+	typedef ::tensorflow::int64 type;
 };
-template <>
+template<>
 struct proxy_type_pod<CPUDevice, 4> {
-  typedef ::tensorflow::int32 type;
+	typedef ::tensorflow::int32 type;
 };
-template <>
+template<>
 struct proxy_type_pod<CPUDevice, 2> {
-  typedef ::tensorflow::int16 type;
+	typedef ::tensorflow::int16 type;
 };
-template <>
+template<>
 struct proxy_type_pod<CPUDevice, 1> {
-  typedef ::tensorflow::int8 type;
+	typedef ::tensorflow::int8 type;
 };
-template <>
+template<>
 struct proxy_type_pod<GPUDevice, 8> {
-  typedef double type;
+	typedef double type;
 };
-template <>
+template<>
 struct proxy_type_pod<GPUDevice, 4> {
-  typedef float type;
+	typedef float type;
 };
-template <>
+template<>
 struct proxy_type_pod<GPUDevice, 2> {
-  typedef Eigen::half type;
+	typedef Eigen::half type;
 };
 
 /// If POD we use proxy_type_pod, otherwise this maps to identiy.
-template <typename Device, typename T>
+template<typename Device, typename T>
 struct proxy_type {
-  typedef typename std::conditional<
-      std::is_arithmetic<T>::value,
-      typename proxy_type_pod<Device, sizeof(T)>::type, T>::type type;
-  static_assert(sizeof(type) == sizeof(T), "proxy_type_pod is not valid");
+	typedef typename std::conditional<std::is_arithmetic<T>::value,
+			typename proxy_type_pod<Device, sizeof(T)>::type, T>::type type;
+	static_assert(sizeof(type) == sizeof(T), "proxy_type_pod is not valid");
 };
 
 /// The active proxy types

@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_LIB_GTL_EDIT_DISTANCE_H_
 #define TENSORFLOW_LIB_GTL_EDIT_DISTANCE_H_
@@ -43,63 +43,73 @@ namespace gtl {
 //
 //  int64 dist = LevenshteinDistance("hi", "bye", std::equal_to<char>());
 //
-template <typename T, typename Cmp>
+template<typename T, typename Cmp>
 inline int64 LevenshteinDistance(const gtl::ArraySlice<T>& s,
-                                 const gtl::ArraySlice<T>& t, const Cmp& cmp) {
-  const int64 s_size = s.size();
-  const int64 t_size = t.size();
+		const gtl::ArraySlice<T>& t, const Cmp& cmp)
+{
+	const int64 s_size = s.size();
+	const int64 t_size = t.size();
 
-  if (t_size > s_size) return LevenshteinDistance(t, s, cmp);
+	if (t_size > s_size)
+		return LevenshteinDistance(t, s, cmp);
 
-  const T* s_data = s.data();
-  const T* t_data = t.data();
+	const T* s_data = s.data();
+	const T* t_data = t.data();
 
-  if (t_size == 0) return s_size;
-  if (s == t) return 0;
+	if (t_size == 0)
+		return s_size;
+	if (s == t)
+		return 0;
 
-  // Create work vector
-  gtl::InlinedVector<int64, 32> scratch_holder(t_size);
+	// Create work vector
+	gtl::InlinedVector<int64, 32> scratch_holder(t_size);
 
-  int64* scratch = scratch_holder.data();
+	int64* scratch = scratch_holder.data();
 
-  // Special case for i = 0: Distance between empty string and string
-  // of length j is just j.
-  for (size_t j = 1; j < t_size; ++j) scratch[j - 1] = j;
+	// Special case for i = 0: Distance between empty string and string
+	// of length j is just j.
+	for (size_t j = 1; j < t_size; ++j)
+		scratch[j - 1] = j;
 
-  for (size_t i = 1; i <= s_size; ++i) {
-    // Invariant: scratch[j - 1] equals cost(i - 1, j).
-    int substitution_base_cost = i - 1;
-    int insertion_cost = i + 1;
-    for (size_t j = 1; j <= t_size; ++j) {
-      // Invariants:
-      //  scratch[k - 1] = cost(i, k)  for 0 < k < j.
-      //  scratch[k - 1] = cost(i - 1, k)  for j <= k <= t_size.
-      //  substitution_base_cost = cost(i - 1, j - 1)
-      //  insertion_cost = cost(i, j - 1)
-      const int replacement_cost = cmp(s_data[i - 1], t_data[j - 1]) ? 0 : 1;
-      const int substitution_cost = substitution_base_cost + replacement_cost;
-      const int deletion_cost = scratch[j - 1] + 1;
+	for (size_t i = 1; i <= s_size; ++i) {
+		// Invariant: scratch[j - 1] equals cost(i - 1, j).
+		int substitution_base_cost = i - 1;
+		int insertion_cost = i + 1;
+		for (size_t j = 1; j <= t_size; ++j) {
+			// Invariants:
+			//  scratch[k - 1] = cost(i, k)  for 0 < k < j.
+			//  scratch[k - 1] = cost(i - 1, k)  for j <= k <= t_size.
+			//  substitution_base_cost = cost(i - 1, j - 1)
+			//  insertion_cost = cost(i, j - 1)
+			const int replacement_cost =
+					cmp(s_data[i - 1], t_data[j - 1]) ? 0 : 1;
+			const int substitution_cost = substitution_base_cost
+					+ replacement_cost;
+			const int deletion_cost = scratch[j - 1] + 1;
 
-      // Select the cheapest edit.
-      const int cheapest =  // = cost(i, j)
-          std::min(deletion_cost, std::min(insertion_cost, substitution_cost));
+			// Select the cheapest edit.
+			const int cheapest =  // = cost(i, j)
+					std::min(deletion_cost,
+							std::min(insertion_cost, substitution_cost));
 
-      // Restore invariant for the next iteration of the loop.
-      substitution_base_cost = scratch[j - 1];  // = cost(i - 1, j)
-      scratch[j - 1] = cheapest;                // = cost(i, j)
-      insertion_cost = cheapest + 1;            // = cost(i, j) + 1
-    }
-  }
-  return scratch[t_size - 1];
+			// Restore invariant for the next iteration of the loop.
+			substitution_base_cost = scratch[j - 1];  // = cost(i - 1, j)
+			scratch[j - 1] = cheapest;                // = cost(i, j)
+			insertion_cost = cheapest + 1;            // = cost(i, j) + 1
+		}
+	}
+	return scratch[t_size - 1];
 }
 
-template <typename Container1, typename Container2, typename Cmp>
+template<typename Container1, typename Container2, typename Cmp>
 inline int64 LevenshteinDistance(const Container1& s, const Container2& t,
-                                 const Cmp& cmp) {
-  return LevenshteinDistance(
-      gtl::ArraySlice<typename Container1::value_type>(s.data(), s.size()),
-      gtl::ArraySlice<typename Container1::value_type>(t.data(), t.size()),
-      cmp);
+		const Cmp& cmp)
+{
+	return LevenshteinDistance(
+			gtl::ArraySlice<typename Container1::value_type>(s.data(),
+					s.size()),
+			gtl::ArraySlice<typename Container1::value_type>(t.data(),
+					t.size()), cmp);
 }
 
 }  // namespace gtl

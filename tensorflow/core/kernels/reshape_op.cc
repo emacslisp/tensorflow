@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/array_ops.cc.
 #include "tensorflow/core/kernels/reshape_op.h"
@@ -19,10 +19,10 @@ limitations under the License.
 namespace tensorflow {
 
 REGISTER_KERNEL_BUILDER(Name("Reshape")
-                            .Device(DEVICE_CPU)
-                            .HostMemory("shape")
-                            .TypeConstraint<int32>("Tshape"),
-                        ReshapeOp);
+		.Device(DEVICE_CPU)
+		.HostMemory("shape")
+		.TypeConstraint<int32>("Tshape"),
+		ReshapeOp);
 
 #define REGISTER_GPU_KERNEL(type)                               \
   REGISTER_KERNEL_BUILDER(Name("Reshape")                       \
@@ -31,7 +31,7 @@ REGISTER_KERNEL_BUILDER(Name("Reshape")
                               .TypeConstraint<type>("T")        \
                               .TypeConstraint<int32>("Tshape"), \
                           ReshapeOp);
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
 #undef REGISTER_GPU_KERNEL
 
 #ifdef TENSORFLOW_USE_SYCL
@@ -46,13 +46,13 @@ TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_SYCL_KERNEL);
 #undef REGISTER_SYCL_KERNEL
 
 REGISTER_KERNEL_BUILDER(Name("Reshape")
-                            .Device(DEVICE_SYCL)
-                            .HostMemory("tensor")
-                            .HostMemory("shape")
-                            .HostMemory("output")
-                            .TypeConstraint<int32>("T")
-                            .TypeConstraint<int32>("Tshape"),
-                        ReshapeOp);
+		.Device(DEVICE_SYCL)
+		.HostMemory("tensor")
+		.HostMemory("shape")
+		.HostMemory("output")
+		.TypeConstraint<int32>("T")
+		.TypeConstraint<int32>("Tshape"),
+		ReshapeOp);
 #endif  // TENSORFLOW_USE_SYCL
 
 #if GOOGLE_CUDA
@@ -60,13 +60,14 @@ REGISTER_KERNEL_BUILDER(Name("Reshape")
 // TODO(b/25387198): Also enable int32 in device memory. This kernel
 // registration requires all int32 inputs and outputs to be in host memory.
 REGISTER_KERNEL_BUILDER(Name("Reshape")
-                            .Device(DEVICE_GPU)
-                            .HostMemory("tensor")
-                            .HostMemory("shape")
-                            .HostMemory("output")
-                            .TypeConstraint<int32>("T")
-                            .TypeConstraint<int32>("Tshape"),
-                        ReshapeOp);
+		.Device(DEVICE_GPU)
+		.HostMemory("tensor")
+		.HostMemory("shape")
+		.HostMemory("output")
+		.TypeConstraint<int32>("T")
+		.TypeConstraint<int32>("Tshape"),
+		ReshapeOp);
 #endif
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

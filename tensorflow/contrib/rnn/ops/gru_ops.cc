@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
@@ -21,31 +21,31 @@ using tensorflow::shape_inference::InferenceContext;
 using tensorflow::shape_inference::ShapeHandle;
 
 REGISTER_OP("GRUBlockCell")
-    .Attr("T: {float}")
-    .Input("x: T")
-    .Input("h_prev: T")
-    .Input("w_ru: T")
-    .Input("w_c: T")
-    .Input("b_ru: T")
-    .Input("b_c: T")
-    .Output("r: T")
-    .Output("u: T")
-    .Output("c: T")
-    .Output("h: T")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle x, h_prev;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &x));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &h_prev));
+.Attr("T: {float}")
+.Input("x: T")
+.Input("h_prev: T")
+.Input("w_ru: T")
+.Input("w_c: T")
+.Input("b_ru: T")
+.Input("b_c: T")
+.Output("r: T")
+.Output("u: T")
+.Output("c: T")
+.Output("h: T")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle x, h_prev;
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &x));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &h_prev));
 
-      DimensionHandle batch_size = c->Dim(x, 0);
-      DimensionHandle cell_size = c->Dim(h_prev, 1);
-      ShapeHandle output = c->Matrix(batch_size, cell_size);
-      for (int i = 0; i < 4; ++i) {
-        c->set_output(i, output);
-      }
-      return tensorflow::Status::OK();
-    })
-    .Doc(R"doc(
+			DimensionHandle batch_size = c->Dim(x, 0);
+			DimensionHandle cell_size = c->Dim(h_prev, 1);
+			ShapeHandle output = c->Matrix(batch_size, cell_size);
+			for (int i = 0; i < 4; ++i) {
+				c->set_output(i, output);
+			}
+			return tensorflow::Status::OK();
+		})
+.Doc(R"doc(
 Computes the GRU cell forward propagation for 1 time step.
 
 Args
@@ -95,39 +95,39 @@ h = (1-u) \circ c + u \circ h_prev
 )doc");
 
 REGISTER_OP("GRUBlockCellGrad")
-    .Attr("T: {float}")
-    .Input("x: T")
-    .Input("h_prev: T")
-    .Input("w_ru: T")
-    .Input("w_c: T")
-    .Input("b_ru: T")
-    .Input("b_c: T")
-    .Input("r: T")
-    .Input("u: T")
-    .Input("c: T")
-    .Input("d_h: T")
-    .Output("d_x: T")
-    .Output("d_h_prev: T")
-    .Output("d_c_bar: T")
-    .Output("d_r_bar_u_bar: T")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle x, h_prev, w_ru;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &x));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &h_prev));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &w_ru));
+.Attr("T: {float}")
+.Input("x: T")
+.Input("h_prev: T")
+.Input("w_ru: T")
+.Input("w_c: T")
+.Input("b_ru: T")
+.Input("b_c: T")
+.Input("r: T")
+.Input("u: T")
+.Input("c: T")
+.Input("d_h: T")
+.Output("d_x: T")
+.Output("d_h_prev: T")
+.Output("d_c_bar: T")
+.Output("d_r_bar_u_bar: T")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle x, h_prev, w_ru;
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 2, &x));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &h_prev));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 2, &w_ru));
 
-      DimensionHandle batch_size = c->Dim(x, 0);
-      DimensionHandle cell_size = c->Dim(h_prev, 1);
-      DimensionHandle twice_cell_size = c->Dim(w_ru, 1);
-      ShapeHandle batch_cell_shape = c->Matrix(batch_size, cell_size);
+			DimensionHandle batch_size = c->Dim(x, 0);
+			DimensionHandle cell_size = c->Dim(h_prev, 1);
+			DimensionHandle twice_cell_size = c->Dim(w_ru, 1);
+			ShapeHandle batch_cell_shape = c->Matrix(batch_size, cell_size);
 
-      c->set_output(0, x);
-      c->set_output(1, batch_cell_shape);
-      c->set_output(2, batch_cell_shape);
-      c->set_output(3, c->Matrix(batch_size, twice_cell_size));
-      return tensorflow::Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, x);
+			c->set_output(1, batch_cell_shape);
+			c->set_output(2, batch_cell_shape);
+			c->set_output(3, c->Matrix(batch_size, twice_cell_size));
+			return tensorflow::Status::OK();
+		})
+.Doc(R"doc(
 Computes the GRU cell back-propagation for 1 time step.
 
 Args

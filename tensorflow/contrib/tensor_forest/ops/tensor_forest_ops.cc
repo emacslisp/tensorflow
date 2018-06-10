@@ -23,21 +23,21 @@ using shape_inference::InferenceContext;
 using shape_inference::ShapeHandle;
 
 REGISTER_OP("BestSplits")
-    .Attr("regression: bool = false")
-    .Input("finished_nodes: int32")
-    .Input("node_to_accumulator: int32")
-    .Input("split_sums: float")
-    .Input("split_squares: float")
-    .Input("accumulator_sums: float")
-    .Input("accumulator_sqaures: float")
-    .Output("split_indices: int32")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle finished_nodes;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 1, &finished_nodes));
-      c->set_output(0, c->Vector(c->Dim(finished_nodes, 0)));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Attr("regression: bool = false")
+.Input("finished_nodes: int32")
+.Input("node_to_accumulator: int32")
+.Input("split_sums: float")
+.Input("split_squares: float")
+.Input("accumulator_sums: float")
+.Input("accumulator_sqaures: float")
+.Output("split_indices: int32")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle finished_nodes;
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 1, &finished_nodes));
+			c->set_output(0, c->Vector(c->Dim(finished_nodes, 0)));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Returns the index of the best split for each finished node.
 
   For classification, the best split is the split with the lowest weighted
@@ -70,67 +70,67 @@ REGISTER_OP("BestSplits")
 )doc");
 
 REGISTER_OP("CountExtremelyRandomStats")
-    .Attr("input_spec: string")
-    .Attr("num_classes: int")
-    .Attr("regression: bool = false")
-    .Input("input_data: float")
-    .Input("sparse_input_indices: int64")
-    .Input("sparse_input_values: float")
-    .Input("sparse_input_shape: int64")
-    .Input("input_labels: float")
-    .Input("input_weights: float")
-    .Input("tree: int32")
-    .Input("tree_thresholds: float")
-    .Input("node_to_accumulator: int32")
-    .Input("candidate_split_features: int32")
-    .Input("candidate_split_thresholds: float")
-    .Input("birth_epochs: int32")
-    .Input("current_epoch: int32")
-    .Output("pcw_node_sums_delta: float")
-    .Output("pcw_node_squares_delta: float")
-    .Output("pcw_splits_indices: int32")
-    .Output("pcw_candidate_splits_sums_delta: float")
-    .Output("pcw_candidate_splits_squares_delta: float")
-    .Output("pcw_totals_indices: int32")
-    .Output("pcw_totals_sums_delta: float")
-    .Output("pcw_totals_squares_delta: float")
-    .Output("leaves: int32")
-    .SetShapeFn([](InferenceContext* c) {
-      int64 num_classes;
-      TF_RETURN_IF_ERROR(c->GetAttr("num_classes", &num_classes));
-      bool regression;
-      TF_RETURN_IF_ERROR(c->GetAttr("regression", &regression));
+.Attr("input_spec: string")
+.Attr("num_classes: int")
+.Attr("regression: bool = false")
+.Input("input_data: float")
+.Input("sparse_input_indices: int64")
+.Input("sparse_input_values: float")
+.Input("sparse_input_shape: int64")
+.Input("input_labels: float")
+.Input("input_weights: float")
+.Input("tree: int32")
+.Input("tree_thresholds: float")
+.Input("node_to_accumulator: int32")
+.Input("candidate_split_features: int32")
+.Input("candidate_split_thresholds: float")
+.Input("birth_epochs: int32")
+.Input("current_epoch: int32")
+.Output("pcw_node_sums_delta: float")
+.Output("pcw_node_squares_delta: float")
+.Output("pcw_splits_indices: int32")
+.Output("pcw_candidate_splits_sums_delta: float")
+.Output("pcw_candidate_splits_squares_delta: float")
+.Output("pcw_totals_indices: int32")
+.Output("pcw_totals_sums_delta: float")
+.Output("pcw_totals_squares_delta: float")
+.Output("leaves: int32")
+.SetShapeFn([](InferenceContext* c) {
+			int64 num_classes;
+			TF_RETURN_IF_ERROR(c->GetAttr("num_classes", &num_classes));
+			bool regression;
+			TF_RETURN_IF_ERROR(c->GetAttr("regression", &regression));
 
-      DimensionHandle num_points = c->Dim(c->input(0), 0);
-      if (c->RankKnown(c->input(3)) && c->Rank(c->input(3)) > 0) {
-        num_points = c->UnknownDim();
-      }
-      DimensionHandle num_nodes = c->Dim(c->input(6), 0);
+			DimensionHandle num_points = c->Dim(c->input(0), 0);
+			if (c->RankKnown(c->input(3)) && c->Rank(c->input(3)) > 0) {
+				num_points = c->UnknownDim();
+			}
+			DimensionHandle num_nodes = c->Dim(c->input(6), 0);
 
-      // Node sums
-      c->set_output(0, c->Matrix(num_nodes, num_classes));
-      // Node squares
-      c->set_output(1, c->Matrix(num_nodes, num_classes));
+			// Node sums
+			c->set_output(0, c->Matrix(num_nodes, num_classes));
+			// Node squares
+			c->set_output(1, c->Matrix(num_nodes, num_classes));
 
-      c->set_output(2, c->Matrix(c->UnknownDim(), regression ? 2 : 3));
+			c->set_output(2, c->Matrix(c->UnknownDim(), regression ? 2 : 3));
 
-      c->set_output(3,
-                    regression ? c->Matrix(c->UnknownDim(), num_classes)
-                               : c->Vector(c->UnknownDim()));
-      c->set_output(4,
-                    regression ? c->Matrix(c->UnknownDim(), num_classes)
-                               : c->Vector(0LL));
-      c->set_output(5, c->Matrix(c->UnknownDim(), regression ? 1 : 2));
-      c->set_output(6,
-                    regression ? c->Matrix(c->UnknownDim(), num_classes)
-                               : c->Vector(c->UnknownDim()));
-      c->set_output(7,
-                    regression ? c->Matrix(c->UnknownDim(), num_classes)
-                               : c->Vector(0LL));
-      c->set_output(8, c->Vector(num_points));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(3,
+					regression ? c->Matrix(c->UnknownDim(), num_classes)
+					: c->Vector(c->UnknownDim()));
+			c->set_output(4,
+					regression ? c->Matrix(c->UnknownDim(), num_classes)
+					: c->Vector(0LL));
+			c->set_output(5, c->Matrix(c->UnknownDim(), regression ? 1 : 2));
+			c->set_output(6,
+					regression ? c->Matrix(c->UnknownDim(), num_classes)
+					: c->Vector(c->UnknownDim()));
+			c->set_output(7,
+					regression ? c->Matrix(c->UnknownDim(), num_classes)
+					: c->Vector(0LL));
+			c->set_output(8, c->Vector(num_points));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Calculates incremental statistics for a batch of training data.
 
 Each training example in `input_data` is sent through the decision tree
@@ -224,31 +224,31 @@ leaves: `leaves[i]` is the leaf that input i ended up in.
 )doc");
 
 REGISTER_OP("FinishedNodes")
-    .Attr("regression: bool = false")
-    .Attr("num_split_after_samples: int")
-    .Attr("min_split_samples: int")
-    .Attr("dominate_fraction: float = 0.99")
-    .Attr(
-        "dominate_method:"
-        " {'none', 'hoeffding', 'bootstrap', 'chebyshev'} = 'bootstrap'")
-    .Attr("random_seed: int = 0")
-    .Attr("check_dominates_every_samples: int = 75")
-    .Input("leaves: int32")
-    .Input("node_to_accumulator: int32")
-    .Input("split_sums: float")
-    .Input("split_squares: float")
-    .Input("accumulator_sums: float")
-    .Input("accumulator_squares: float")
-    .Input("birth_epochs: int32")
-    .Input("current_epoch: int32")
-    .Output("finished: int32")
-    .Output("stale: int32")
-    .SetShapeFn([](InferenceContext* c) {
-      c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Attr("regression: bool = false")
+.Attr("num_split_after_samples: int")
+.Attr("min_split_samples: int")
+.Attr("dominate_fraction: float = 0.99")
+.Attr(
+		"dominate_method:"
+		" {'none', 'hoeffding', 'bootstrap', 'chebyshev'} = 'bootstrap'")
+.Attr("random_seed: int = 0")
+.Attr("check_dominates_every_samples: int = 75")
+.Input("leaves: int32")
+.Input("node_to_accumulator: int32")
+.Input("split_sums: float")
+.Input("split_squares: float")
+.Input("accumulator_sums: float")
+.Input("accumulator_squares: float")
+.Input("birth_epochs: int32")
+.Input("current_epoch: int32")
+.Output("finished: int32")
+.Output("stale: int32")
+.SetShapeFn([](InferenceContext* c) {
+			c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Determines which of the given leaf nodes are done accumulating.
 
 The `regression` attribute should be set to true for regression problems, and
@@ -297,24 +297,24 @@ stale:= A 1-d int32 tensor containing the fertile nodes that were created two
 )doc");
 
 REGISTER_OP("GrowTree")
-    .Input("end_of_tree: int32")
-    .Input("node_to_accumulator: int32")
-    .Input("finished_nodes: int32")
-    .Input("best_splits: int32")
-    .Input("candidate_split_features: int32")
-    .Input("candidate_split_thresholds: float")
-    .Output("nodes_to_update: int32")
-    .Output("tree_updates: int32")
-    .Output("threshold_updates: float")
-    .Output("new_end_of_tree: int32")
-    .SetShapeFn([](InferenceContext* c) {
-      c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(1, c->Matrix(InferenceContext::kUnknownDim, 2));
-      c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(3, c->Vector(1));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Input("end_of_tree: int32")
+.Input("node_to_accumulator: int32")
+.Input("finished_nodes: int32")
+.Input("best_splits: int32")
+.Input("candidate_split_features: int32")
+.Input("candidate_split_thresholds: float")
+.Output("nodes_to_update: int32")
+.Output("tree_updates: int32")
+.Output("threshold_updates: float")
+.Output("new_end_of_tree: int32")
+.SetShapeFn([](InferenceContext* c) {
+			c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(1, c->Matrix(InferenceContext::kUnknownDim, 2));
+			c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(3, c->Vector(1));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Output the tree changes needed to resolve fertile nodes.
 
   Previous Ops have already decided which fertile nodes want to stop being
@@ -348,32 +348,32 @@ REGISTER_OP("GrowTree")
 )doc");
 
 REGISTER_OP("SampleInputs")
-    .Attr("input_spec: string")
-    .Attr("split_initializations_per_input: int")
-    .Attr("split_sampling_random_seed: int")
-    .Input("input_data: float")
-    .Input("sparse_input_indices: int64")
-    .Input("sparse_input_values: float")
-    .Input("sparse_input_shape: int64")
-    .Input("input_weights: float")
-    .Input("node_to_accumulator: int32")
-    .Input("leaves: int32")
-    .Input("candidate_split_features: int32")
-    .Input("candidate_split_thresholds: float")
-    .Output("accumulators_to_update: int32")
-    .Output("new_split_feature_rows: int32")
-    .Output("new_split_threshold_rows: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle candidate_split_features;
-      TF_RETURN_IF_ERROR(
-          c->WithRank(c->input(7), 2, &candidate_split_features));
-      DimensionHandle split_dim = c->Dim(candidate_split_features, 1);
-      c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(1, c->Matrix(InferenceContext::kUnknownDim, split_dim));
-      c->set_output(2, c->Matrix(InferenceContext::kUnknownDim, split_dim));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Attr("input_spec: string")
+.Attr("split_initializations_per_input: int")
+.Attr("split_sampling_random_seed: int")
+.Input("input_data: float")
+.Input("sparse_input_indices: int64")
+.Input("sparse_input_values: float")
+.Input("sparse_input_shape: int64")
+.Input("input_weights: float")
+.Input("node_to_accumulator: int32")
+.Input("leaves: int32")
+.Input("candidate_split_features: int32")
+.Input("candidate_split_thresholds: float")
+.Output("accumulators_to_update: int32")
+.Output("new_split_feature_rows: int32")
+.Output("new_split_threshold_rows: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle candidate_split_features;
+			TF_RETURN_IF_ERROR(
+					c->WithRank(c->input(7), 2, &candidate_split_features));
+			DimensionHandle split_dim = c->Dim(candidate_split_features, 1);
+			c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(1, c->Matrix(InferenceContext::kUnknownDim, split_dim));
+			c->set_output(2, c->Matrix(InferenceContext::kUnknownDim, split_dim));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Initializes candidate splits for newly fertile nodes.
 
 In an extremely random forest, we don't consider all possible threshold
@@ -426,11 +426,11 @@ new_split_threshold_rows:  The new values for the candidate_split_thresholds
 )doc");
 
 REGISTER_OP("ScatterAddNdim")
-    .Input("input: Ref(float)")
-    .Input("indices: int32")
-    .Input("deltas: float")
-    .SetShapeFn([](InferenceContext* c) { return Status::OK(); })
-    .Doc(R"doc(
+.Input("input: Ref(float)")
+.Input("indices: int32")
+.Input("deltas: float")
+.SetShapeFn([](InferenceContext* c) {return Status::OK();})
+.Doc(R"doc(
   Add elements in deltas to mutable input according to indices.
 
   input: A N-dimensional float tensor to mutate.
@@ -445,10 +445,10 @@ REGISTER_OP("ScatterAddNdim")
 )doc");
 
 REGISTER_OP("ReinterpretStringToFloat")
-    .Input("input_data: string")
-    .Output("output_data: float")
-    .SetShapeFn(shape_inference::UnchangedShape)
-    .Doc(R"doc(
+.Input("input_data: string")
+.Output("output_data: float")
+.SetShapeFn(shape_inference::UnchangedShape)
+.Doc(R"doc(
    Converts byte arrays represented by strings to 32-bit
    floating point numbers. The output numbers themselves are meaningless, and
    should only be used in == comparisons.
@@ -461,20 +461,20 @@ REGISTER_OP("ReinterpretStringToFloat")
 )doc");
 
 REGISTER_OP("TopNInsert")
-    .Input("ids: int64")
-    .Input("scores: float32")
-    .Input("new_ids: int64")
-    .Input("new_scores: float32")
-    .Output("shortlist_ids: int64")
-    .Output("update_ids: int64")
-    .Output("update_scores: float32")
-    .SetShapeFn([](InferenceContext* c) {
-      c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Input("ids: int64")
+.Input("scores: float32")
+.Input("new_ids: int64")
+.Input("new_scores: float32")
+.Output("shortlist_ids: int64")
+.Output("update_ids: int64")
+.Output("update_scores: float32")
+.SetShapeFn([](InferenceContext* c) {
+			c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Outputs update Tensors for adding new_ids and new_scores to the shortlist.
 
   ids:= A 1-D int64 tensor containing the ids on the shortlist (except for
@@ -489,16 +489,16 @@ REGISTER_OP("TopNInsert")
 )doc");
 
 REGISTER_OP("TopNRemove")
-    .Input("ids: int64")
-    .Input("remove_ids: int64")
-    .Output("shortlist_ids: int64")
-    .Output("new_length: int64")
-    .SetShapeFn([](InferenceContext* c) {
-      c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Input("ids: int64")
+.Input("remove_ids: int64")
+.Output("shortlist_ids: int64")
+.Output("new_length: int64")
+.SetShapeFn([](InferenceContext* c) {
+			c->set_output(0, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(1, c->Vector(InferenceContext::kUnknownDim));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Remove ids from a shortlist.
 
   ids:= A 1-D int64 tensor containing the ids on the shortlist (except for
@@ -511,33 +511,33 @@ REGISTER_OP("TopNRemove")
 )doc");
 
 REGISTER_OP("TreePredictions")
-    .Attr("input_spec: string")
-    .Attr("valid_leaf_threshold: float")
-    .Input("input_data: float")
-    .Input("sparse_input_indices: int64")
-    .Input("sparse_input_values: float")
-    .Input("sparse_input_shape: int64")
-    .Input("tree: int32")
-    .Input("tree_thresholds: float")
-    .Input("node_per_class_weights: float")
+.Attr("input_spec: string")
+.Attr("valid_leaf_threshold: float")
+.Input("input_data: float")
+.Input("sparse_input_indices: int64")
+.Input("sparse_input_values: float")
+.Input("sparse_input_shape: int64")
+.Input("tree: int32")
+.Input("tree_thresholds: float")
+.Input("node_per_class_weights: float")
 
-    .Output("predictions: float")
-    .SetShapeFn([](InferenceContext* c) {
-      // The output of TreePredictions is
-      // [node_pcw(evaluate_tree(x), c) for c in classes for x in input_data].
-      DimensionHandle num_classes = c->Dim(c->input(6), 1);
-      DimensionHandle num_points = c->UnknownDim();
+.Output("predictions: float")
+.SetShapeFn([](InferenceContext* c) {
+			// The output of TreePredictions is
+			// [node_pcw(evaluate_tree(x), c) for c in classes for x in input_data].
+			DimensionHandle num_classes = c->Dim(c->input(6), 1);
+			DimensionHandle num_points = c->UnknownDim();
 
-      if (c->RankKnown(c->input(0)) && c->Rank(c->input(0)) > 0) {
-        num_points = c->Dim(c->input(0), 0);
-      }
+			if (c->RankKnown(c->input(0)) && c->Rank(c->input(0)) > 0) {
+				num_points = c->Dim(c->input(0), 0);
+			}
 
-      TF_RETURN_IF_ERROR(c->Subtract(num_classes, 1, &num_classes));
+			TF_RETURN_IF_ERROR(c->Subtract(num_classes, 1, &num_classes));
 
-      c->set_output(0, c->Matrix(num_points, num_classes));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, c->Matrix(num_points, num_classes));
+			return Status::OK();
+		})
+.Doc(R"doc(
   Returns the per-class probabilities for each input.
 
   input_spec: A serialized TensorForestDataSpec proto.
@@ -560,27 +560,27 @@ REGISTER_OP("TreePredictions")
 )doc");
 
 REGISTER_OP("UpdateFertileSlots")
-    .Attr("regression: bool = False")
-    .Input("finished: int32")
-    .Input("non_fertile_leaves: int32")
-    .Input("non_fertile_leaf_scores: float")
-    .Input("end_of_tree: int32")
-    .Input("accumulator_sums: float")
-    .Input("node_to_accumulator: int32")
-    .Input("stale_leaves: int32")
-    .Input("node_sums: float")
-    .Output("node_to_accumulator_map_updates: int32")
-    .Output("accumulator_to_node_map_updates: int32")
-    .Output("accumulators_cleared: int32")
-    .Output("accumulators_allocated: int32")
-    .SetShapeFn([](InferenceContext* c) {
-      c->set_output(0, c->Matrix(c->MakeDim(2), InferenceContext::kUnknownDim));
-      c->set_output(1, c->Matrix(c->MakeDim(2), InferenceContext::kUnknownDim));
-      c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
-      c->set_output(3, c->Vector(InferenceContext::kUnknownDim));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Attr("regression: bool = False")
+.Input("finished: int32")
+.Input("non_fertile_leaves: int32")
+.Input("non_fertile_leaf_scores: float")
+.Input("end_of_tree: int32")
+.Input("accumulator_sums: float")
+.Input("node_to_accumulator: int32")
+.Input("stale_leaves: int32")
+.Input("node_sums: float")
+.Output("node_to_accumulator_map_updates: int32")
+.Output("accumulator_to_node_map_updates: int32")
+.Output("accumulators_cleared: int32")
+.Output("accumulators_allocated: int32")
+.SetShapeFn([](InferenceContext* c) {
+			c->set_output(0, c->Matrix(c->MakeDim(2), InferenceContext::kUnknownDim));
+			c->set_output(1, c->Matrix(c->MakeDim(2), InferenceContext::kUnknownDim));
+			c->set_output(2, c->Vector(InferenceContext::kUnknownDim));
+			c->set_output(3, c->Vector(InferenceContext::kUnknownDim));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Updates accumulator slots to reflect finished or newly fertile nodes.
 
 finished:= A 1-d int32 tensor containing the indices of fertile nodes that
@@ -626,4 +626,5 @@ accumulators_allocated:= A 1-d int32 tensor containing the indices of all
 
 )doc");
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

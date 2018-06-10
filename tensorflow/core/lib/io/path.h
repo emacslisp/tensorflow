@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_LIB_IO_PATH_H_
 #define TENSORFLOW_LIB_IO_PATH_H_
@@ -43,9 +43,10 @@ string JoinPathImpl(std::initializer_list<StringPiece> paths);
 // string path = io::JoinPath("/mydir", filename);
 // string path = io::JoinPath(FLAGS_test_srcdir, filename);
 // string path = io::JoinPath("/full", "path", "to", "filename);
-template <typename... T>
-string JoinPath(const T&... args) {
-  return internal::JoinPathImpl({args...});
+template<typename ... T>
+string JoinPath(const T&... args)
+{
+	return internal::JoinPathImpl( { args... });
 }
 #endif /* SWIG */
 
@@ -83,7 +84,7 @@ string CleanPath(StringPiece path);
 //   passed string is assumed to be a path
 // - If the URI omits the path (e.g. file://host), then the path is left empty.
 void ParseURI(StringPiece uri, StringPiece* scheme, StringPiece* host,
-              StringPiece* path);
+		StringPiece* path);
 
 // Creates a URI from a scheme, host, and path. If the scheme is empty, we just
 // return the path.

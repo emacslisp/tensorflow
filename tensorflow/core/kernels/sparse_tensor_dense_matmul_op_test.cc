@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include <random>
 
@@ -24,48 +24,46 @@ limitations under the License.
 namespace tensorflow {
 
 Node* SparseTensorDenseMatMulNode(Graph* g, Node* a_indices, Node* a_values,
-                                  Node* a_shape, Node* b, bool adjoint_a,
-                                  bool adjoint_b) {
-  Node* ret;
-  TF_CHECK_OK(NodeBuilder(g->NewName("n"), "SparseTensorDenseMatMul")
-                  .Input(a_indices)
-                  .Input(a_values)
-                  .Input(a_shape)
-                  .Input(b)
-                  .Attr("T", DT_FLOAT)
-                  .Attr("adjoint_a", adjoint_a)
-                  .Attr("adjoint_b", adjoint_b)
-                  .Finalize(g, &ret));
-  return ret;
+		Node* a_shape, Node* b, bool adjoint_a, bool adjoint_b)
+{
+	Node* ret;
+	TF_CHECK_OK(
+			NodeBuilder(g->NewName("n"), "SparseTensorDenseMatMul").Input(
+					a_indices).Input(a_values).Input(a_shape).Input(b).Attr("T",
+					DT_FLOAT).Attr("adjoint_a", adjoint_a).Attr("adjoint_b",
+					adjoint_b).Finalize(g, &ret));
+	return ret;
 }
 
 static Graph* SparseTensorDenseMatmul(int nnz, int m, int k, int n,
-                                      bool adjoint_a, bool adjoint_b) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor a_values(DT_FLOAT, TensorShape({nnz}));
-  Tensor a_indices(DT_INT64, TensorShape({nnz, 2}));
-  Tensor a_shape(DT_INT64, TensorShape({2}));
-  auto a_shape_t = a_shape.vec<int64>();
-  a_shape_t(0) = adjoint_a ? k : m;
-  a_shape_t(1) = adjoint_a ? m : k;
-  a_values.flat<float>().setRandom();
-  auto a_indices_t = a_indices.matrix<int64>();
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> a_lhs_dist(0, a_shape_t(0) - 1);
-  std::uniform_int_distribution<> a_rhs_dist(0, a_shape_t(1) - 1);
-  for (int32 i = 0; i < nnz; ++i) {
-    a_indices_t(i, 0) = a_lhs_dist(gen);
-    a_indices_t(i, 1) = a_rhs_dist(gen);
-  }
-  Tensor b(DT_FLOAT, adjoint_b ? TensorShape({n, k}) : TensorShape({k, n}));
-  b.flat<float>().setRandom();
+		bool adjoint_a, bool adjoint_b)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor a_values(DT_FLOAT, TensorShape( { nnz }));
+	Tensor a_indices(DT_INT64, TensorShape( { nnz, 2 }));
+	Tensor a_shape(DT_INT64, TensorShape( { 2 }));
+	auto a_shape_t = a_shape.vec<int64>();
+	a_shape_t(0) = adjoint_a ? k : m;
+	a_shape_t(1) = adjoint_a ? m : k;
+	a_values.flat<float>().setRandom();
+	auto a_indices_t = a_indices.matrix<int64>();
+	std::random_device rd;
+	std::mt19937 gen(rd());
+	std::uniform_int_distribution<> a_lhs_dist(0, a_shape_t(0) - 1);
+	std::uniform_int_distribution<> a_rhs_dist(0, a_shape_t(1) - 1);
+	for (int32 i = 0; i < nnz; ++i) {
+		a_indices_t(i, 0) = a_lhs_dist(gen);
+		a_indices_t(i, 1) = a_rhs_dist(gen);
+	}
+	Tensor b(DT_FLOAT,
+			adjoint_b ? TensorShape( { n, k }) : TensorShape( { k, n }));
+	b.flat<float>().setRandom();
 
-  SparseTensorDenseMatMulNode(
-      g, test::graph::Constant(g, a_indices),
-      test::graph::Constant(g, a_values), test::graph::HostConstant(g, a_shape),
-      test::graph::Constant(g, b), adjoint_a, adjoint_b);
-  return g;
+	SparseTensorDenseMatMulNode(g, test::graph::Constant(g, a_indices),
+			test::graph::Constant(g, a_values),
+			test::graph::HostConstant(g, a_shape), test::graph::Constant(g, b),
+			adjoint_a, adjoint_b);
+	return g;
 }
 
 #define BM_SparseTensorDenseMatmulDev(NNZ, M, K, N, TA, TB, DEVICE)                  \

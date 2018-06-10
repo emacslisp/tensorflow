@@ -1,23 +1,22 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // Endian-neutral encoding:
 // * Fixed-length numbers are encoded with least-significant byte first
 // * In addition we support variable length "varint" encoding
 // * Strings are encoded prefixed by their length in varint format
-
 #ifndef TENSORFLOW_LIB_CORE_CODING_H_
 #define TENSORFLOW_LIB_CORE_CODING_H_
 
@@ -51,17 +50,18 @@ extern const char* GetVarint64Ptr(const char* p, const char* limit, uint64* v);
 
 // Internal routine for use by fallback path of GetVarint32Ptr
 extern const char* GetVarint32PtrFallback(const char* p, const char* limit,
-                                          uint32* value);
+		uint32* value);
 inline const char* GetVarint32Ptr(const char* p, const char* limit,
-                                  uint32* value) {
-  if (p < limit) {
-    uint32 result = *(reinterpret_cast<const unsigned char*>(p));
-    if ((result & 128) == 0) {
-      *value = result;
-      return p + 1;
-    }
-  }
-  return GetVarint32PtrFallback(p, limit, value);
+		uint32* value)
+{
+	if (p < limit) {
+		uint32 result = *(reinterpret_cast<const unsigned char*>(p));
+		if ((result & 128) == 0) {
+			*value = result;
+			return p + 1;
+		}
+	}
+	return GetVarint32PtrFallback(p, limit, value);
 }
 
 extern char* EncodeVarint32(char* dst, uint32 v);

@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/math_ops.cc.
-
 #define EIGEN_USE_THREADS
 
 #if GOOGLE_CUDA
@@ -40,41 +39,44 @@ namespace tensorflow {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-template <typename Device, typename T, typename ArgFunctor>
-class ArgOp : public OpKernel {
- public:
-  explicit ArgOp(OpKernelConstruction* context) : OpKernel(context) {}
+template<typename Device, typename T, typename ArgFunctor>
+class ArgOp: public OpKernel {
+public:
+	explicit ArgOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+	}
 
-  void Compute(OpKernelContext* context) override {
-    const Tensor& input = context->input(0);
-    const Tensor& dimension = context->input(1);
+	void Compute(OpKernelContext* context) override
+	{
+		const Tensor& input = context->input(0);
+		const Tensor& dimension = context->input(1);
 
-    OP_REQUIRES(context, TensorShapeUtils::IsScalar(dimension.shape()),
-                errors::InvalidArgument(
-                    "dim must be a scalar, but received tensor of shape: ",
-                    dimension.shape().DebugString()));
+		OP_REQUIRES(context, TensorShapeUtils::IsScalar(dimension.shape()),
+				errors::InvalidArgument(
+						"dim must be a scalar, but received tensor of shape: ",
+						dimension.shape().DebugString()));
 
-    const int32 dim = internal::SubtleMustCopy(dimension.scalar<int32>()());
-    const int input_dims = input.dims();
+		const int32 dim = internal::SubtleMustCopy(dimension.scalar<int32>()());
+		const int input_dims = input.dims();
 
-    int axis = dim < 0 ? dim + input_dims : dim;
+		int axis = dim < 0 ? dim + input_dims : dim;
 
-    OP_REQUIRES(context, axis >= 0 && axis < input_dims,
-                errors::InvalidArgument("Expected dimension in the range [",
-                                        -input_dims, ", ", input_dims,
-                                        "), but got ", dim));
-    OP_REQUIRES(
-        context, input.dim_size(axis) > 0,
-        errors::InvalidArgument("Reduction axis ", dim, " is empty in shape ",
-                                input.shape().DebugString()));
+		OP_REQUIRES(context, axis >= 0 && axis < input_dims,
+				errors::InvalidArgument("Expected dimension in the range [",
+						-input_dims, ", ", input_dims, "), but got ", dim));
+		OP_REQUIRES(context, input.dim_size(axis) > 0,
+				errors::InvalidArgument("Reduction axis ", dim,
+						" is empty in shape ", input.shape().DebugString()));
 
-    TensorShape output_shape;
-    const TensorShape& input_shape = input.shape();
-    for (int d = 0; d < input_dims - 1; ++d) {
-      output_shape.AddDim(input_shape.dim_size((d < axis) ? d : d + 1));
-    }
-    Tensor* output = nullptr;
-    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+		TensorShape output_shape;
+		const TensorShape& input_shape = input.shape();
+		for (int d = 0; d < input_dims - 1; ++d) {
+			output_shape.AddDim(input_shape.dim_size((d < axis) ? d : d + 1));
+		}
+		Tensor* output = nullptr;
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, output_shape, &output));
 
 #define HANDLE_DIM(NDIM)                                         \
   case NDIM:                                                     \
@@ -83,37 +85,47 @@ class ArgOp : public OpKernel {
                              output->tensor<int64, NDIM - 1>()); \
     break;
 
-    switch (input_dims) {
-      HANDLE_DIM(1);
-      HANDLE_DIM(2);
-      HANDLE_DIM(3);
-      HANDLE_DIM(4);
-      HANDLE_DIM(5);
+		switch (input_dims) {
+		HANDLE_DIM(1)
+			;
+		HANDLE_DIM(2)
+			;
+		HANDLE_DIM(3)
+			;
+		HANDLE_DIM(4)
+			;
+		HANDLE_DIM(5)
+			;
 
-      default:
-        OP_REQUIRES(context, false,
-                    errors::InvalidArgument(
-                        "ArgOp : Unhandled input dimensions: ", input_dims));
-    }
-  }
+		default:
+			OP_REQUIRES(context, false,
+					errors::InvalidArgument(
+							"ArgOp : Unhandled input dimensions: ",
+							input_dims));
+		}
+	}
 #undef HANDLE_DIM
 
- private:
-  TF_DISALLOW_COPY_AND_ASSIGN(ArgOp);
+private:
+	TF_DISALLOW_COPY_AND_ASSIGN (ArgOp);
 };
 
-template <typename Device, typename T>
-class ArgMaxOp : public ArgOp<Device, T, functor::ArgMax<Device, T> > {
- public:
-  explicit ArgMaxOp(OpKernelConstruction* context)
-      : ArgOp<Device, T, functor::ArgMax<Device, T> >(context) {}
+template<typename Device, typename T>
+class ArgMaxOp: public ArgOp<Device, T, functor::ArgMax<Device, T> > {
+public:
+	explicit ArgMaxOp(OpKernelConstruction* context) :
+			ArgOp<Device, T, functor::ArgMax<Device, T> >(context)
+	{
+	}
 };
 
-template <typename Device, typename T>
-class ArgMinOp : public ArgOp<Device, T, functor::ArgMin<Device, T> > {
- public:
-  explicit ArgMinOp(OpKernelConstruction* context)
-      : ArgOp<Device, T, functor::ArgMin<Device, T> >(context) {}
+template<typename Device, typename T>
+class ArgMinOp: public ArgOp<Device, T, functor::ArgMin<Device, T> > {
+public:
+	explicit ArgMinOp(OpKernelConstruction* context) :
+			ArgOp<Device, T, functor::ArgMin<Device, T> >(context)
+	{
+	}
 };
 
 #define REGISTER_ARGMAX(type)                            \
@@ -128,7 +140,7 @@ class ArgMinOp : public ArgOp<Device, T, functor::ArgMin<Device, T> > {
                               .HostMemory("dimension"),  \
                           ArgMinOp<CPUDevice, type>);
 
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_ARGMAX);
+TF_CALL_REAL_NUMBER_TYPES (REGISTER_ARGMAX);
 
 #if GOOGLE_CUDA
 
@@ -156,8 +168,8 @@ namespace functor {
   extern template struct ArgMax<GPUDevice, T>; \
   extern template struct ArgMin<GPUDevice, T>;
 
-TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPECS);
-TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_CLASS);
+	TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPECS);
+	TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_CLASS);
 
 #undef DECLARE_GPU_SPECS
 #undef DECLARE_GPU_CLASS
@@ -185,4 +197,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_ARGMAX_GPU);
 
 #endif  // GOOGLE_CUDA
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

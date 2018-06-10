@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // GrpcMasterService implements the RPC service MasterSerivce.
 //
@@ -44,37 +44,40 @@ limitations under the License.
 
 namespace tensorflow {
 
-class GrpcMasterService : public AsyncServiceInterface {
- public:
-  GrpcMasterService(Master* master, ::grpc::ServerBuilder* builder)
-      : master_impl_(master), is_shutdown_(false) {
-    builder->RegisterService(&master_service_);
-    cq_ = builder->AddCompletionQueue().release();
-  }
+class GrpcMasterService: public AsyncServiceInterface {
+public:
+	GrpcMasterService(Master* master, ::grpc::ServerBuilder* builder) :
+			master_impl_(master), is_shutdown_(false)
+	{
+		builder->RegisterService(&master_service_);
+		cq_ = builder->AddCompletionQueue().release();
+	}
 
-  ~GrpcMasterService() {
-    delete shutdown_alarm_;
-    delete cq_;
-  }
+	~GrpcMasterService()
+	{
+		delete shutdown_alarm_;
+		delete cq_;
+	}
 
-  void Shutdown() override {
-    bool did_shutdown = false;
-    {
-      mutex_lock l(mu_);
-      if (!is_shutdown_) {
-        LOG(INFO) << "Shutting down GrpcMasterService.";
-        is_shutdown_ = true;
-        did_shutdown = true;
-      }
-    }
-    if (did_shutdown) {
-      // NOTE(mrry): This enqueues a special event (with a null tag)
-      // that causes the completion queue to be shut down on the
-      // polling thread.
-      shutdown_alarm_ =
-          new ::grpc::Alarm(cq_, gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
-    }
-  }
+	void Shutdown() override
+	{
+		bool did_shutdown = false;
+		{
+			mutex_lock l(mu_);
+			if (!is_shutdown_) {
+				LOG(INFO) << "Shutting down GrpcMasterService.";
+				is_shutdown_ = true;
+				did_shutdown = true;
+			}
+		}
+		if (did_shutdown) {
+			// NOTE(mrry): This enqueues a special event (with a null tag)
+			// that causes the completion queue to be shut down on the
+			// polling thread.
+			shutdown_alarm_ = new ::grpc::Alarm(cq_,
+					gpr_now(GPR_CLOCK_MONOTONIC), nullptr);
+		}
+	}
 
 // This macro creates a new request for the given RPC method name
 // (e.g., `ENQUEUE_REQUEST(RunStep);`), and enqueues it on
@@ -100,130 +103,138 @@ class GrpcMasterService : public AsyncServiceInterface {
     }                                                                         \
   } while (0)
 
-  void HandleRPCsLoop() override {
-    ENQUEUE_REQUEST(CreateSession, true);
-    ENQUEUE_REQUEST(ExtendSession, false);
-    for (int i = 0; i < 100; ++i) {
-      ENQUEUE_REQUEST(PartialRunSetup, false);
-      ENQUEUE_REQUEST(RunStep, true);
-    }
-    ENQUEUE_REQUEST(CloseSession, false);
-    ENQUEUE_REQUEST(ListDevices, false);
-    ENQUEUE_REQUEST(Reset, false);
+	void HandleRPCsLoop() override
+	{
+		ENQUEUE_REQUEST(CreateSession, true);
+		ENQUEUE_REQUEST(ExtendSession, false);
+		for (int i = 0; i < 100; ++i) {
+			ENQUEUE_REQUEST(PartialRunSetup, false);
+			ENQUEUE_REQUEST(RunStep, true);
+		}
+		ENQUEUE_REQUEST(CloseSession, false);
+		ENQUEUE_REQUEST(ListDevices, false);
+		ENQUEUE_REQUEST(Reset, false);
 
-    void* tag;
-    bool ok;
-    while (cq_->Next(&tag, &ok)) {
-      UntypedCall<GrpcMasterService>::Tag* callback_tag =
-          static_cast<UntypedCall<GrpcMasterService>::Tag*>(tag);
-      if (callback_tag) {
-        callback_tag->OnCompleted(this, ok);
-      } else {
-        // NOTE(mrry): A null `callback_tag` indicates that this is
-        // the shutdown alarm.
-        cq_->Shutdown();
-      }
-    }
-  }
+		void* tag;
+		bool ok;
+		while (cq_->Next(&tag, &ok)) {
+			UntypedCall<GrpcMasterService>::Tag* callback_tag =
+					static_cast<UntypedCall<GrpcMasterService>::Tag*>(tag);
+			if (callback_tag) {
+				callback_tag->OnCompleted(this, ok);
+			} else {
+				// NOTE(mrry): A null `callback_tag` indicates that this is
+				// the shutdown alarm.
+				cq_->Shutdown();
+			}
+		}
+	}
 
- private:
-  Master* master_impl_;                // Not owned.
-  ::grpc::ServerCompletionQueue* cq_;  // Owned.
-  grpc::MasterService::AsyncService master_service_;
+private:
+	Master* master_impl_;                // Not owned.
+	::grpc::ServerCompletionQueue* cq_;  // Owned.
+	grpc::MasterService::AsyncService master_service_;
 
-  mutex mu_;
-  bool is_shutdown_ GUARDED_BY(mu_);
-  ::grpc::Alarm* shutdown_alarm_;
+	mutex mu_;bool is_shutdown_ GUARDED_BY(mu_);
+	::grpc::Alarm* shutdown_alarm_;
 
-  template <class RequestMessage, class ResponseMessage>
-  using MasterCall = Call<GrpcMasterService, grpc::MasterService::AsyncService,
-                          RequestMessage, ResponseMessage>;
+	template<class RequestMessage, class ResponseMessage>
+	using MasterCall = Call<GrpcMasterService, grpc::MasterService::AsyncService,
+	RequestMessage, ResponseMessage>;
 
-  // RPC handler for creating a session.
-  void CreateSessionHandler(
-      MasterCall<CreateSessionRequest, CreateSessionResponse>* call) {
-    master_impl_->CreateSession(&call->request, &call->response,
-                                [call](const Status& status) {
-                                  call->SendResponse(ToGrpcStatus(status));
-                                });
-    ENQUEUE_REQUEST(CreateSession, true);
-  }
+	// RPC handler for creating a session.
+	void CreateSessionHandler(
+			MasterCall<CreateSessionRequest, CreateSessionResponse>* call)
+	{
+		master_impl_->CreateSession(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(CreateSession, true);
+	}
 
-  // RPC handler for extending a session.
-  void ExtendSessionHandler(
-      MasterCall<ExtendSessionRequest, ExtendSessionResponse>* call) {
-    master_impl_->ExtendSession(&call->request, &call->response,
-                                [call](const Status& status) {
-                                  call->SendResponse(ToGrpcStatus(status));
-                                });
-    ENQUEUE_REQUEST(ExtendSession, false);
-  }
+	// RPC handler for extending a session.
+	void ExtendSessionHandler(
+			MasterCall<ExtendSessionRequest, ExtendSessionResponse>* call)
+	{
+		master_impl_->ExtendSession(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(ExtendSession, false);
+	}
 
-  // RPC handler for setting up a partial run call.
-  void PartialRunSetupHandler(
-      MasterCall<PartialRunSetupRequest, PartialRunSetupResponse>* call) {
-    master_impl_->PartialRunSetup(&call->request, &call->response,
-                                  [call](const Status& status) {
-                                    call->SendResponse(ToGrpcStatus(status));
-                                  });
-    ENQUEUE_REQUEST(PartialRunSetup, false);
-  }
+	// RPC handler for setting up a partial run call.
+	void PartialRunSetupHandler(
+			MasterCall<PartialRunSetupRequest, PartialRunSetupResponse>* call)
+	{
+		master_impl_->PartialRunSetup(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(PartialRunSetup, false);
+	}
 
-  // RPC handler for running one step in a session.
-  void RunStepHandler(MasterCall<RunStepRequest, RunStepResponse>* call) {
-    CallOptions* call_opts = new CallOptions;
-    RunStepRequestWrapper* wrapped_request =
-        new ProtoRunStepRequest(&call->request);
-    MutableRunStepResponseWrapper* wrapped_response =
-        new NonOwnedProtoRunStepResponse(&call->response);
-    call->SetCancelCallback([call_opts]() { call_opts->StartCancel(); });
-    master_impl_->RunStep(call_opts, wrapped_request, wrapped_response,
-                          [call, call_opts, wrapped_request,
-                           wrapped_response](const Status& status) {
-                            call->ClearCancelCallback();
-                            delete call_opts;
-                            delete wrapped_request;
-                            call->SendResponse(ToGrpcStatus(status));
-                          });
-    ENQUEUE_REQUEST(RunStep, true);
-  }
+	// RPC handler for running one step in a session.
+	void RunStepHandler(MasterCall<RunStepRequest, RunStepResponse>* call)
+	{
+		CallOptions* call_opts = new CallOptions;
+		RunStepRequestWrapper* wrapped_request = new ProtoRunStepRequest(
+				&call->request);
+		MutableRunStepResponseWrapper* wrapped_response =
+				new NonOwnedProtoRunStepResponse(&call->response);
+		call->SetCancelCallback([call_opts]() {call_opts->StartCancel();});
+		master_impl_->RunStep(call_opts, wrapped_request, wrapped_response,
+				[call, call_opts, wrapped_request,
+				wrapped_response](const Status& status) {
+					call->ClearCancelCallback();
+					delete call_opts;
+					delete wrapped_request;
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(RunStep, true);
+	}
 
-  // RPC handler for deleting a session.
-  void CloseSessionHandler(
-      MasterCall<CloseSessionRequest, CloseSessionResponse>* call) {
-    master_impl_->CloseSession(&call->request, &call->response,
-                               [call](const Status& status) {
-                                 call->SendResponse(ToGrpcStatus(status));
-                               });
-    ENQUEUE_REQUEST(CloseSession, false);
-  }
+	// RPC handler for deleting a session.
+	void CloseSessionHandler(
+			MasterCall<CloseSessionRequest, CloseSessionResponse>* call)
+	{
+		master_impl_->CloseSession(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(CloseSession, false);
+	}
 
-  // RPC handler for listing devices.
-  void ListDevicesHandler(
-      MasterCall<ListDevicesRequest, ListDevicesResponse>* call) {
-    master_impl_->ListDevices(&call->request, &call->response,
-                              [call](const Status& status) {
-                                call->SendResponse(ToGrpcStatus(status));
-                              });
-    ENQUEUE_REQUEST(ListDevices, false);
-  }
+	// RPC handler for listing devices.
+	void ListDevicesHandler(
+			MasterCall<ListDevicesRequest, ListDevicesResponse>* call)
+	{
+		master_impl_->ListDevices(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(ListDevices, false);
+	}
 
-  // RPC handler for resetting all sessions.
-  void ResetHandler(MasterCall<ResetRequest, ResetResponse>* call) {
-    master_impl_->Reset(&call->request, &call->response,
-                        [call](const Status& status) {
-                          call->SendResponse(ToGrpcStatus(status));
-                        });
-    ENQUEUE_REQUEST(Reset, false);
-  }
+	// RPC handler for resetting all sessions.
+	void ResetHandler(MasterCall<ResetRequest, ResetResponse>* call)
+	{
+		master_impl_->Reset(&call->request, &call->response,
+				[call](const Status& status) {
+					call->SendResponse(ToGrpcStatus(status));
+				});
+		ENQUEUE_REQUEST(Reset, false);
+	}
 #undef ENQUEUE_REQUEST
 
-  TF_DISALLOW_COPY_AND_ASSIGN(GrpcMasterService);
+	TF_DISALLOW_COPY_AND_ASSIGN (GrpcMasterService);
 };
 
 AsyncServiceInterface* NewGrpcMasterService(Master* master,
-                                            ::grpc::ServerBuilder* builder) {
-  return new GrpcMasterService(master, builder);
+		::grpc::ServerBuilder* builder)
+{
+	return new GrpcMasterService(master, builder);
 }
 
 }  // end namespace tensorflow

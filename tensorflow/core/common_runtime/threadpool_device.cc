@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/common_runtime/threadpool_device.h"
 
@@ -30,44 +30,48 @@ limitations under the License.
 namespace tensorflow {
 
 ThreadPoolDevice::ThreadPoolDevice(const SessionOptions& options,
-                                   const string& name, Bytes memory_limit,
-                                   const DeviceLocality& locality,
-                                   Allocator* allocator)
-    : LocalDevice(options, Device::BuildDeviceAttributes(
-                               name, DEVICE_CPU, memory_limit, locality),
-                  allocator),
-      allocator_(allocator) {}
-
-ThreadPoolDevice::~ThreadPoolDevice() {}
-
-void ThreadPoolDevice::Compute(OpKernel* op_kernel, OpKernelContext* context) {
-  if (port::Tracing::IsActive()) {
-    // TODO(pbar) We really need a useful identifier of the graph node.
-    const uint64 id = Hash64(op_kernel->name());
-    port::Tracing::ScopedActivity region(port::Tracing::EventCategory::kCompute,
-                                         id);
-    op_kernel->Compute(context);
-  } else {
-    op_kernel->Compute(context);
-  }
+		const string& name, Bytes memory_limit, const DeviceLocality& locality,
+		Allocator* allocator) :
+		LocalDevice(options,
+				Device::BuildDeviceAttributes(name, DEVICE_CPU, memory_limit,
+						locality), allocator), allocator_(allocator)
+{
 }
 
-Allocator* ThreadPoolDevice::GetAllocator(AllocatorAttributes attr) {
-  return allocator_;
+ThreadPoolDevice::~ThreadPoolDevice()
+{
 }
 
-Status ThreadPoolDevice::MakeTensorFromProto(
-    const TensorProto& tensor_proto, const AllocatorAttributes alloc_attrs,
-    Tensor* tensor) {
-  if (tensor_proto.dtype() > 0 && tensor_proto.dtype() <= DataType_MAX) {
-    Tensor parsed(tensor_proto.dtype());
-    if (parsed.FromProto(cpu_allocator(), tensor_proto)) {
-      *tensor = parsed;
-      return Status::OK();
-    }
-  }
-  return errors::InvalidArgument("Cannot parse tensor from proto: ",
-                                 ProtoDebugString(tensor_proto));
+void ThreadPoolDevice::Compute(OpKernel* op_kernel, OpKernelContext* context)
+{
+	if (port::Tracing::IsActive()) {
+		// TODO(pbar) We really need a useful identifier of the graph node.
+		const uint64 id = Hash64(op_kernel->name());
+		port::Tracing::ScopedActivity region(
+				port::Tracing::EventCategory::kCompute, id);
+		op_kernel->Compute(context);
+	} else {
+		op_kernel->Compute(context);
+	}
+}
+
+Allocator* ThreadPoolDevice::GetAllocator(AllocatorAttributes attr)
+{
+	return allocator_;
+}
+
+Status ThreadPoolDevice::MakeTensorFromProto(const TensorProto& tensor_proto,
+		const AllocatorAttributes alloc_attrs, Tensor* tensor)
+{
+	if (tensor_proto.dtype() > 0 && tensor_proto.dtype() <= DataType_MAX) {
+		Tensor parsed(tensor_proto.dtype());
+		if (parsed.FromProto(cpu_allocator(), tensor_proto)) {
+			*tensor = parsed;
+			return Status::OK();
+		}
+	}
+	return errors::InvalidArgument("Cannot parse tensor from proto: ",
+			ProtoDebugString(tensor_proto));
 }
 
 }  // namespace tensorflow

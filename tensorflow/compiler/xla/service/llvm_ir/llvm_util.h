@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_LLVM_IR_LLVM_UTIL_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_LLVM_IR_LLVM_UTIL_H_
@@ -38,7 +38,8 @@ limitations under the License.
 namespace llvm {
 class FastMathFlags;
 class TargetOptions;
-};
+}
+;
 
 namespace xla {
 namespace llvm_ir {
@@ -52,24 +53,27 @@ string AsString(const std::string& str);
 // & Clang APIs that expect llvm::StringRef.
 llvm::StringRef AsStringRef(tensorflow::StringPiece str);
 
-template <typename T>
-llvm::ArrayRef<T> AsArrayRef(const std::vector<T>& vec) {
-  return llvm::ArrayRef<T>(vec.data(), vec.size());
+template<typename T>
+llvm::ArrayRef<T> AsArrayRef(const std::vector<T>& vec)
+{
+	return llvm::ArrayRef < T > (vec.data(), vec.size());
 }
 
-template <typename T>
-llvm::ArrayRef<T> AsArrayRef(const tensorflow::gtl::ArraySlice<T>& slice) {
-  return llvm::ArrayRef<T>(slice.data(), slice.size());
+template<typename T>
+llvm::ArrayRef<T> AsArrayRef(const tensorflow::gtl::ArraySlice<T>& slice)
+{
+	return llvm::ArrayRef < T > (slice.data(), slice.size());
 }
 
 // Dump the given LLVM entity to a string. This works for Types and Values.
-template <typename T>
-string DumpToString(const T& entity) {
-  std::string buffer_string;
-  llvm::raw_string_ostream ostream(buffer_string);
-  entity.print(ostream);
-  ostream.flush();
-  return AsString(buffer_string);
+template<typename T>
+string DumpToString(const T& entity)
+{
+	std::string buffer_string;
+	llvm::raw_string_ostream ostream(buffer_string);
+	entity.print(ostream);
+	ostream.flush();
+	return AsString(buffer_string);
 }
 
 // Dump the given LLVM module to a string. This requires a function distinct
@@ -84,24 +88,23 @@ string SanitizeIrName(string name);
 // intrinsics (for example, "minnum") must include a type in overloaded_types
 // for each overloaded type. Typically, overloaded intrinsics have only a single
 // overloaded type.
-llvm::Value* EmitCallToIntrinsic(
-    llvm::Intrinsic::ID intrinsic_id,
-    tensorflow::gtl::ArraySlice<llvm::Value*> operands,
-    tensorflow::gtl::ArraySlice<llvm::Type*> overloaded_types,
-    llvm::IRBuilder<>* ir_builder);
+llvm::Value* EmitCallToIntrinsic(llvm::Intrinsic::ID intrinsic_id,
+		tensorflow::gtl::ArraySlice<llvm::Value*> operands,
+		tensorflow::gtl::ArraySlice<llvm::Type*> overloaded_types,
+		llvm::IRBuilder<>* ir_builder);
 
 // Convenience methods for emitting a GEP instruction that indexes into a buffer
 // (1-dimensional array), equivalent to array[index]. The type is automatically
 // determined from the element type of the array.  The int64 index overload
 // wraps the index in a i64 llvm::Value.
 llvm::Value* EmitBufferIndexingGEP(llvm::Value* array, llvm::Value* index,
-                                   llvm::IRBuilder<>* ir_builder);
+		llvm::IRBuilder<>* ir_builder);
 llvm::Value* EmitBufferIndexingGEP(llvm::Value* array, int64 index,
-                                   llvm::IRBuilder<>* ir_builder);
+		llvm::IRBuilder<>* ir_builder);
 
 // Returns the LLVM type which represents the given XLA primitive type.
 llvm::Type* PrimitiveTypeToIrType(PrimitiveType element_type,
-                                  llvm::IRBuilder<>* ir_builder);
+		llvm::IRBuilder<>* ir_builder);
 
 // Returns the LLVM type which represents the given XLA shape. For example,
 // if "shape" is [5 x [10 x f32]], the function returns [5 x [10 x float]].
@@ -110,7 +113,7 @@ llvm::Type* ShapeToIrType(const Shape& shape, llvm::IRBuilder<>* ir_builder);
 // Converts a given literal to an IR Constant. Literals have known constant
 // values at IR emission time.
 llvm::Constant* ConvertLiteralToIrConstant(const Literal& literal,
-                                           llvm::IRBuilder<>* ir_builder);
+		llvm::IRBuilder<>* ir_builder);
 
 // Inserts an allocate of the requested type at the entry point of the
 // function that the builder is currently building. The insert point
@@ -120,38 +123,36 @@ llvm::Constant* ConvertLiteralToIrConstant(const Literal& literal,
 // This can be useful to avoid e.g. executing an alloca every time
 // through a loop.
 llvm::AllocaInst* EmitAllocaAtFunctionEntry(llvm::Type* type,
-                                            tensorflow::StringPiece name,
-                                            llvm::IRBuilder<>* ir_builder,
-                                            int alignment = 0);
+		tensorflow::StringPiece name, llvm::IRBuilder<>* ir_builder,
+		int alignment = 0);
 
 // As EmitAllocaAtFunctionEntry, but allocates element_count entries
 // intead of a single element.
-llvm::AllocaInst* EmitAllocaAtFunctionEntryWithCount(
-    llvm::Type* type, llvm::Value* element_count, tensorflow::StringPiece name,
-    llvm::IRBuilder<>* ir_builder, int alignment = 0);
+llvm::AllocaInst* EmitAllocaAtFunctionEntryWithCount(llvm::Type* type,
+		llvm::Value* element_count, tensorflow::StringPiece name,
+		llvm::IRBuilder<>* ir_builder, int alignment = 0);
 
 // Creates a basic block with the same context and funtion as for the
 // builder. Inserts at the end of the function if insert_before is
 // null.
 llvm::BasicBlock* CreateBasicBlock(llvm::BasicBlock* insert_before,
-                                   tensorflow::StringPiece name,
-                                   llvm::IRBuilder<>* ir_builder);
+		tensorflow::StringPiece name, llvm::IRBuilder<>* ir_builder);
 
 // Struct with data on a conditional branch in a diamond shape created
 // via EmitIfThenElse.
 struct LlvmIfData {
-  // The block that has the conditional branch.
-  llvm::BasicBlock* if_block;
+	// The block that has the conditional branch.
+	llvm::BasicBlock* if_block;
 
-  // The block that is executed if the condition is true.
-  llvm::BasicBlock* true_block;
+	// The block that is executed if the condition is true.
+	llvm::BasicBlock* true_block;
 
-  // The block that is executed if the condition is false.
-  llvm::BasicBlock* false_block;
+	// The block that is executed if the condition is false.
+	llvm::BasicBlock* false_block;
 
-  // The block that follows after both the true_block and the
-  // false_block.
-  llvm::BasicBlock* after_block;
+	// The block that follows after both the true_block and the
+	// false_block.
+	llvm::BasicBlock* after_block;
 };
 
 // Inserts a diamond-shaped if-then-else construct at the current
@@ -167,13 +168,12 @@ struct LlvmIfData {
 // block with a terminator. If you need to use this for a
 // non-terminated block, just make the function able to do that too.
 LlvmIfData EmitIfThenElse(llvm::Value* condition, tensorflow::StringPiece name,
-                          llvm::IRBuilder<>* ir_builder, bool emit_else = true);
+		llvm::IRBuilder<>* ir_builder, bool emit_else = true);
 
 // Emits a compare operation between "lhs" and "rhs" with the given predicate,
 // and then converts the result to i8 so that it is addressable.
 llvm::Value* EmitComparison(llvm::CmpInst::Predicate predicate,
-                            llvm::Value* lhs, llvm::Value* rhs,
-                            llvm::IRBuilder<>* ir_builder);
+		llvm::Value* lhs, llvm::Value* rhs, llvm::IRBuilder<>* ir_builder);
 
 // Emits a call that logs the given value with the given tag as a prefix.
 // The provided tag and value are passed to a runtime logging call that is
@@ -186,13 +186,13 @@ llvm::Value* EmitComparison(llvm::CmpInst::Predicate predicate,
 // Precondition: tag must be a stable pointer for the lifetime of the generated
 // program (the constant pointer is burned in to the program).
 void EmitLogging(const char* tag, llvm::Value* value,
-                 llvm::IRBuilder<>* ir_builder);
+		llvm::IRBuilder<>* ir_builder);
 
 // Adds TBAA metadata to a load or store instruction using the given shape as
 // it's type.  The is_pointer_to parameter is used to indicate whether or not
 // this instruction loads or stores a pointer to an array.
 void SetTbaaForInstruction(llvm::Instruction* instruction, Shape shape,
-                           bool is_pointer_to);
+		bool is_pointer_to);
 
 // Adds alignment metadata to a load instruction using the given alignment.
 // The alignment refers to the result of the load, not the load itself.
@@ -202,17 +202,17 @@ void SetAlignmentMetadataForLoad(llvm::LoadInst* load, uint64_t alignment);
 // the number of dereferenceable bytes.
 // Dereferenceable refers to the result of the load, not the load itself.
 void SetDereferenceableMetadataForLoad(llvm::LoadInst* load,
-                                       uint64_t dereferenceable_bytes);
+		uint64_t dereferenceable_bytes);
 
 // Tells LLVM `inst >= lower && inst < upper`. Returns `inst` for convenience.
 llvm::Instruction* AddRangeMetadata(int64 lower, int64 upper,
-                                    llvm::Instruction* inst);
+		llvm::Instruction* inst);
 
 void SetToFirstInsertPoint(llvm::BasicBlock* blk, llvm::IRBuilder<>* builder);
 
 // Create a bitwise rotation of `rotand` by `rotor`.
 llvm::Value* CreateRor(llvm::Value* rotand, llvm::Value* rotor,
-                       llvm::IRBuilder<>* builder);
+		llvm::IRBuilder<>* builder);
 
 // Returns the number of bytes within the shape.
 int64 ByteSizeOf(const Shape& shape, const llvm::DataLayout& data_layout);
@@ -224,7 +224,7 @@ llvm::FastMathFlags GetFastMathFlags(const HloModuleConfig& config);
 // Sets values in the given TargetOptions struct according to the given
 // compilation options.
 void SetTargetOptions(const HloModuleConfig& config,
-                      llvm::TargetOptions* target_options);
+		llvm::TargetOptions* target_options);
 
 }  // namespace llvm_ir
 }  // namespace xla

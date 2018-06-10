@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_LOGICAL_BUFFER_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_LOGICAL_BUFFER_H_
@@ -82,71 +82,96 @@ struct HashLogicalBuffer;
 //   LogicalBuffer(%tuple_constant, {1, 0})  // Holds value "42"
 //   LogicalBuffer(%tuple_constant, {1, 1})  // Holds value "43"
 class LogicalBuffer {
- public:
-  // Id is a unique identifier for the LogicalBuffer to facilitate efficient
-  // collections of LogicalBuffers with stable iteration order.
-  // LogicalBuffers are typically created and accessed through
-  // TuplePointsToAnalysis, and points-to analysis assigns each LogicalBuffer a
-  // unique value.
-  using Id = int64;
+public:
+	// Id is a unique identifier for the LogicalBuffer to facilitate efficient
+	// collections of LogicalBuffers with stable iteration order.
+	// LogicalBuffers are typically created and accessed through
+	// TuplePointsToAnalysis, and points-to analysis assigns each LogicalBuffer a
+	// unique value.
+	using Id = int64;
 
-  // Function which returns the size of a logical buffer in bytes.
-  using SizeFunction = std::function<int64(const LogicalBuffer&)>;
+	// Function which returns the size of a logical buffer in bytes.
+	using SizeFunction = std::function<int64(const LogicalBuffer&)>;
 
-  LogicalBuffer(HloInstruction* instruction, const ShapeIndex& index, Id id)
-      : instruction_(instruction), index_(index), id_(id) {}
+	LogicalBuffer(HloInstruction* instruction, const ShapeIndex& index, Id id) :
+			instruction_(instruction), index_(index), id_(id)
+	{
+	}
 
-  Id id() const { return id_; }
+	Id id() const
+	{
+		return id_;
+	}
 
-  // Return the instruction that defines the buffer.
-  HloInstruction* instruction() const { return instruction_; }
+	// Return the instruction that defines the buffer.
+	HloInstruction* instruction() const
+	{
+		return instruction_;
+	}
 
-  // Return the index within the output of the instruction where the buffer is
-  // defined. Index used defined as in ShapeUtil::GetSubshape()
-  const ShapeIndex& index() const { return index_; }
+	// Return the index within the output of the instruction where the buffer is
+	// defined. Index used defined as in ShapeUtil::GetSubshape()
+	const ShapeIndex& index() const
+	{
+		return index_;
+	}
 
-  // Return the shape of the buffer. This reference points into the shape field
-  // of the instruction defining the buffer.  Therefore, the returned shape will
-  // contain the layout of instruction, if any.
-  const Shape& shape() const {
-    return ShapeUtil::GetSubshape(instruction_->shape(), index_);
-  }
+	// Return the shape of the buffer. This reference points into the shape field
+	// of the instruction defining the buffer.  Therefore, the returned shape will
+	// contain the layout of instruction, if any.
+	const Shape& shape() const
+	{
+		return ShapeUtil::GetSubshape(instruction_->shape(), index_);
+	}
 
-  // Returns true if this buffer is the top-level output buffer of the defining
-  // HLO instruction. This is equivalent to index == {}.
-  bool IsTopLevel() const { return index_.empty(); }
+	// Returns true if this buffer is the top-level output buffer of the defining
+	// HLO instruction. This is equivalent to index == {}.
+	bool IsTopLevel() const
+	{
+		return index_.empty();
+	}
 
-  // Whether this buffer contains a tuple.
-  bool IsTuple() const { return ShapeUtil::IsTuple(shape()); }
+	// Whether this buffer contains a tuple.
+	bool IsTuple() const
+	{
+		return ShapeUtil::IsTuple(shape());
+	}
 
-  // operator< is required for std::set.
-  bool operator<(const LogicalBuffer& other) const { return id_ < other.id_; }
+	// operator< is required for std::set.
+	bool operator<(const LogicalBuffer& other) const
+	{
+		return id_ < other.id_;
+	}
 
-  // Whether this buffer contains an array.
-  bool IsArray() const { return ShapeUtil::IsArray(shape()); }
+	// Whether this buffer contains an array.
+	bool IsArray() const
+	{
+		return ShapeUtil::IsArray(shape());
+	}
 
-  string ToString() const;
+	string ToString() const;
 
- private:
-  friend struct HashLogicalBuffer;
-  HloInstruction* instruction_;
-  ShapeIndex index_;
-  Id id_;
+private:
+	friend struct HashLogicalBuffer;
+	HloInstruction* instruction_;
+	ShapeIndex index_;
+	Id id_;
 
-  // Similar to HLO constructs (HloInstruction, etc), pointers are used for
-  // comparison to equality, so disable all copying.
-  TF_DISALLOW_COPY_AND_ASSIGN(LogicalBuffer);
+	// Similar to HLO constructs (HloInstruction, etc), pointers are used for
+	// comparison to equality, so disable all copying.
+	TF_DISALLOW_COPY_AND_ASSIGN (LogicalBuffer);
 };
 
 struct HashLogicalBuffer {
-  size_t operator()(const LogicalBuffer& b) const {
-    std::hash<const HloInstruction*> hasher;
-    size_t h = hasher(b.instruction_);
-    for (int i = 0; i < b.index_.size(); i++) {
-      h += static_cast<size_t>(b.index_[i] << i);
-    }
-    return h;
-  }
+	size_t operator()(const LogicalBuffer& b) const
+	{
+		std::hash<const HloInstruction*> hasher;
+		size_t h = hasher(b.instruction_);
+		for (int i = 0; i < b.index_.size(); i++) {
+			h += static_cast<size_t>(b.index_[i] << i);
+		}
+		return h;
+	}
 };
 
 std::ostream& operator<<(std::ostream& out, const LogicalBuffer& buffer);

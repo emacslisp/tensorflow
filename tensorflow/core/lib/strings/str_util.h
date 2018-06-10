@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_LIB_STRINGS_STR_UTIL_H_
 #define TENSORFLOW_LIB_STRINGS_STR_UTIL_H_
@@ -86,111 +86,131 @@ string Uppercase(StringPiece s);
 void TitlecaseString(string* s, StringPiece delimiters);
 
 // Join functionality
-template <typename T>
+template<typename T>
 string Join(const T& s, const char* sep);
 
 // A variant of Join where for each element of "s", f(&dest_string, elem)
 // is invoked (f is often constructed with a lambda of the form:
 //   [](string* result, ElemType elem)
-template <typename T, typename Formatter>
+template<typename T, typename Formatter>
 string Join(const T& s, const char* sep, Formatter f);
 
 struct AllowEmpty {
-  bool operator()(StringPiece sp) const { return true; }
+	bool operator()(StringPiece sp) const
+	{
+		return true;
+	}
 };
 struct SkipEmpty {
-  bool operator()(StringPiece sp) const { return !sp.empty(); }
+	bool operator()(StringPiece sp) const
+	{
+		return !sp.empty();
+	}
 };
 struct SkipWhitespace {
-  bool operator()(StringPiece sp) const {
-    RemoveTrailingWhitespace(&sp);
-    return !sp.empty();
-  }
+	bool operator()(StringPiece sp) const
+	{
+		RemoveTrailingWhitespace(&sp);
+		return !sp.empty();
+	}
 };
 
 // Split strings using any of the supplied delimiters. For example:
 // Split("a,b.c,d", ".,") would return {"a", "b", "c", "d"}.
 std::vector<string> Split(StringPiece text, StringPiece delims);
 
-template <typename Predicate>
+template<typename Predicate>
 std::vector<string> Split(StringPiece text, StringPiece delims, Predicate p);
 
 // Split "text" at "delim" characters, and parse each component as
 // an integer.  If successful, adds the individual numbers in order
 // to "*result" and returns true.  Otherwise returns false.
 bool SplitAndParseAsInts(StringPiece text, char delim,
-                         std::vector<int32>* result);
+		std::vector<int32>* result);
 bool SplitAndParseAsInts(StringPiece text, char delim,
-                         std::vector<int64>* result);
+		std::vector<int64>* result);
 bool SplitAndParseAsFloats(StringPiece text, char delim,
-                           std::vector<float>* result);
+		std::vector<float>* result);
 
 // ------------------------------------------------------------------
 // Implementation details below
-template <typename T>
-string Join(const T& s, const char* sep) {
-  string result;
-  bool first = true;
-  for (const auto& x : s) {
-    tensorflow::strings::StrAppend(&result, (first ? "" : sep), x);
-    first = false;
-  }
-  return result;
+template<typename T>
+string Join(const T& s, const char* sep)
+{
+	string result;
+	bool first = true;
+	for (const auto& x : s) {
+		tensorflow::strings::StrAppend(&result, (first ? "" : sep), x);
+		first = false;
+	}
+	return result;
 }
 
-template <typename T>
+template<typename T>
 class Formatter {
- public:
-  Formatter(std::function<void(string*, T)> f) : f_(f) {}
-  void operator()(string* out, const T& t) { f_(out, t); }
+public:
+	Formatter(std::function<void(string*, T)> f) :
+			f_(f)
+	{
+	}
+	void operator()(string* out, const T& t)
+	{
+		f_(out, t);
+	}
 
- private:
-  std::function<void(string*, T)> f_;
+private:
+	std::function<void(string*, T)> f_;
 };
 
-template <typename T, typename Formatter>
-string Join(const T& s, const char* sep, Formatter f) {
-  string result;
-  bool first = true;
-  for (const auto& x : s) {
-    if (!first) {
-      result.append(sep);
-    }
-    f(&result, x);
-    first = false;
-  }
-  return result;
+template<typename T, typename Formatter>
+string Join(const T& s, const char* sep, Formatter f)
+{
+	string result;
+	bool first = true;
+	for (const auto& x : s) {
+		if (!first) {
+			result.append(sep);
+		}
+		f(&result, x);
+		first = false;
+	}
+	return result;
 }
 
-inline std::vector<string> Split(StringPiece text, StringPiece delims) {
-  return Split(text, delims, AllowEmpty());
+inline std::vector<string> Split(StringPiece text, StringPiece delims)
+{
+	return Split(text, delims, AllowEmpty());
 }
 
-template <typename Predicate>
-std::vector<string> Split(StringPiece text, StringPiece delims, Predicate p) {
-  std::vector<string> result;
-  size_t token_start = 0;
-  if (!text.empty()) {
-    for (size_t i = 0; i < text.size() + 1; i++) {
-      if ((i == text.size()) || (delims.find(text[i]) != StringPiece::npos)) {
-        StringPiece token(text.data() + token_start, i - token_start);
-        if (p(token)) {
-          result.push_back(token.ToString());
-        }
-        token_start = i + 1;
-      }
-    }
-  }
-  return result;
+template<typename Predicate>
+std::vector<string> Split(StringPiece text, StringPiece delims, Predicate p)
+{
+	std::vector<string> result;
+	size_t token_start = 0;
+	if (!text.empty()) {
+		for (size_t i = 0; i < text.size() + 1; i++) {
+			if ((i == text.size())
+					|| (delims.find(text[i]) != StringPiece::npos)) {
+				StringPiece token(text.data() + token_start, i - token_start);
+				if (p(token)) {
+					result.push_back(token.ToString());
+				}
+				token_start = i + 1;
+			}
+		}
+	}
+	return result;
 }
 
-inline std::vector<string> Split(StringPiece text, char delim) {
-  return Split(text, StringPiece(&delim, 1));
+inline std::vector<string> Split(StringPiece text, char delim)
+{
+	return Split(text, StringPiece(&delim, 1));
 }
 
-template <typename Predicate>
-std::vector<string> Split(StringPiece text, char delims, Predicate p) {
-  return Split(text, StringPiece(&delims, 1), p);
+template<typename Predicate>
+std::vector<string> Split(StringPiece text, char delims, Predicate p)
+{
+	return Split(text, StringPiece(&delims, 1), p);
 }
 
 }  // namespace str_util

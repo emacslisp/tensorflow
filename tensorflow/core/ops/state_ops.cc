@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op.h"
@@ -23,22 +23,22 @@ using shape_inference::InferenceContext;
 using shape_inference::ShapeHandle;
 
 REGISTER_OP("VariableV2")
-    .Output("ref: Ref(dtype)")
-    .Attr("shape: shape")
-    .Attr("dtype: type")
-    .Attr("container: string = ''")
-    .Attr("shared_name: string = ''")
-    .SetIsStateful()
-    .SetShapeFn([](InferenceContext* c) {
-      TensorShapeProto shape_proto;
-      TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape_proto));
-      ShapeHandle output_shape;
-      TF_RETURN_IF_ERROR(
-          c->MakeShapeFromShapeProto(shape_proto, &output_shape));
-      c->set_output(0, output_shape);
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Output("ref: Ref(dtype)")
+.Attr("shape: shape")
+.Attr("dtype: type")
+.Attr("container: string = ''")
+.Attr("shared_name: string = ''")
+.SetIsStateful()
+.SetShapeFn([](InferenceContext* c) {
+			TensorShapeProto shape_proto;
+			TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape_proto));
+			ShapeHandle output_shape;
+			TF_RETURN_IF_ERROR(
+					c->MakeShapeFromShapeProto(shape_proto, &output_shape));
+			c->set_output(0, output_shape);
+			return Status::OK();
+		})
+.Doc(R"doc(
 Holds state in the form of a tensor that persists across steps.
 
 Outputs a ref to the tensor state so it may be read or modified.
@@ -55,39 +55,39 @@ shared_name: If non-empty, this variable is named in the given bucket
 )doc");
 
 REGISTER_OP("Variable")
-    .Output("ref: Ref(dtype)")
-    .Attr("shape: shape")
-    .Attr("dtype: type")
-    .Attr("container: string = ''")
-    .Attr("shared_name: string = ''")
-    .SetIsStateful()
-    .SetShapeFn([](InferenceContext* c) {
-      PartialTensorShape shape;
-      TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape));
+.Output("ref: Ref(dtype)")
+.Attr("shape: shape")
+.Attr("dtype: type")
+.Attr("container: string = ''")
+.Attr("shared_name: string = ''")
+.SetIsStateful()
+.SetShapeFn([](InferenceContext* c) {
+			PartialTensorShape shape;
+			TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape));
 
-      // Variable has legacy behavior where we cannot tell the difference
-      // between a scalar shape attribute and 'unknown shape'.  So if the shape
-      // is a scalar, we return an unknown shape.
-      if (shape.dims() <= 0) {
-        return shape_inference::UnknownShape(c);
-      }
+			// Variable has legacy behavior where we cannot tell the difference
+			// between a scalar shape attribute and 'unknown shape'.  So if the shape
+			// is a scalar, we return an unknown shape.
+			if (shape.dims() <= 0) {
+				return shape_inference::UnknownShape(c);
+			}
 
-      TensorShapeProto shape_proto;
-      shape.AsProto(&shape_proto);
-      ShapeHandle out;
-      TF_RETURN_IF_ERROR(c->MakeShapeFromShapeProto(shape_proto, &out));
-      c->set_output(0, out);
-      return Status::OK();
-    })
-    .Doc("Use VariableV2 instead.");
+			TensorShapeProto shape_proto;
+			shape.AsProto(&shape_proto);
+			ShapeHandle out;
+			TF_RETURN_IF_ERROR(c->MakeShapeFromShapeProto(shape_proto, &out));
+			c->set_output(0, out);
+			return Status::OK();
+		})
+.Doc("Use VariableV2 instead.");
 
 REGISTER_OP("IsVariableInitialized")
-    .Input("ref: Ref(dtype)")
-    .Output("is_initialized: bool")
-    .Attr("dtype: type")
-    .SetAllowsUninitializedInput()
-    .SetShapeFn(shape_inference::ScalarShape)
-    .Doc(R"doc(
+.Input("ref: Ref(dtype)")
+.Output("is_initialized: bool")
+.Attr("dtype: type")
+.SetAllowsUninitializedInput()
+.SetShapeFn(shape_inference::ScalarShape)
+.Doc(R"doc(
 Checks whether a tensor has been initialized.
 
 Outputs boolean scalar indicating whether the tensor has been initialized.
@@ -97,20 +97,20 @@ dtype: The type of elements in the variable tensor.
 )doc");
 
 REGISTER_OP("TemporaryVariable")
-    .Output("ref: Ref(dtype)")
-    .Attr("shape: shape")
-    .Attr("dtype: type")
-    .Attr("var_name: string = ''")
-    .SetIsStateful()
-    .SetShapeFn([](InferenceContext* c) {
-      TensorShapeProto shape_proto;
-      TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape_proto));
-      ShapeHandle output;
-      TF_RETURN_IF_ERROR(c->MakeShapeFromShapeProto(shape_proto, &output));
-      c->set_output(0, output);
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Output("ref: Ref(dtype)")
+.Attr("shape: shape")
+.Attr("dtype: type")
+.Attr("var_name: string = ''")
+.SetIsStateful()
+.SetShapeFn([](InferenceContext* c) {
+			TensorShapeProto shape_proto;
+			TF_RETURN_IF_ERROR(c->GetAttr("shape", &shape_proto));
+			ShapeHandle output;
+			TF_RETURN_IF_ERROR(c->MakeShapeFromShapeProto(shape_proto, &output));
+			c->set_output(0, output);
+			return Status::OK();
+		})
+.Doc(R"doc(
 Returns a tensor that may be mutated, but only persists within a single step.
 
 This is an experimental op for internal use only and it is possible to use this
@@ -136,12 +136,12 @@ value is the name of the 'TemporaryVariable' op (which is guaranteed unique).
 )doc");
 
 REGISTER_OP("DestroyTemporaryVariable")
-    .Input("ref: Ref(T)")
-    .Output("value: T")
-    .Attr("T: type")
-    .Attr("var_name: string")
-    .SetShapeFn(shape_inference::UnchangedShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Output("value: T")
+.Attr("T: type")
+.Attr("var_name: string")
+.SetShapeFn(shape_inference::UnchangedShape)
+.Doc(R"doc(
 Destroys the temporary variable and returns its final value.
 
 Sets output to the value of the Tensor pointed to by 'ref', then destroys
@@ -158,24 +158,24 @@ var_name: Name of the temporary variable, usually the name of the matching
 )doc");
 
 REGISTER_OP("Assign")
-    .Input("ref: Ref(T)")
-    .Input("value: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: type")
-    .Attr("validate_shape: bool = true")
-    .Attr("use_locking: bool = true")
-    .SetAllowsUninitializedInput()
-    .SetShapeFn([](InferenceContext* c) {
-      bool validate_shape;
-      TF_RETURN_IF_ERROR(c->GetAttr("validate_shape", &validate_shape));
-      if (validate_shape) {
-        return shape_inference::MergeBothInputsShapeFn(c);
-      }
+.Input("ref: Ref(T)")
+.Input("value: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: type")
+.Attr("validate_shape: bool = true")
+.Attr("use_locking: bool = true")
+.SetAllowsUninitializedInput()
+.SetShapeFn([](InferenceContext* c) {
+			bool validate_shape;
+			TF_RETURN_IF_ERROR(c->GetAttr("validate_shape", &validate_shape));
+			if (validate_shape) {
+				return shape_inference::MergeBothInputsShapeFn(c);
+			}
 
-      c->set_output(0, c->input(1));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, c->input(1));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Update 'ref' by assigning 'value' to it.
 
 This operation outputs "ref" after the assignment is done.
@@ -193,13 +193,13 @@ output_ref:= Same as "ref".  Returned as a convenience for operations that want
 )doc");
 
 REGISTER_OP("AssignAdd")
-    .Input("ref: Ref(T)")
-    .Input("value: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(shape_inference::MergeBothInputsShapeFn)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("value: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("use_locking: bool = false")
+.SetShapeFn(shape_inference::MergeBothInputsShapeFn)
+.Doc(R"doc(
 Update 'ref' by adding 'value' to it.
 
 This operation outputs "ref" after the update is done.
@@ -214,13 +214,13 @@ output_ref:= Same as "ref".  Returned as a convenience for operations that want
 )doc");
 
 REGISTER_OP("AssignSub")
-    .Input("ref: Ref(T)")
-    .Input("value: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(shape_inference::MergeBothInputsShapeFn)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("value: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("use_locking: bool = false")
+.SetShapeFn(shape_inference::MergeBothInputsShapeFn)
+.Doc(R"doc(
 Update 'ref' by subtracting 'value' from it.
 
 This operation outputs "ref" after the update is done.
@@ -236,33 +236,34 @@ output_ref:= Same as "ref".  Returned as a convenience for operations that want
 
 namespace {
 
-Status ScatterUpdateShape(InferenceContext* c) {
-  ShapeHandle var_shape = c->input(0);
-  ShapeHandle indices_shape = c->input(1);
+Status ScatterUpdateShape(InferenceContext* c)
+{
+	ShapeHandle var_shape = c->input(0);
+	ShapeHandle indices_shape = c->input(1);
 
-  ShapeHandle unused_updates_shape;
-  ShapeHandle concat;
-  ShapeHandle var_subshape;
-  TF_RETURN_IF_ERROR(c->Subshape(var_shape, 1, &var_subshape));
-  TF_RETURN_IF_ERROR(c->Concatenate(indices_shape, var_subshape, &concat));
-  TF_RETURN_IF_ERROR(c->Merge(c->input(2), concat, &unused_updates_shape));
+	ShapeHandle unused_updates_shape;
+	ShapeHandle concat;
+	ShapeHandle var_subshape;
+	TF_RETURN_IF_ERROR(c->Subshape(var_shape, 1, &var_subshape));
+	TF_RETURN_IF_ERROR(c->Concatenate(indices_shape, var_subshape, &concat));
+	TF_RETURN_IF_ERROR(c->Merge(c->input(2), concat, &unused_updates_shape));
 
-  c->set_output(0, var_shape);
-  return Status::OK();
+	c->set_output(0, var_shape);
+	return Status::OK();
 }
 
 }  // namespace
 
 REGISTER_OP("ScatterUpdate")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: type")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = true")
-    .SetShapeFn(ScatterUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: type")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = true")
+.SetShapeFn(ScatterUpdateShape)
+.Doc(R"doc(
 Applies sparse updates to a variable reference.
 
 This operation computes
@@ -299,15 +300,15 @@ use_locking: If True, the assignment will be protected by a lock;
 )doc");
 
 REGISTER_OP("ScatterAdd")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterUpdateShape)
+.Doc(R"doc(
 Adds sparse updates to a variable reference.
 
 This operation computes
@@ -343,15 +344,15 @@ use_locking: If True, the addition will be protected by a lock;
 )doc");
 
 REGISTER_OP("ScatterSub")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterUpdateShape)
+.Doc(R"doc(
 Subtracts sparse updates to a variable reference.
 
     # Scalar indices
@@ -385,15 +386,15 @@ use_locking: If True, the subtraction will be protected by a lock;
 )doc");
 
 REGISTER_OP("ScatterMul")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterUpdateShape)
+.Doc(R"doc(
 Multiplies sparse updates into a variable reference.
 
 This operation computes
@@ -425,15 +426,15 @@ use_locking: If True, the operation will be protected by a lock;
 )doc");
 
 REGISTER_OP("ScatterDiv")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterUpdateShape)
+.Doc(R"doc(
 Divides a variable reference by sparse updates.
 
 This operation computes
@@ -466,71 +467,72 @@ use_locking: If True, the operation will be protected by a lock;
 
 namespace {
 
-Status ScatterNdUpdateShape(InferenceContext* c) {
-  ShapeHandle ref_shape = c->input(0);
-  ShapeHandle indices_shape;
-  TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &indices_shape));
-  ShapeHandle updates_shape;
-  TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(2), 1, &updates_shape));
+Status ScatterNdUpdateShape(InferenceContext* c)
+{
+	ShapeHandle ref_shape = c->input(0);
+	ShapeHandle indices_shape;
+	TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(1), 1, &indices_shape));
+	ShapeHandle updates_shape;
+	TF_RETURN_IF_ERROR(c->WithRankAtLeast(c->input(2), 1, &updates_shape));
 
-  if (c->RankKnown(indices_shape) && c->RankKnown(updates_shape)) {
-    const int64 outer_dims = c->Rank(indices_shape) - 1;
-    const DimensionHandle ixdim = c->Dim(indices_shape, -1);
+	if (c->RankKnown(indices_shape) && c->RankKnown(updates_shape)) {
+		const int64 outer_dims = c->Rank(indices_shape) - 1;
+		const DimensionHandle ixdim = c->Dim(indices_shape, -1);
 
-    // We can only do more validation if the last dimension of indices
-    // is a known value.
-    if (c->ValueKnown(ixdim)) {
-      int64 ix = c->Value(ixdim);
-      ShapeHandle unused;
-      ShapeHandle prefix_indices;
-      TF_RETURN_IF_ERROR(
-          c->Subshape(indices_shape, 0, outer_dims, &prefix_indices));
-      ShapeHandle prefix_updates;
-      TF_RETURN_IF_ERROR(
-          c->Subshape(updates_shape, 0, outer_dims, &prefix_updates));
+		// We can only do more validation if the last dimension of indices
+		// is a known value.
+		if (c->ValueKnown(ixdim)) {
+			int64 ix = c->Value(ixdim);
+			ShapeHandle unused;
+			ShapeHandle prefix_indices;
+			TF_RETURN_IF_ERROR(
+					c->Subshape(indices_shape, 0, outer_dims, &prefix_indices));
+			ShapeHandle prefix_updates;
+			TF_RETURN_IF_ERROR(
+					c->Subshape(updates_shape, 0, outer_dims, &prefix_updates));
 
-      Status s = c->Merge(prefix_indices, prefix_updates, &unused);
-      if (!s.ok()) {
-        return errors::InvalidArgument(
-            "The outer ", outer_dims, " dimensions of indices.shape=",
-            c->DebugString(indices_shape), "must match the outer ", outer_dims,
-            " dimensions of updates.shape=", c->DebugString(updates_shape),
-            ": ", s.error_message());
-      }
+			Status s = c->Merge(prefix_indices, prefix_updates, &unused);
+			if (!s.ok()) {
+				return errors::InvalidArgument("The outer ", outer_dims,
+						" dimensions of indices.shape=",
+						c->DebugString(indices_shape), "must match the outer ",
+						outer_dims, " dimensions of updates.shape=",
+						c->DebugString(updates_shape), ": ", s.error_message());
+			}
 
-      ShapeHandle suffix_ref;
-      TF_RETURN_IF_ERROR(c->Subshape(ref_shape, ix, &suffix_ref));
-      ShapeHandle suffix_updates;
-      TF_RETURN_IF_ERROR(
-          c->Subshape(updates_shape, outer_dims, &suffix_updates));
-      s = c->Merge(suffix_ref, suffix_updates, &unused);
-      if (!s.ok()) {
-        return errors::InvalidArgument(
-            "The inner ", c->Rank(ref_shape) - ix, " dimensions of ref.shape=",
-            c->DebugString(ref_shape), "must match the inner ",
-            c->Rank(updates_shape) - outer_dims,
-            " dimensions of updates.shape=", c->DebugString(updates_shape),
-            ": ", s.error_message());
-      }
-    }
-  }
+			ShapeHandle suffix_ref;
+			TF_RETURN_IF_ERROR(c->Subshape(ref_shape, ix, &suffix_ref));
+			ShapeHandle suffix_updates;
+			TF_RETURN_IF_ERROR(
+					c->Subshape(updates_shape, outer_dims, &suffix_updates));
+			s = c->Merge(suffix_ref, suffix_updates, &unused);
+			if (!s.ok()) {
+				return errors::InvalidArgument("The inner ",
+						c->Rank(ref_shape) - ix, " dimensions of ref.shape=",
+						c->DebugString(ref_shape), "must match the inner ",
+						c->Rank(updates_shape) - outer_dims,
+						" dimensions of updates.shape=",
+						c->DebugString(updates_shape), ": ", s.error_message());
+			}
+		}
+	}
 
-  c->set_output(0, ref_shape);
-  return Status::OK();
+	c->set_output(0, ref_shape);
+	return Status::OK();
 }
 
 }  // namespace
 
 REGISTER_OP("ScatterNdUpdate")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: type")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = true")
-    .SetShapeFn(ScatterNdUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: type")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = true")
+.SetShapeFn(ScatterNdUpdateShape)
+.Doc(R"doc(
 Applies sparse `updates` to individual values or slices within a given
 variable according to `indices`.
 
@@ -579,15 +581,15 @@ output_ref: Same as ref. Returned as a convenience for operations that want to
 )doc");
 
 REGISTER_OP("ScatterNdAdd")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterNdUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterNdUpdateShape)
+.Doc(R"doc(
 Applies sparse addition between `updates` and individual values or slices
 within a given variable according to `indices`.
 
@@ -636,15 +638,15 @@ output_ref: Same as ref. Returned as a convenience for operations that want
 )doc");
 
 REGISTER_OP("ScatterNdSub")
-    .Input("ref: Ref(T)")
-    .Input("indices: Tindices")
-    .Input("updates: T")
-    .Output("output_ref: Ref(T)")
-    .Attr("T: numbertype")
-    .Attr("Tindices: {int32, int64}")
-    .Attr("use_locking: bool = false")
-    .SetShapeFn(ScatterNdUpdateShape)
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Input("indices: Tindices")
+.Input("updates: T")
+.Output("output_ref: Ref(T)")
+.Attr("T: numbertype")
+.Attr("Tindices: {int32, int64}")
+.Attr("use_locking: bool = false")
+.SetShapeFn(ScatterNdUpdateShape)
+.Doc(R"doc(
 Applies sparse subtraction between `updates` and individual values or slices
 within a given variable according to `indices`.
 
@@ -808,17 +810,17 @@ output_ref: Same as ref. Returned as a convenience for operations that want
 // to use the updated values after the update is done.)doc");
 
 REGISTER_OP("CountUpTo")
-    .Input("ref: Ref(T)")
-    .Output("output: T")
-    .Attr("limit: int")
-    .Attr("T: {int32, int64}")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle output;
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 0, &output));
-      c->set_output(0, output);
-      return Status::OK();
-    })
-    .Doc(R"doc(
+.Input("ref: Ref(T)")
+.Output("output: T")
+.Attr("limit: int")
+.Attr("T: {int32, int64}")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle output;
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 0, &output));
+			c->set_output(0, output);
+			return Status::OK();
+		})
+.Doc(R"doc(
 Increments 'ref' until it reaches 'limit'.
 
 ref: Should be from a scalar `Variable` node.
@@ -828,4 +830,5 @@ output: A copy of the input before increment. If nothing else modifies the
   input, the values produced will all be distinct.
 )doc");
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_TESTS_LOCAL_CLIENT_TEST_BASE_H_
 #define TENSORFLOW_COMPILER_XLA_TESTS_LOCAL_CLIENT_TEST_BASE_H_
@@ -39,106 +39,106 @@ limitations under the License.
 
 namespace xla {
 
-class TestAllocator : public StreamExecutorMemoryAllocator {
- public:
-  explicit TestAllocator(perftools::gputools::Platform* platform)
-      : StreamExecutorMemoryAllocator(
-            platform, PlatformUtil::GetStreamExecutors(platform).ValueOrDie()) {
-  }
+class TestAllocator: public StreamExecutorMemoryAllocator {
+public:
+	explicit TestAllocator(perftools::gputools::Platform* platform) :
+			StreamExecutorMemoryAllocator(platform,
+					PlatformUtil::GetStreamExecutors(platform).ValueOrDie())
+	{
+	}
 
-  StatusOr<perftools::gputools::DeviceMemoryBase> Allocate(
-      int device_ordinal, uint64 size, bool retry_on_failure) override;
-  tensorflow::Status Deallocate(
-      int device_ordinal, perftools::gputools::DeviceMemoryBase* mem) override;
+	StatusOr<perftools::gputools::DeviceMemoryBase> Allocate(int device_ordinal,
+			uint64 size, bool retry_on_failure) override;
+	tensorflow::Status Deallocate(int device_ordinal,
+			perftools::gputools::DeviceMemoryBase* mem) override;
 
-  // Return the number of allocations that have been performed.
-  int64 allocation_count() const;
-  int64 allocation_count(int device_ordinal) const;
+	// Return the number of allocations that have been performed.
+	int64 allocation_count() const;
+	int64 allocation_count(int device_ordinal) const;
 
-  // Return the number of deallocations that have been performed.
-  int64 deallocation_count() const;
-  int64 deallocation_count(int device_ordinal) const;
+	// Return the number of deallocations that have been performed.
+	int64 deallocation_count() const;
+	int64 deallocation_count(int device_ordinal) const;
 
- private:
-  mutable tensorflow::mutex count_mutex_;
+private:
+	mutable tensorflow::mutex count_mutex_;
 
-  // Global counts of allocations and deallocations.
-  int64 allocation_count_ GUARDED_BY(count_mutex_) = 0;
-  int64 deallocation_count_ GUARDED_BY(count_mutex_) = 0;
+	// Global counts of allocations and deallocations.
+	int64
+	allocation_count_ GUARDED_BY(count_mutex_) = 0;int64
+	deallocation_count_ GUARDED_BY(count_mutex_) = 0;
 
-  // Per-device counts of allocations and deallocations.
-  std::map<int, int64> device_allocation_count_ GUARDED_BY(count_mutex_);
-  std::map<int, int64> device_deallocation_count_ GUARDED_BY(count_mutex_);
+	// Per-device counts of allocations and deallocations.
+	std::map<int, int64> device_allocation_count_ GUARDED_BY(count_mutex_);std::map<int, int64> device_deallocation_count_ GUARDED_BY(count_mutex_);
 };
 
 // A base class for tests which exercise the LocalClient interface.
-class LocalClientTestBase : public ::testing::Test {
- protected:
-  explicit LocalClientTestBase(
-      perftools::gputools::Platform* platform = nullptr);
+class LocalClientTestBase: public ::testing::Test {
+protected:
+	explicit LocalClientTestBase(perftools::gputools::Platform* platform =
+			nullptr);
 
-  static TestAllocator* GetOrCreateAllocator(
-      perftools::gputools::Platform* platform);
+	static TestAllocator* GetOrCreateAllocator(
+			perftools::gputools::Platform* platform);
 
-  // Copy the given literal onto the default device and return a
-  // ScopedShapedBuffer.
-  std::unique_ptr<ScopedShapedBuffer> LiteralToScopedShapedBuffer(
-      const Literal& literal);
-  // As above, but copy to a specific device.
-  std::unique_ptr<ScopedShapedBuffer> LiteralToScopedShapedBuffer(
-      const Literal& literal, int device_ordinal);
+	// Copy the given literal onto the default device and return a
+	// ScopedShapedBuffer.
+	std::unique_ptr<ScopedShapedBuffer> LiteralToScopedShapedBuffer(
+			const Literal& literal);
+	// As above, but copy to a specific device.
+	std::unique_ptr<ScopedShapedBuffer> LiteralToScopedShapedBuffer(
+			const Literal& literal, int device_ordinal);
 
-  // Construct and return a literal containing the array represented by
-  // shaped_buffer.
-  std::unique_ptr<Literal> ShapedBufferToLiteral(
-      const ShapedBuffer& shaped_buffer);
+	// Construct and return a literal containing the array represented by
+	// shaped_buffer.
+	std::unique_ptr<Literal> ShapedBufferToLiteral(
+			const ShapedBuffer& shaped_buffer);
 
-  // Helper for converting a ShapedBuffer into a literal.
-  void CopyShapedBufferToLiteral(const ShapedBuffer& shaped_buffer,
-                                 ShapeIndex* index, Literal* literal);
+	// Helper for converting a ShapedBuffer into a literal.
+	void CopyShapedBufferToLiteral(const ShapedBuffer& shaped_buffer,
+			ShapeIndex* index, Literal* literal);
 
-  // Execute the given computation on the local client. With and without
-  // options.
-  std::unique_ptr<ScopedShapedBuffer> ExecuteLocally(
-      const Computation& computation,
-      tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments);
-  std::unique_ptr<ScopedShapedBuffer> ExecuteLocally(
-      const Computation& computation,
-      tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
-      const LocalExecuteOptions& options);
+	// Execute the given computation on the local client. With and without
+	// options.
+	std::unique_ptr<ScopedShapedBuffer> ExecuteLocally(
+			const Computation& computation,
+			tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments);
+	std::unique_ptr<ScopedShapedBuffer> ExecuteLocally(
+			const Computation& computation,
+			tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
+			const LocalExecuteOptions& options);
 
-  // Returns a default set of execute options, configured to use allocator_
-  // as the allocator.
-  LocalExecuteOptions DefaultLocalExecuteOptions() const;
+	// Returns a default set of execute options, configured to use allocator_
+	// as the allocator.
+	LocalExecuteOptions DefaultLocalExecuteOptions() const;
 
-  // Overloads which write result into the given buffer.
-  void ExecuteLocally(
-      const Computation& computation,
-      tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
-      ShapedBuffer* result);
-  void ExecuteLocally(
-      const Computation& computation,
-      tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
-      const LocalExecuteOptions& options, ShapedBuffer* result);
+	// Overloads which write result into the given buffer.
+	void ExecuteLocally(const Computation& computation,
+			tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
+			ShapedBuffer* result);
+	void ExecuteLocally(const Computation& computation,
+			tensorflow::gtl::ArraySlice<const ShapedBuffer*> arguments,
+			const LocalExecuteOptions& options, ShapedBuffer* result);
 
-  // Convert a ShapedBuffer into a ScopedShaped buffer so that all buffers are
-  // deallocated when the object is destructed.
-  std::unique_ptr<ScopedShapedBuffer> ShapedBufferToScopedShapedBuffer(
-      std::unique_ptr<ShapedBuffer> shaped_buffer,
-      DeviceMemoryAllocator* allocator);
+	// Convert a ShapedBuffer into a ScopedShaped buffer so that all buffers are
+	// deallocated when the object is destructed.
+	std::unique_ptr<ScopedShapedBuffer> ShapedBufferToScopedShapedBuffer(
+			std::unique_ptr<ShapedBuffer> shaped_buffer,
+			DeviceMemoryAllocator* allocator);
 
-  string TestName() const {
-    return ::testing::UnitTest::GetInstance()->current_test_info()->name();
-  }
+	string TestName() const
+	{
+		return ::testing::UnitTest::GetInstance()->current_test_info()->name();
+	}
 
-  // The allocator must live as long as the service which lives until the end of
-  // the process, so make the allocator static.
-  static TestAllocator* allocator_;
+	// The allocator must live as long as the service which lives until the end of
+	// the process, so make the allocator static.
+	static TestAllocator* allocator_;
 
-  perftools::gputools::StreamExecutor* stream_executor_;
-  TransferManager* transfer_manager_;
+	perftools::gputools::StreamExecutor* stream_executor_;
+	TransferManager* transfer_manager_;
 
-  LocalClient* local_client_;
+	LocalClient* local_client_;
 };
 
 }  // namespace xla

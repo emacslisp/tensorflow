@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include <dirent.h>
 #include <errno.h>
@@ -38,92 +38,110 @@ namespace tensorflow {
 
 namespace {
 
-class StdThread : public Thread {
- public:
-  // name and thread_options are both ignored.
-  StdThread(const ThreadOptions& thread_options, const string& name,
-            std::function<void()> fn)
-      : thread_(fn) {}
-  ~StdThread() { thread_.join(); }
+class StdThread: public Thread {
+public:
+	// name and thread_options are both ignored.
+	StdThread(const ThreadOptions& thread_options, const string& name,
+			std::function<void()> fn) :
+			thread_(fn)
+	{
+	}
+	~StdThread()
+	{
+		thread_.join();
+	}
 
- private:
-  std::thread thread_;
+private:
+	std::thread thread_;
 };
 
-class PosixEnv : public Env {
- public:
-  PosixEnv() {}
+class PosixEnv: public Env {
+public:
+	PosixEnv()
+	{
+	}
 
-  ~PosixEnv() override { LOG(FATAL) << "Env::Default() must not be destroyed"; }
+	~PosixEnv() override
+	{
+		LOG(FATAL) << "Env::Default() must not be destroyed";
+	}
 
-  bool MatchPath(const string& path, const string& pattern) override {
-    return fnmatch(pattern.c_str(), path.c_str(), FNM_PATHNAME) == 0;
-  }
+	bool MatchPath(const string& path, const string& pattern) override
+	{
+		return fnmatch(pattern.c_str(), path.c_str(), FNM_PATHNAME) == 0;
+	}
 
-  uint64 NowMicros() override {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
-    return static_cast<uint64>(tv.tv_sec) * 1000000 + tv.tv_usec;
-  }
+	uint64 NowMicros() override
+	{
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		return static_cast<uint64>(tv.tv_sec) * 1000000 + tv.tv_usec;
+	}
 
-  void SleepForMicroseconds(int64 micros) override {
-    while (micros > 0) {
-      timespec sleep_time;
-      sleep_time.tv_sec = 0;
-      sleep_time.tv_nsec = 0;
+	void SleepForMicroseconds(int64 micros) override
+	{
+		while (micros > 0) {
+			timespec sleep_time;
+			sleep_time.tv_sec = 0;
+			sleep_time.tv_nsec = 0;
 
-      if (micros >= 1e6) {
-        sleep_time.tv_sec =
-            std::min<int64>(micros / 1e6, std::numeric_limits<time_t>::max());
-        micros -= static_cast<int64>(sleep_time.tv_sec) * 1e6;
-      }
-      if (micros < 1e6) {
-        sleep_time.tv_nsec = 1000 * micros;
-        micros = 0;
-      }
-      while (nanosleep(&sleep_time, &sleep_time) != 0 && errno == EINTR) {
-        // Ignore signals and wait for the full interval to elapse.
-      }
-    }
-  }
+			if (micros >= 1e6) {
+				sleep_time.tv_sec = std::min<int64>(micros / 1e6,
+						std::numeric_limits<time_t>::max());
+				micros -= static_cast<int64>(sleep_time.tv_sec) * 1e6;
+			}
+			if (micros < 1e6) {
+				sleep_time.tv_nsec = 1000 * micros;
+				micros = 0;
+			}
+			while (nanosleep(&sleep_time, &sleep_time) != 0 && errno == EINTR) {
+				// Ignore signals and wait for the full interval to elapse.
+			}
+		}
+	}
 
-  Thread* StartThread(const ThreadOptions& thread_options, const string& name,
-                      std::function<void()> fn) override {
-    return new StdThread(thread_options, name, fn);
-  }
+	Thread* StartThread(const ThreadOptions& thread_options, const string& name,
+			std::function<void()> fn) override
+	{
+		return new StdThread(thread_options, name, fn);
+	}
 
-  void SchedClosure(std::function<void()> closure) override {
-    // TODO(b/27290852): Spawning a new thread here is wasteful, but
-    // needed to deal with the fact that many `closure` functions are
-    // blocking in the current codebase.
-    std::thread closure_thread(closure);
-    closure_thread.detach();
-  }
+	void SchedClosure(std::function<void()> closure) override
+	{
+		// TODO(b/27290852): Spawning a new thread here is wasteful, but
+		// needed to deal with the fact that many `closure` functions are
+		// blocking in the current codebase.
+		std::thread closure_thread(closure);
+		closure_thread.detach();
+	}
 
-  void SchedClosureAfter(int64 micros, std::function<void()> closure) override {
-    // TODO(b/27290852): Consuming a thread here is wasteful, but this
-    // code is (currently) only used in the case where a step fails
-    // (AbortStep). This could be replaced by a timer thread
-    SchedClosure([this, micros, closure]() {
-      SleepForMicroseconds(micros);
-      closure();
-    });
-  }
+	void SchedClosureAfter(int64 micros, std::function<void()> closure) override
+	{
+		// TODO(b/27290852): Consuming a thread here is wasteful, but this
+		// code is (currently) only used in the case where a step fails
+		// (AbortStep). This could be replaced by a timer thread
+		SchedClosure([this, micros, closure]() {
+			SleepForMicroseconds(micros);
+			closure();
+		});
+	}
 
-  Status LoadLibrary(const char* library_filename, void** handle) override {
-    return tensorflow::internal::LoadLibrary(library_filename, handle);
-  }
+	Status LoadLibrary(const char* library_filename, void** handle) override
+	{
+		return tensorflow::internal::LoadLibrary(library_filename, handle);
+	}
 
-  Status GetSymbolFromLibrary(void* handle, const char* symbol_name,
-                              void** symbol) override {
-    return tensorflow::internal::GetSymbolFromLibrary(handle, symbol_name,
-                                                      symbol);
-  }
+	Status GetSymbolFromLibrary(void* handle, const char* symbol_name,
+			void** symbol) override
+	{
+		return tensorflow::internal::GetSymbolFromLibrary(handle, symbol_name,
+				symbol);
+	}
 
-  string FormatLibraryFileName(const string& name,
-                               const string& version) override {
-    return tensorflow::internal::FormatLibraryFileName(name, version);
-  }
+	string FormatLibraryFileName(const string& name, const string& version) override
+	{
+		return tensorflow::internal::FormatLibraryFileName(name, version);
+	}
 };
 
 }  // namespace
@@ -132,9 +150,10 @@ class PosixEnv : public Env {
 REGISTER_FILE_SYSTEM("", PosixFileSystem);
 REGISTER_FILE_SYSTEM("file", LocalPosixFileSystem);
 Env* Env::Default() {
-  static Env* default_env = new PosixEnv;
-  return default_env;
+	static Env* default_env = new PosixEnv;
+	return default_env;
 }
 #endif
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

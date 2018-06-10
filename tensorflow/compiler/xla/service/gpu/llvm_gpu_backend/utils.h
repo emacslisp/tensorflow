@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_GPU_LLVM_GPU_BACKEND_UTILS_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_GPU_LLVM_GPU_BACKEND_UTILS_H_
@@ -34,7 +34,7 @@ namespace gpu {
 //
 // If loading fails for some reason, dies printing a diagnostic error.
 std::unique_ptr<llvm::Module> LoadIRModule(const string& filename,
-                                           llvm::LLVMContext* llvm_context);
+		llvm::LLVMContext* llvm_context);
 
 // Convenience function for replacing the extension of the given filename.
 // If the filename has no extension, the new extension is appended to its name.
@@ -42,7 +42,7 @@ std::unique_ptr<llvm::Module> LoadIRModule(const string& filename,
 // For example:
 //   ReplaceFilenameExtension("/foo/baz.txt", "cc") --> "/foo/baz.cc"
 string ReplaceFilenameExtension(tensorflow::StringPiece filename,
-                                tensorflow::StringPiece new_extension);
+		tensorflow::StringPiece new_extension);
 
 }  // namespace gpu
 }  // namespace xla

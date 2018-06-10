@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_TF2XLA_XLA_COMPILATION_DEVICE_H_
 #define TENSORFLOW_COMPILER_TF2XLA_XLA_COMPILATION_DEVICE_H_
@@ -37,19 +37,19 @@ namespace tensorflow {
 extern const char* const DEVICE_CPU_XLA_JIT;  // "CPU_XLA_JIT"
 extern const char* const DEVICE_GPU_XLA_JIT;  // "GPU_XLA_JIT"
 
-constexpr std::array<DataType, 5> kCpuAllTypes = {
-    {DT_INT32, DT_INT64, DT_FLOAT, DT_DOUBLE, DT_BOOL}};
-constexpr std::array<DataType, 2> kCpuIntTypes = {{DT_INT32, DT_INT64}};
-constexpr std::array<DataType, 2> kCpuFloatTypes = {{DT_FLOAT, DT_DOUBLE}};
-constexpr std::array<DataType, 4> kCpuNumericTypes = {
-    {DT_INT32, DT_INT64, DT_FLOAT, DT_DOUBLE}};
+constexpr std::array<DataType, 5> kCpuAllTypes = { { DT_INT32, DT_INT64,
+		DT_FLOAT, DT_DOUBLE, DT_BOOL } };
+constexpr std::array<DataType, 2> kCpuIntTypes = { { DT_INT32, DT_INT64 } };
+constexpr std::array<DataType, 2> kCpuFloatTypes = { { DT_FLOAT, DT_DOUBLE } };
+constexpr std::array<DataType, 4> kCpuNumericTypes = { { DT_INT32, DT_INT64,
+		DT_FLOAT, DT_DOUBLE } };
 
-constexpr std::array<DataType, 5> kGpuAllTypes = {
-    {DT_INT32, DT_INT64, DT_FLOAT, DT_DOUBLE, DT_BOOL}};
-constexpr std::array<DataType, 2> kGpuIntTypes = {{DT_INT32, DT_INT64}};
-constexpr std::array<DataType, 2> kGpuFloatTypes = {{DT_FLOAT, DT_DOUBLE}};
-constexpr std::array<DataType, 4> kGpuNumericTypes = {
-    {DT_INT32, DT_INT64, DT_FLOAT, DT_DOUBLE}};
+constexpr std::array<DataType, 5> kGpuAllTypes = { { DT_INT32, DT_INT64,
+		DT_FLOAT, DT_DOUBLE, DT_BOOL } };
+constexpr std::array<DataType, 2> kGpuIntTypes = { { DT_INT32, DT_INT64 } };
+constexpr std::array<DataType, 2> kGpuFloatTypes = { { DT_FLOAT, DT_DOUBLE } };
+constexpr std::array<DataType, 4> kGpuNumericTypes = { { DT_INT32, DT_INT64,
+		DT_FLOAT, DT_DOUBLE } };
 
 // Class is declared and defined in tla_jit_device.cc, reference
 // included here only so the XlaCompilationDevice allocator_ member can be
@@ -67,99 +67,97 @@ class XlaCompilationAllocator;
 // of the subgraph's computation. It has a 'dummy' allocator that
 // backs each Tensor with metadata indicating the computation the
 // Tensor represents.
-class XlaCompilationDevice : public LocalDevice {
- public:
-  XlaCompilationDevice(const SessionOptions& options, DeviceType type);
+class XlaCompilationDevice: public LocalDevice {
+public:
+	XlaCompilationDevice(const SessionOptions& options, DeviceType type);
 
-  ~XlaCompilationDevice() override;
+	~XlaCompilationDevice() override;
 
-  Allocator* GetAllocator(AllocatorAttributes attr) override;
+	Allocator* GetAllocator(AllocatorAttributes attr) override;
 
-  Status Sync() override;
+	Status Sync() override;
 
-  Status MakeTensorFromProto(const TensorProto& tensor_proto,
-                             const AllocatorAttributes alloc_attrs,
-                             Tensor* tensor) override;
+	Status MakeTensorFromProto(const TensorProto& tensor_proto,
+			const AllocatorAttributes alloc_attrs, Tensor* tensor) override;
 
- private:
-  std::unique_ptr<XlaCompilationAllocator> allocator_;
+private:
+	std::unique_ptr<XlaCompilationAllocator> allocator_;
 };
 
 // Class that manages registrations of operators and devices for the XLA JIT.
 // Not thread-safe.
 class XlaOpRegistry {
- public:
-  typedef OpKernel* (*Factory)(OpKernelConstruction*);
+public:
+	typedef OpKernel* (*Factory)(OpKernelConstruction*);
 
-  // Registers 'jit_device_name' as the JIT device corresponding to
-  // 'device_name'. If 'requires_jit' is true, then operators placed on this
-  // device must be JIT-compiled. Dies if a conflicting registration already
-  // exists.
-  static void RegisterJitDevice(const string& device_name,
-                                const string& jit_device_name,
-                                bool requires_jit, bool enable_jit_by_default);
+	// Registers 'jit_device_name' as the JIT device corresponding to
+	// 'device_name'. If 'requires_jit' is true, then operators placed on this
+	// device must be JIT-compiled. Dies if a conflicting registration already
+	// exists.
+	static void RegisterJitDevice(const string& device_name,
+			const string& jit_device_name, bool requires_jit,
+			bool enable_jit_by_default);
 
-  // Returns the JIT device name associated with 'device_name', setting
-  // 'jit_device_name', 'requires_jit', and 'enabled_jit_by_default', if they
-  // are not null. Returns false and leaves the outputs unchanged if no matching
-  // JIT device is registered.
-  // '*enable_jit_by_default' is set to true if we should try to JIT using this
-  // device when the JIT is enabled via the Session OptimizerOptions.
-  static bool GetJitDevice(const string& device_name,
-                           const string** jit_device_name, bool* requires_jit,
-                           bool* enable_jit_by_default);
+	// Returns the JIT device name associated with 'device_name', setting
+	// 'jit_device_name', 'requires_jit', and 'enabled_jit_by_default', if they
+	// are not null. Returns false and leaves the outputs unchanged if no matching
+	// JIT device is registered.
+	// '*enable_jit_by_default' is set to true if we should try to JIT using this
+	// device when the JIT is enabled via the Session OptimizerOptions.
+	static bool GetJitDevice(const string& device_name,
+			const string** jit_device_name, bool* requires_jit,
+			bool* enable_jit_by_default);
 
-  // Registers all JIT kernels on JIT devices, if not already registered.
-  // Does nothing otherwise.
-  static void RegisterJitKernels();
+	// Registers all JIT kernels on JIT devices, if not already registered.
+	// Does nothing otherwise.
+	static void RegisterJitKernels();
 
-  // Returns KernelDefs for JIT ops registered on 'jit_device_type'.
-  // Does not include kernels registered using REGISTER_XLA_JIT_ONLY_KERNEL.
-  static std::vector<const KernelDef*> DeviceKernels(
-      const string& jit_device_type);
+	// Returns KernelDefs for JIT ops registered on 'jit_device_type'.
+	// Does not include kernels registered using REGISTER_XLA_JIT_ONLY_KERNEL.
+	static std::vector<const KernelDef*> DeviceKernels(
+			const string& jit_device_type);
 
- private:
-  friend class XlaKernelRegistrar;
-  friend class XlaOpRegistrar;
+private:
+	friend class XlaKernelRegistrar;
+	friend class XlaOpRegistrar;
 
-  static XlaOpRegistry& Instance();
+	static XlaOpRegistry& Instance();
 
-  XlaOpRegistry();
-  ~XlaOpRegistry();
+	XlaOpRegistry();
+	~XlaOpRegistry();
 
-  mutex mutex_;
+	mutex mutex_;
 
-  // Map from Tensorflow device names to the corresponding JIT device metadata.
-  struct JitDevice {
-    string jit_device_name;
-    bool requires_jit;
-    bool enable_jit_by_default;
-  };
-  std::unordered_map<string, JitDevice> jit_devices_ GUARDED_BY(mutex_);
+	// Map from Tensorflow device names to the corresponding JIT device metadata.
+	struct JitDevice {
+		string jit_device_name;
+		bool requires_jit;
+		bool enable_jit_by_default;
+	};std::unordered_map<string, JitDevice> jit_devices_ GUARDED_BY(mutex_);
 
-  // Map from operator name to OpKernel factory, populated by REGISTER_XLA_OP.
-  std::unordered_map<string, Factory> ops_ GUARDED_BY(mutex_);
+	// Map from operator name to OpKernel factory, populated by REGISTER_XLA_OP.
+	std::unordered_map<string, Factory> ops_ GUARDED_BY(mutex_);
 
-  // Have we already registered the JIT kernels on the JIT devices?
-  bool jit_kernels_registered_ = false;
+	// Have we already registered the JIT kernels on the JIT devices?
+	bool jit_kernels_registered_ = false;
 
-  struct XlaKernel {
-    // Should this kernel be registered only on JIT devices, without a dummy
-    // kernel registered on the corresponding XLA device?
-    bool jit_only;
+	struct XlaKernel {
+		// Should this kernel be registered only on JIT devices, without a dummy
+		// kernel registered on the corresponding XLA device?
+		bool jit_only;
 
-    // KernelDef as built by REGISTER_XLA_KERNEL.
-    std::unique_ptr<const KernelDef> kernel_def;
-  };
+		// KernelDef as built by REGISTER_XLA_KERNEL.
+		std::unique_ptr<const KernelDef> kernel_def;
+	};
 
-  // Map from JIT device name to a vector of XLA kernel descriptors.
-  std::unordered_map<string, std::vector<XlaKernel>> kernels_
-      GUARDED_BY(mutex_);
+	// Map from JIT device name to a vector of XLA kernel descriptors.
+	std::unordered_map<string, std::vector<XlaKernel>> kernels_
+	GUARDED_BY (mutex_);
 
-  // Holds ownership of OpKernelRegistrars that represent the Tensorflow kernel
-  // registrations created by RegisterJitKernels() and RegisterDeviceKernels().
-  std::vector<std::unique_ptr<kernel_factory::OpKernelRegistrar>>
-      kernel_registrars_ GUARDED_BY(mutex_);
+	// Holds ownership of OpKernelRegistrars that represent the Tensorflow kernel
+	// registrations created by RegisterJitKernels() and RegisterDeviceKernels().
+	std::vector<std::unique_ptr<kernel_factory::OpKernelRegistrar>>
+	kernel_registrars_ GUARDED_BY(mutex_);
 };
 
 // REGISTER_XLA_OP() registers an XLA OpKernel by name, for example:
@@ -189,8 +187,8 @@ class XlaOpRegistry {
 // Implementation details.
 
 class XlaOpRegistrar {
- public:
-  XlaOpRegistrar(StringPiece name, XlaOpRegistry::Factory factory);
+public:
+	XlaOpRegistrar(StringPiece name, XlaOpRegistry::Factory factory);
 };
 
 #define REGISTER_XLA_OP_UNIQ_HELPER(COUNTER, NAME, OP) \
@@ -203,8 +201,8 @@ class XlaOpRegistrar {
 
 // Implementation details.
 class XlaKernelRegistrar {
- public:
-  XlaKernelRegistrar(bool jit_only, const KernelDef* def);
+public:
+	XlaKernelRegistrar(bool jit_only, const KernelDef* def);
 };
 
 #define REGISTER_XLA_KERNEL_UNIQ_HELPER(COUNTER, DEVICE, BUILDER, JIT_ONLY) \

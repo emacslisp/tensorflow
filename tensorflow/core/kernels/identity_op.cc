@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/array_ops.cc.
 #include "tensorflow/core/kernels/identity_op.h"
@@ -34,7 +34,7 @@ REGISTER_KERNEL_BUILDER(Name("PreventGradient").Device(DEVICE_CPU), IdentityOp);
 // PlaceholderWithDefault does the same thing as Identity, but has a
 // different shape function (and constant value function) registered.
 REGISTER_KERNEL_BUILDER(Name("PlaceholderWithDefault").Device(DEVICE_CPU),
-                        IdentityOp);
+		IdentityOp);
 
 REGISTER_KERNEL_BUILDER(Name("RefIdentity").Device(DEVICE_CPU), IdentityOp);
 
@@ -92,7 +92,7 @@ REGISTER_SYCL_HOST_KERNEL(bool);
       Name("StopGradient").Device(DEVICE_GPU).TypeConstraint<type>("T"),    \
       IdentityOp)
 
-TF_CALL_NUMBER_TYPES_NO_INT32(REGISTER_GPU_KERNEL);
+TF_CALL_NUMBER_TYPES_NO_INT32 (REGISTER_GPU_KERNEL);
 REGISTER_GPU_KERNEL(bfloat16);
 
 #undef REGISTER_GPU_KERNEL
@@ -122,4 +122,5 @@ REGISTER_GPU_HOST_KERNEL(bool);
 
 #endif
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_GPU_WHILE_THUNK_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_GPU_WHILE_THUNK_H_
@@ -35,25 +35,25 @@ namespace gpu {
 //   init, condition.parameter, body.parameter, body.root, while.result
 // WhileThunk synchronizes the stream to test the result of the 'condition'
 // computation.
-class WhileThunk : public Thunk {
- public:
-  // Constructs a WhileThunk to compute while instruction 'hlo'.
-  WhileThunk(BufferAllocation::Index condition_result_buffer_index,
-             std::unique_ptr<ThunkSequence> condition_thunk_sequence,
-             std::unique_ptr<ThunkSequence> body_thunk_sequence,
-             const HloInstruction* hlo);
-  WhileThunk(const WhileThunk&) = delete;
-  WhileThunk& operator=(const WhileThunk&) = delete;
+class WhileThunk: public Thunk {
+public:
+	// Constructs a WhileThunk to compute while instruction 'hlo'.
+	WhileThunk(BufferAllocation::Index condition_result_buffer_index,
+			std::unique_ptr<ThunkSequence> condition_thunk_sequence,
+			std::unique_ptr<ThunkSequence> body_thunk_sequence,
+			const HloInstruction* hlo);
+	WhileThunk(const WhileThunk&) = delete;
+	WhileThunk& operator=(const WhileThunk&) = delete;
 
-  tensorflow::Status Initialize(const GpuExecutable& executable) override;
-  tensorflow::Status ExecuteOnStream(
-      const BufferAllocations& buffer_allocations,
-      perftools::gputools::Stream* stream) override;
+	tensorflow::Status Initialize(const GpuExecutable& executable) override;
+	tensorflow::Status ExecuteOnStream(
+			const BufferAllocations& buffer_allocations,
+			perftools::gputools::Stream* stream) override;
 
- private:
-  BufferAllocation::Index condition_result_buffer_index_;
-  std::unique_ptr<SequentialThunk> condition_thunk_sequence_;
-  std::unique_ptr<SequentialThunk> body_thunk_sequence_;
+private:
+	BufferAllocation::Index condition_result_buffer_index_;
+	std::unique_ptr<SequentialThunk> condition_thunk_sequence_;
+	std::unique_ptr<SequentialThunk> body_thunk_sequence_;
 };
 
 }  // namespace gpu

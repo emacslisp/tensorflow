@@ -1,20 +1,19 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // Native XLA implementations of simple unary Ops
-
 #include "tensorflow/compiler/tf2xla/kernels/cwise_ops.h"
 #include "tensorflow/compiler/tf2xla/xla_compilation_device.h"
 #include "tensorflow/compiler/tf2xla/xla_helpers.h"
@@ -59,13 +58,13 @@ XLAJIT_MAKE_UNARY(Log1p, b->Log(b->Add(XlaHelpers::One(b, input_type(0)), x)));
 XLAJIT_MAKE_UNARY(LogicalNot, b->LogicalNot(x));
 XLAJIT_MAKE_UNARY(Neg, b->Neg(x));
 XLAJIT_MAKE_UNARY(Rsqrt,
-                  b->Pow(x, XlaHelpers::FloatLiteral(b, input_type(0), -0.5)));
+		b->Pow(x, XlaHelpers::FloatLiteral(b, input_type(0), -0.5)));
 XLAJIT_MAKE_UNARY(Sigmoid,
-                  b->Map({x}, *ctx->GetOrCreateSigmoid(input_type(0))));
+		b->Map( { x }, *ctx->GetOrCreateSigmoid(input_type(0))));
 XLAJIT_MAKE_UNARY(Softplus,
-                  b->Log(b->Add(b->Exp(x), XlaHelpers::One(b, input_type(0)))));
+		b->Log(b->Add(b->Exp(x), XlaHelpers::One(b, input_type(0)))));
 XLAJIT_MAKE_UNARY(Sqrt,
-                  b->Pow(x, XlaHelpers::FloatLiteral(b, input_type(0), 0.5)));
+		b->Pow(x, XlaHelpers::FloatLiteral(b, input_type(0), 0.5)));
 XLAJIT_MAKE_UNARY(Square, b->Mul(x, x));
 XLAJIT_MAKE_UNARY(Tanh, b->Tanh(x));
 

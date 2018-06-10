@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include <sys/wait.h>
 
@@ -21,7 +21,8 @@ limitations under the License.
 
 namespace tensorflow {
 
-class SubProcessTest : public ::testing::Test {};
+class SubProcessTest: public ::testing::Test {
+};
 
 TEST_F(SubProcessTest, NoOutputNoComm) {
   tensorflow::SubProcess proc;
@@ -40,7 +41,8 @@ TEST_F(SubProcessTest, NoOutput) {
   string out, err;
   int status = proc.Communicate(nullptr, &out, &err);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
   EXPECT_EQ("", out);
   EXPECT_EQ("", err);
 }
@@ -55,7 +57,8 @@ TEST_F(SubProcessTest, Stdout) {
   string out, err;
   int status = proc.Communicate(nullptr, &out, &err);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
   EXPECT_EQ("hello world", out);
   EXPECT_EQ("", err);
 }
@@ -69,7 +72,8 @@ TEST_F(SubProcessTest, StdoutIgnored) {
 
   int status = proc.Communicate(nullptr, nullptr, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
 }
 
 TEST_F(SubProcessTest, Stderr) {
@@ -82,7 +86,8 @@ TEST_F(SubProcessTest, Stderr) {
   string out, err;
   int status = proc.Communicate(nullptr, &out, &err);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(1, WEXITSTATUS(status));
+  EXPECT_EQ(1, WEXITSTATUS(status)
+);
   EXPECT_EQ("", out);
   EXPECT_NE(string::npos, err.find("/file_does_not_exist"));
 }
@@ -96,7 +101,8 @@ TEST_F(SubProcessTest, StderrIgnored) {
 
   int status = proc.Communicate(nullptr, nullptr, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(1, WEXITSTATUS(status));
+  EXPECT_EQ(1, WEXITSTATUS(status)
+);
 }
 
 TEST_F(SubProcessTest, Stdin) {
@@ -108,7 +114,8 @@ TEST_F(SubProcessTest, Stdin) {
   string in = "foobar\nbarfoo\nhaha\n";
   int status = proc.Communicate(&in, nullptr, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
 }
 
 TEST_F(SubProcessTest, StdinStdout) {
@@ -122,7 +129,8 @@ TEST_F(SubProcessTest, StdinStdout) {
   string out;
   int status = proc.Communicate(&in, &out, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
   int count = stoi(out);
   EXPECT_EQ(3, count);
 }
@@ -143,7 +151,8 @@ TEST_F(SubProcessTest, StdinChildExit) {
 
   int status = proc.Communicate(&in, nullptr, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
 }
 
 TEST_F(SubProcessTest, StdinStdoutOverlap) {
@@ -164,21 +173,23 @@ TEST_F(SubProcessTest, StdinStdoutOverlap) {
   string out;
   int status = proc.Communicate(&in, &out, nullptr);
   EXPECT_TRUE(WIFEXITED(status));
-  EXPECT_EQ(0, WEXITSTATUS(status));
-  EXPECT_EQ(in, out);
+  EXPECT_EQ(0, WEXITSTATUS(status)
+);
+EXPECT_EQ(in, out);
 }
 
 TEST_F(SubProcessTest, KillProc) {
-  tensorflow::SubProcess proc;
-  proc.SetProgram("/bin/cat", {"cat"});
-  proc.SetChannelAction(CHAN_STDIN, ACTION_PIPE);
-  proc.SetChannelAction(CHAN_STDOUT, ACTION_PIPE);
-  EXPECT_TRUE(proc.Start());
+tensorflow::SubProcess proc;
+proc.SetProgram("/bin/cat", {"cat"});
+proc.SetChannelAction(CHAN_STDIN, ACTION_PIPE);
+proc.SetChannelAction(CHAN_STDOUT, ACTION_PIPE);
+EXPECT_TRUE(proc.Start());
 
-  EXPECT_TRUE(proc.Kill(SIGKILL));
-  EXPECT_TRUE(proc.Wait());
+EXPECT_TRUE(proc.Kill(SIGKILL));
+EXPECT_TRUE(proc.Wait());
 
-  EXPECT_FALSE(proc.Kill(SIGKILL));
+EXPECT_FALSE(proc.Kill(SIGKILL));
 }
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

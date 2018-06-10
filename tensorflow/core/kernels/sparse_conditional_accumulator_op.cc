@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #define EIGEN_USE_THREADS
 
@@ -24,24 +24,27 @@ namespace tensorflow {
  * Defines a SparseConditionalAccumulatorOp, which constructs a
  * SparseConditionalAccumulator and returns its handle.
  */
-template <typename Device, typename T>
-class SparseConditionalAccumulatorOp : public ConditionalAccumulatorBaseOp {
- public:
-  explicit SparseConditionalAccumulatorOp(OpKernelConstruction* context)
-      : ConditionalAccumulatorBaseOp(context) {}
+template<typename Device, typename T>
+class SparseConditionalAccumulatorOp: public ConditionalAccumulatorBaseOp {
+public:
+	explicit SparseConditionalAccumulatorOp(OpKernelConstruction* context) :
+			ConditionalAccumulatorBaseOp(context)
+	{
+	}
 
- protected:
-  Creator GetCreator() const override {
-    return [this](ConditionalAccumulatorBase** ret) {
-      SparseConditionalAccumulator<Device, T>* accumulator =
-          new SparseConditionalAccumulator<Device, T>(dtype_, shape_,
-                                                      cinfo_.name());
-      *ret = accumulator;
-      return Status::OK();
-    };
-  }
+protected:
+	Creator GetCreator() const override
+	{
+		return [this](ConditionalAccumulatorBase** ret) {
+			SparseConditionalAccumulator<Device, T>* accumulator =
+			new SparseConditionalAccumulator<Device, T>(dtype_, shape_,
+					cinfo_.name());
+			*ret = accumulator;
+			return Status::OK();
+		};
+	}
 
-  TF_DISALLOW_COPY_AND_ASSIGN(SparseConditionalAccumulatorOp);
+	TF_DISALLOW_COPY_AND_ASSIGN (SparseConditionalAccumulatorOp);
 };
 
 #define REGISTER_KERNELS(type, dev)                            \
@@ -52,9 +55,9 @@ class SparseConditionalAccumulatorOp : public ConditionalAccumulatorBaseOp {
 
 #define REGISTER_KERNELS_CPU(type) REGISTER_KERNELS(type, CPU)
 
-TF_CALL_half(REGISTER_KERNELS_CPU);
-TF_CALL_float(REGISTER_KERNELS_CPU);
-TF_CALL_double(REGISTER_KERNELS_CPU);
+TF_CALL_half (REGISTER_KERNELS_CPU);
+TF_CALL_float (REGISTER_KERNELS_CPU);
+TF_CALL_double (REGISTER_KERNELS_CPU);
 
 #undef REGISTER_KERNELS_CPU
 #undef REGISTER_KERNELS
@@ -63,57 +66,60 @@ TF_CALL_double(REGISTER_KERNELS_CPU);
  * Defines a SparseAccumulateGradientOp, the execution of which adds a gradient
  * to the given SparseConditionalAccumulator.
  */
-class SparseAccumulatorApplyGradientOp
-    : public ConditionalAccumulatorBaseApplyGradientOp {
- public:
-  explicit SparseAccumulatorApplyGradientOp(OpKernelConstruction* context)
-      : ConditionalAccumulatorBaseApplyGradientOp(context) {}
+class SparseAccumulatorApplyGradientOp: public ConditionalAccumulatorBaseApplyGradientOp {
+public:
+	explicit SparseAccumulatorApplyGradientOp(OpKernelConstruction* context) :
+			ConditionalAccumulatorBaseApplyGradientOp(context)
+	{
+	}
 
- protected:
-  void CheckSignature(OpKernelContext* ctx,
-                      ConditionalAccumulatorBase* accumulator) override {
-    // Check input signature
-    DataTypeVector expected_inputs = {DT_STRING_REF, DT_INT64, DT_INT64};
-    expected_inputs.push_back(accumulator->dtype());
-    expected_inputs.push_back(DT_INT64);
-    OP_REQUIRES_OK(ctx, ctx->MatchSignature(expected_inputs, {}));
-  }
+protected:
+	void CheckSignature(OpKernelContext* ctx,
+			ConditionalAccumulatorBase* accumulator) override
+	{
+		// Check input signature
+		DataTypeVector expected_inputs = { DT_STRING_REF, DT_INT64, DT_INT64 };
+		expected_inputs.push_back(accumulator->dtype());
+		expected_inputs.push_back(DT_INT64);
+		OP_REQUIRES_OK(ctx, ctx->MatchSignature(expected_inputs, { }));
+	}
 
- private:
-  TF_DISALLOW_COPY_AND_ASSIGN(SparseAccumulatorApplyGradientOp);
+private:
+	TF_DISALLOW_COPY_AND_ASSIGN (SparseAccumulatorApplyGradientOp);
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("SparseAccumulatorApplyGradient").Device(DEVICE_CPU),
-    SparseAccumulatorApplyGradientOp);
+		Name("SparseAccumulatorApplyGradient").Device(DEVICE_CPU),
+		SparseAccumulatorApplyGradientOp);
 
 /**
  * Defines a SparseAccumulatorTakeGradientOp, the execution of which returns the
  * average sparse gradient accumulated by the given ConditionalAccumulator.
  */
-class SparseAccumulatorTakeGradientOp
-    : public ConditionalAccumulatorBaseTakeGradientOp {
- public:
-  explicit SparseAccumulatorTakeGradientOp(OpKernelConstruction* context)
-      : ConditionalAccumulatorBaseTakeGradientOp(context) {}
+class SparseAccumulatorTakeGradientOp: public ConditionalAccumulatorBaseTakeGradientOp {
+public:
+	explicit SparseAccumulatorTakeGradientOp(OpKernelConstruction* context) :
+			ConditionalAccumulatorBaseTakeGradientOp(context)
+	{
+	}
 
- protected:
-  void CheckSignature(OpKernelContext* ctx,
-                      ConditionalAccumulatorBase* accumulator,
-                      DoneCallback callback) override {
-    // Check signature
-    OP_REQUIRES_OK_ASYNC(
-        ctx, ctx->MatchSignature({DT_STRING_REF, DT_INT32},
-                                 {DT_INT64, accumulator->dtype(), DT_INT64}),
-        callback);
-  }
+protected:
+	void CheckSignature(OpKernelContext* ctx,
+			ConditionalAccumulatorBase* accumulator, DoneCallback callback) override
+	{
+		// Check signature
+		OP_REQUIRES_OK_ASYNC(ctx,
+				ctx->MatchSignature( { DT_STRING_REF, DT_INT32 }, { DT_INT64,
+						accumulator->dtype(), DT_INT64 }), callback);
+	}
 
- private:
-  TF_DISALLOW_COPY_AND_ASSIGN(SparseAccumulatorTakeGradientOp);
+private:
+	TF_DISALLOW_COPY_AND_ASSIGN (SparseAccumulatorTakeGradientOp);
 };
 
 REGISTER_KERNEL_BUILDER(
-    Name("SparseAccumulatorTakeGradient").Device(DEVICE_CPU),
-    SparseAccumulatorTakeGradientOp);
+		Name("SparseAccumulatorTakeGradient").Device(DEVICE_CPU),
+		SparseAccumulatorTakeGradientOp);
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

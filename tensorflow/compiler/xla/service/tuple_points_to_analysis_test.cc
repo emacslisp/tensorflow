@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/compiler/xla/service/tuple_points_to_analysis.h"
 
@@ -30,78 +30,83 @@ limitations under the License.
 namespace xla {
 namespace {
 
-class TuplePointsToAnalysisTest : public HloTestBase {
- protected:
-  // Builds a module with the given entry computation and runs points to
-  // analysis.
-  void BuildModuleAndRunAnalysis(std::unique_ptr<HloComputation> computation) {
-    module_.reset(new HloModule(TestName()));
-    module_->AddEntryComputation(std::move(computation));
-    points_to_analysis_ =
-        TuplePointsToAnalysis::Run(module_.get()).ConsumeValueOrDie();
-  }
+class TuplePointsToAnalysisTest: public HloTestBase {
+protected:
+	// Builds a module with the given entry computation and runs points to
+	// analysis.
+	void BuildModuleAndRunAnalysis(std::unique_ptr<HloComputation> computation)
+	{
+		module_.reset(new HloModule(TestName()));
+		module_->AddEntryComputation(std::move(computation));
+		points_to_analysis_ =
+				TuplePointsToAnalysis::Run(module_.get()).ConsumeValueOrDie();
+	}
 
-  // Returns the LogicalBuffer defined at the given instruction and
-  // index. CHECKs if no buffer is defined at that point.
-  const LogicalBuffer* const GetBuffer(const HloInstruction* instruction,
-                                       const ShapeIndex& index) {
-    const std::vector<const LogicalBuffer*>& pointed_to =
-        points_to_analysis_->GetPointsToSet(instruction).element(index);
-    CHECK_EQ(1, pointed_to.size());
-    CHECK_EQ(instruction, pointed_to[0]->instruction());
-    CHECK(index == pointed_to[0]->index());
-    return pointed_to[0];
-  }
+	// Returns the LogicalBuffer defined at the given instruction and
+	// index. CHECKs if no buffer is defined at that point.
+	const LogicalBuffer* const GetBuffer(const HloInstruction* instruction,
+			const ShapeIndex& index)
+	{
+		const std::vector<const LogicalBuffer*>& pointed_to =
+				points_to_analysis_->GetPointsToSet(instruction).element(index);
+		CHECK_EQ(1, pointed_to.size());
+		CHECK_EQ(instruction, pointed_to[0]->instruction());
+		CHECK(index == pointed_to[0]->index());
+		return pointed_to[0];
+	}
 
-  // Checks that the given points-to set contains exactly (unordered) the given
-  // LogicalBuffers.
-  void ExpectHasBuffers(
-      const std::vector<const LogicalBuffer*>& points_to_set,
-      tensorflow::gtl::ArraySlice<const LogicalBuffer*> buffers) {
-    std::vector<const LogicalBuffer*> vec(buffers.begin(), buffers.end());
-    EXPECT_MATCH(points_to_set, testing::UnorderedElementsAre(vec));
-  }
+	// Checks that the given points-to set contains exactly (unordered) the given
+	// LogicalBuffers.
+	void ExpectHasBuffers(
+			const std::vector<const LogicalBuffer*>& points_to_set,
+			tensorflow::gtl::ArraySlice<const LogicalBuffer*> buffers)
+	{
+		std::vector<const LogicalBuffer*> vec(buffers.begin(), buffers.end());
+		EXPECT_MATCH(points_to_set, testing::UnorderedElementsAre(vec));
+	}
 
-  // Checks that the given points-to set contains exactly (unordered) the
-  // top-level buffers of the given instructions.
-  void ExpectHasTopLevelBuffers(
-      const std::vector<const LogicalBuffer*>& points_to_set,
-      tensorflow::gtl::ArraySlice<HloInstruction*> instructions) {
-    std::vector<const LogicalBuffer*> buffers;
-    for (auto instruction : instructions) {
-      buffers.push_back(GetBuffer(instruction, /*index=*/{}));
-    }
-    ExpectHasBuffers(points_to_set, buffers);
-  }
+	// Checks that the given points-to set contains exactly (unordered) the
+	// top-level buffers of the given instructions.
+	void ExpectHasTopLevelBuffers(
+			const std::vector<const LogicalBuffer*>& points_to_set,
+			tensorflow::gtl::ArraySlice<HloInstruction*> instructions)
+	{
+		std::vector<const LogicalBuffer*> buffers;
+		for (auto instruction : instructions) {
+			buffers.push_back(GetBuffer(instruction, /*index=*/{ }));
+		}
+		ExpectHasBuffers(points_to_set, buffers);
+	}
 
-  // Overload which takes a std::set instead of a std::vector.
-  void ExpectHasTopLevelBuffers(
-      const std::set<const LogicalBuffer*>& points_to_set,
-      tensorflow::gtl::ArraySlice<HloInstruction*> instructions) {
-    ExpectHasTopLevelBuffers(std::vector<const LogicalBuffer*>(
-                                 points_to_set.begin(), points_to_set.end()),
-                             instructions);
-  }
+	// Overload which takes a std::set instead of a std::vector.
+	void ExpectHasTopLevelBuffers(
+			const std::set<const LogicalBuffer*>& points_to_set,
+			tensorflow::gtl::ArraySlice<HloInstruction*> instructions)
+	{
+		ExpectHasTopLevelBuffers(
+				std::vector<const LogicalBuffer*>(points_to_set.begin(),
+						points_to_set.end()), instructions);
+	}
 
-  // Checks that the buffer defined at the given instruction and index has
-  // aliases which are exactly (unordered) the given instruction/index pairs.
-  void ExpectHasBufferAliases(
-      const HloInstruction* instruction, const ShapeIndex& index,
-      tensorflow::gtl::ArraySlice<std::pair<HloInstruction*, ShapeIndex>>
-          expected) {
-    const LogicalBuffer* buffer =
-        points_to_analysis_->GetBufferDefinedAt(instruction, index)
-            .ValueOrDie();
-    std::vector<BufferAlias> expected_aliases;
-    for (auto& pair : expected) {
-      expected_aliases.push_back(BufferAlias(*buffer, pair.first, pair.second));
-    }
-    EXPECT_MATCH(points_to_analysis_->GetBufferAliases(*buffer),
-                 testing::UnorderedElementsAre(expected_aliases));
-  }
+	// Checks that the buffer defined at the given instruction and index has
+	// aliases which are exactly (unordered) the given instruction/index pairs.
+	void ExpectHasBufferAliases(const HloInstruction* instruction,
+			const ShapeIndex& index,
+			tensorflow::gtl::ArraySlice<std::pair<HloInstruction*, ShapeIndex>> expected)
+	{
+		const LogicalBuffer* buffer = points_to_analysis_->GetBufferDefinedAt(
+				instruction, index).ValueOrDie();
+		std::vector<BufferAlias> expected_aliases;
+		for (auto& pair : expected) {
+			expected_aliases.push_back(
+					BufferAlias(*buffer, pair.first, pair.second));
+		}
+		EXPECT_MATCH(points_to_analysis_->GetBufferAliases(*buffer),
+				testing::UnorderedElementsAre(expected_aliases));
+	}
 
-  std::unique_ptr<HloModule> module_;
-  std::unique_ptr<TuplePointsToAnalysis> points_to_analysis_;
+	std::unique_ptr<HloModule> module_;
+	std::unique_ptr<TuplePointsToAnalysis> points_to_analysis_;
 };
 
 // Expect the given std::set<HloInstruction*> as A contains exactly the given
@@ -136,9 +141,9 @@ TEST_F(TuplePointsToAnalysisTest, SimpleTuple) {
   EXPECT_EQ(3, points_to_analysis_->GetPointsToSet(tuple).size());
   EXPECT_FALSE(points_to_analysis_->GetPointsToSet(tuple).IsAmbiguous());
   EXPECT_ISET(points_to_analysis_->GetPointsToSet(tuple).tuple_sources({}),
-              tuple);
+		tuple);
 
-  ExpectHasTopLevelBuffers(
+ExpectHasTopLevelBuffers(
       points_to_analysis_->GetPointsToSet(tuple).CreateFlattenedSet(),
       {constant1, constant2, tuple});
   ExpectHasTopLevelBuffers(
@@ -194,21 +199,20 @@ TEST_F(TuplePointsToAnalysisTest, NestedTuple) {
   ExpectHasTopLevelBuffers(
       points_to_analysis_->GetPointsToSet(inner_tuple).element({}),
       {inner_tuple});
-  EXPECT_ISET(
-      points_to_analysis_->GetPointsToSet(inner_tuple).tuple_sources({}),
-      inner_tuple);
+  EXPECT_ISET(points_to_analysis_->GetPointsToSet(inner_tuple).tuple_sources({}),
+		inner_tuple);
 
-  EXPECT_EQ(5, points_to_analysis_->GetPointsToSet(tuple).size());
+EXPECT_EQ(5, points_to_analysis_->GetPointsToSet(tuple).size());
   EXPECT_FALSE(points_to_analysis_->GetPointsToSet(tuple).IsAmbiguous());
   ExpectHasTopLevelBuffers(
       points_to_analysis_->GetPointsToSet(tuple).CreateFlattenedSet(),
       {constant1, constant2, constant3, inner_tuple, tuple});
 
   EXPECT_ISET(points_to_analysis_->GetPointsToSet(tuple).tuple_sources({}),
-              tuple);
-  EXPECT_ISET(points_to_analysis_->GetPointsToSet(tuple).tuple_sources({0}),
-              inner_tuple);
-  EXPECT_TRUE(
+		tuple);EXPECT_ISET(
+		points_to_analysis_->GetPointsToSet(tuple).tuple_sources({0}),
+		inner_tuple);
+EXPECT_TRUE(
       points_to_analysis_->GetPointsToSet(tuple).tuple_sources({1}).empty());
 
   ExpectHasTopLevelBuffers(
@@ -449,9 +453,9 @@ TEST_F(TuplePointsToAnalysisTest, NestedTupleSelect) {
   ExpectHasTopLevelBuffers(points_to_set.element({0, 1}), {constant2});
 
   // Verify tuple sources.
-  EXPECT_ISET(points_to_set.tuple_sources({}), tuple1, tuple2);
-  EXPECT_ISET(points_to_set.tuple_sources({0}), inner_tuple1, inner_tuple2);
-  EXPECT_EQ(0, points_to_set.tuple_sources({0, 0}).size());
+  EXPECT_ISET(points_to_set.tuple_sources({}), tuple1, tuple2);EXPECT_ISET(
+		points_to_set.tuple_sources({0}), inner_tuple1, inner_tuple2);
+EXPECT_EQ(0, points_to_set.tuple_sources({0, 0}).size());
   EXPECT_EQ(0, points_to_set.tuple_sources({0, 1}).size());
 }
 
@@ -479,66 +483,67 @@ TEST_F(TuplePointsToAnalysisTest, TupleWithBitcast) {
   EXPECT_EQ(3, points_to_analysis_->GetPointsToSet(tuple).size());
   EXPECT_FALSE(points_to_analysis_->GetPointsToSet(tuple).IsAmbiguous());
   EXPECT_ISET(points_to_analysis_->GetPointsToSet(tuple).tuple_sources({}),
-              tuple);
+		tuple);
 
-  ExpectHasTopLevelBuffers(
-      points_to_analysis_->GetPointsToSet(tuple).CreateFlattenedSet(),
-      {constant1, constant2, tuple});
-  ExpectHasTopLevelBuffers(
-      points_to_analysis_->GetPointsToSet(tuple).element({}), {tuple});
-  ExpectHasTopLevelBuffers(
-      points_to_analysis_->GetPointsToSet(tuple).element({0}), {constant1});
-  ExpectHasTopLevelBuffers(
-      points_to_analysis_->GetPointsToSet(tuple).element({1}), {constant2});
+ExpectHasTopLevelBuffers(
+		points_to_analysis_->GetPointsToSet(tuple).CreateFlattenedSet(),
+		{	constant1, constant2, tuple});
+ExpectHasTopLevelBuffers(
+		points_to_analysis_->GetPointsToSet(tuple).element( {}), {tuple});
+ExpectHasTopLevelBuffers(
+		points_to_analysis_->GetPointsToSet(tuple).element( {0}), {constant1});
+ExpectHasTopLevelBuffers(
+		points_to_analysis_->GetPointsToSet(tuple).element( {1}), {constant2});
 }
 
 TEST_F(TuplePointsToAnalysisTest, PointsToTupleConstantElements) {
-  // Construct a tuple constant and kCopy it. Verify the points-to set of the
-  // copy correctly correctly points into the nested elements of the constant.
-  auto builder = HloComputation::Builder(TestName());
-  auto tuple_constant = builder.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::MakeTuple(
-          {LiteralUtil::CreateR2<float>({{1.0}, {2.0}}).get(),
-           LiteralUtil::CreateR1<float>({2.0, 42}).get()})));
-  auto copy = builder.AddInstruction(HloInstruction::CreateUnary(
-      tuple_constant->shape(), HloOpcode::kCopy, tuple_constant));
+// Construct a tuple constant and kCopy it. Verify the points-to set of the
+// copy correctly correctly points into the nested elements of the constant.
+auto builder = HloComputation::Builder(TestName());
+auto tuple_constant = builder.AddInstruction(
+		HloInstruction::CreateConstant(LiteralUtil::MakeTuple(
+						{	LiteralUtil::CreateR2<float>( { {1.0}, {2.0}}).get(),
+							LiteralUtil::CreateR1<float>( {2.0, 42}).get()})));
+auto copy = builder.AddInstruction(HloInstruction::CreateUnary(
+				tuple_constant->shape(), HloOpcode::kCopy, tuple_constant));
 
-  BuildModuleAndRunAnalysis(builder.Build());
+BuildModuleAndRunAnalysis(builder.Build());
 
-  auto& points_to_set = points_to_analysis_->GetPointsToSet(copy);
+auto& points_to_set = points_to_analysis_->GetPointsToSet(copy);
 
-  ExpectHasBuffers(points_to_set.element({}), {GetBuffer(copy, {})});
-  ExpectHasBuffers(points_to_set.element({0}),
-                   {GetBuffer(tuple_constant, {0})});
-  ExpectHasBuffers(points_to_set.element({1}),
-                   {GetBuffer(tuple_constant, {1})});
+ExpectHasBuffers(points_to_set.element( {}), {GetBuffer(copy, {})});
+ExpectHasBuffers(points_to_set.element( {0}),
+		{	GetBuffer(tuple_constant, {0})});
+ExpectHasBuffers(points_to_set.element( {1}),
+		{	GetBuffer(tuple_constant, {1})});
 }
 
 TEST_F(TuplePointsToAnalysisTest, BufferAliases) {
-  // Create a nested tuple in which individual elements appear multiple
-  // times. Verify buffer alias sets.
-  auto builder = HloComputation::Builder(TestName());
-  auto constant1 = builder.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(1.0)));
-  auto constant2 = builder.AddInstruction(
-      HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(2.0)));
-  auto inner_tuple = builder.AddInstruction(
-      HloInstruction::CreateTuple({constant1, constant2}));
-  auto tuple = builder.AddInstruction(
-      HloInstruction::CreateTuple({inner_tuple, constant2}));
+// Create a nested tuple in which individual elements appear multiple
+// times. Verify buffer alias sets.
+auto builder = HloComputation::Builder(TestName());
+auto constant1 = builder.AddInstruction(
+		HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(1.0)));
+auto constant2 = builder.AddInstruction(
+		HloInstruction::CreateConstant(LiteralUtil::CreateR0<float>(2.0)));
+auto inner_tuple = builder.AddInstruction(
+		HloInstruction::CreateTuple( {constant1, constant2}));
+auto tuple = builder.AddInstruction(
+		HloInstruction::CreateTuple( {inner_tuple, constant2}));
 
-  BuildModuleAndRunAnalysis(builder.Build());
+BuildModuleAndRunAnalysis(builder.Build());
 
-  ExpectHasBufferAliases(
-      constant1, /*index=*/{},
-      {{constant1, {}}, {inner_tuple, {0}}, {tuple, {0, 0}}});
-  ExpectHasBufferAliases(
-      constant2, /*index=*/{},
-      {{constant2, {}}, {inner_tuple, {1}}, {tuple, {0, 1}}, {tuple, {1}}});
-  ExpectHasBufferAliases(inner_tuple, /*index=*/{},
-                         {{inner_tuple, {}}, {tuple, {0}}});
-  ExpectHasBufferAliases(tuple, /*index=*/{}, {{tuple, {}}});
+ExpectHasBufferAliases(
+		constant1, /*index=*/{},
+		{	{	constant1, {}}, {inner_tuple, {0}}, {tuple, {0, 0}}});
+ExpectHasBufferAliases(
+		constant2, /*index=*/{},
+		{	{	constant2, {}}, {inner_tuple, {1}}, {tuple, {0, 1}}, {tuple, {1}}});
+ExpectHasBufferAliases(inner_tuple, /*index=*/{},
+		{	{	inner_tuple, {}}, {tuple, {0}}});
+ExpectHasBufferAliases(tuple, /*index=*/{}, { {tuple, {}}});
 }
 
-}  // namespace
-}  // namespace xla
+}
+  // namespace
+} // namespace xla

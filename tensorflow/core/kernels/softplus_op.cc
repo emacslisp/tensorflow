@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/nn_ops.cc.
-
 #define EIGEN_USE_THREADS
 
 #include "tensorflow/core/kernels/softplus_op.h"
@@ -30,48 +29,48 @@ namespace tensorflow {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-template <typename Device, typename T>
-class SoftplusOp : public UnaryElementWiseOp<T, SoftplusOp<Device, T>> {
- public:
-  using UnaryElementWiseOp<T, SoftplusOp<Device, T>>::UnaryElementWiseOp;
+template<typename Device, typename T>
+class SoftplusOp: public UnaryElementWiseOp<T, SoftplusOp<Device, T>> {
+public:
+	using UnaryElementWiseOp<T, SoftplusOp<Device, T>>::UnaryElementWiseOp;
 
-  void Operate(OpKernelContext* context, const Tensor& input, Tensor* output) {
-    functor::Softplus<Device, T> functor;
-    functor(context->eigen_device<Device>(), input.flat<T>(),
-            output->flat<T>());
-  }
+	void Operate(OpKernelContext* context, const Tensor& input, Tensor* output)
+	{
+		functor::Softplus<Device, T> functor;
+		functor(context->eigen_device<Device>(), input.flat<T>(),
+				output->flat<T>());
+	}
 };
 
-template <typename Device, typename T>
-class SoftplusGradOp
-    : public BinaryElementWiseOp<T, SoftplusGradOp<Device, T>> {
- public:
-  using BinaryElementWiseOp<T, SoftplusGradOp<Device, T>>::BinaryElementWiseOp;
+template<typename Device, typename T>
+class SoftplusGradOp: public BinaryElementWiseOp<T, SoftplusGradOp<Device, T>> {
+public:
+	using BinaryElementWiseOp<T, SoftplusGradOp<Device, T>>::BinaryElementWiseOp;
 
-  void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
-                         const Tensor& a, Tensor* output);
+	void OperateNoTemplate(OpKernelContext* context, const Tensor& g,
+			const Tensor& a, Tensor* output);
 
-  // INPUTS:
-  //   g (gradients): backpropagated gradients
-  //   a (inputs): inputs that were passed to SoftplusOp()
-  // OUTPUT:
-  //   gradients to backprop
-  template <int NDIMS>
-  void Operate(OpKernelContext* context, const Tensor& g, const Tensor& a,
-               Tensor* output) {
-    OperateNoTemplate(context, g, a, output);
-  }
+	// INPUTS:
+	//   g (gradients): backpropagated gradients
+	//   a (inputs): inputs that were passed to SoftplusOp()
+	// OUTPUT:
+	//   gradients to backprop
+	template<int NDIMS>
+	void Operate(OpKernelContext* context, const Tensor& g, const Tensor& a,
+			Tensor* output)
+	{
+		OperateNoTemplate(context, g, a, output);
+	}
 };
-template <typename Device, typename T>
+template<typename Device, typename T>
 void SoftplusGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
-                                                  const Tensor& g,
-                                                  const Tensor& a,
-                                                  Tensor* output) {
-  OP_REQUIRES(context, a.IsSameSize(g),
-              errors::InvalidArgument("g and a must be the same size"));
-  functor::SoftplusGrad<Device, T> functor;
-  functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
-          output->flat<T>());
+		const Tensor& g, const Tensor& a, Tensor* output)
+{
+	OP_REQUIRES(context, a.IsSameSize(g),
+			errors::InvalidArgument("g and a must be the same size"));
+	functor::SoftplusGrad<Device, T> functor;
+	functor(context->eigen_device<Device>(), g.flat<T>(), a.flat<T>(),
+			output->flat<T>());
 }
 
 #define REGISTER_KERNELS(type)                                           \
@@ -82,7 +81,7 @@ void SoftplusGradOp<Device, T>::OperateNoTemplate(OpKernelContext* context,
       Name("SoftplusGrad").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       SoftplusGradOp<CPUDevice, type>);
 
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_KERNELS);
+TF_CALL_REAL_NUMBER_TYPES (REGISTER_KERNELS);
 #undef REGISTER_KERNELS
 
 #if GOOGLE_CUDA
@@ -102,7 +101,7 @@ namespace functor {
       typename TTypes<T>::Tensor backprops);                         \
   extern template struct SoftplusGrad<GPUDevice, T>;
 
-TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
+	TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 }  // namespace functor
 
 // Registration of the GPU implementations.
@@ -119,4 +118,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_GPU_KERNELS);
 
 #endif  // GOOGLE_CUDA
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

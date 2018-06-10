@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/shape_inference.h"
@@ -25,41 +25,41 @@ using shape_inference::ShapeHandle;
 // CTC is Connectionist Temporal Classification.  See util/ctc/ for details.
 
 REGISTER_OP("CTCLoss")
-    .Input("inputs: float")
-    .Input("labels_indices: int64")
-    .Input("labels_values: int32")
-    .Input("sequence_length: int32")
-    .Attr("preprocess_collapse_repeated: bool = false")
-    .Attr("ctc_merge_repeated: bool = true")
-    .Output("loss: float")
-    .Output("gradient: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle inputs;
-      ShapeHandle labels_indices;
-      ShapeHandle labels_values;
-      ShapeHandle sequence_length;
+.Input("inputs: float")
+.Input("labels_indices: int64")
+.Input("labels_values: int32")
+.Input("sequence_length: int32")
+.Attr("preprocess_collapse_repeated: bool = false")
+.Attr("ctc_merge_repeated: bool = true")
+.Output("loss: float")
+.Output("gradient: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle inputs;
+			ShapeHandle labels_indices;
+			ShapeHandle labels_values;
+			ShapeHandle sequence_length;
 
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &labels_indices));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 1, &labels_values));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &sequence_length));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 2, &labels_indices));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(2), 1, &labels_values));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(3), 1, &sequence_length));
 
-      DimensionHandle unused;
-      TF_RETURN_IF_ERROR(c->Merge(c->Dim(labels_indices, 0),
-                                  c->Dim(labels_values, 0), &unused));
+			DimensionHandle unused;
+			TF_RETURN_IF_ERROR(c->Merge(c->Dim(labels_indices, 0),
+							c->Dim(labels_values, 0), &unused));
 
-      // Get batch size from inputs and sequence_length, and update inputs
-      // with the merged batch_size since it is returned.
-      DimensionHandle batch_size;
-      TF_RETURN_IF_ERROR(
-          c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
-      TF_RETURN_IF_ERROR(c->ReplaceDim(inputs, 1, batch_size, &inputs));
+			// Get batch size from inputs and sequence_length, and update inputs
+			// with the merged batch_size since it is returned.
+			DimensionHandle batch_size;
+			TF_RETURN_IF_ERROR(
+					c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
+			TF_RETURN_IF_ERROR(c->ReplaceDim(inputs, 1, batch_size, &inputs));
 
-      c->set_output(0, c->Vector(batch_size));
-      c->set_output(1, inputs);
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			c->set_output(0, c->Vector(batch_size));
+			c->set_output(1, inputs);
+			return Status::OK();
+		})
+.Doc(R"doc(
 Calculates the CTC Loss (log probability) for each batch entry.  Also calculates
 the gradient.  This class performs the softmax operation for you, so inputs
 should be e.g. linear projections of outputs by an LSTM.
@@ -81,33 +81,33 @@ gradient: The gradient of `loss`.  3-D, shape:
 )doc");
 
 REGISTER_OP("CTCGreedyDecoder")
-    .Input("inputs: float")
-    .Input("sequence_length: int32")
-    .Attr("merge_repeated: bool = false")
-    .Output("decoded_indices: int64")
-    .Output("decoded_values: int64")
-    .Output("decoded_shape: int64")
-    .Output("log_probability: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle inputs;
-      ShapeHandle sequence_length;
+.Input("inputs: float")
+.Input("sequence_length: int32")
+.Attr("merge_repeated: bool = false")
+.Output("decoded_indices: int64")
+.Output("decoded_values: int64")
+.Output("decoded_shape: int64")
+.Output("log_probability: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle inputs;
+			ShapeHandle sequence_length;
 
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &sequence_length));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &sequence_length));
 
-      // Get batch size from inputs and sequence_length.
-      DimensionHandle batch_size;
-      TF_RETURN_IF_ERROR(
-          c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
+			// Get batch size from inputs and sequence_length.
+			DimensionHandle batch_size;
+			TF_RETURN_IF_ERROR(
+					c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
 
-      DimensionHandle total_decoded_outputs = c->UnknownDim();
-      c->set_output(0, c->Matrix(total_decoded_outputs, 2));
-      c->set_output(1, c->Vector(total_decoded_outputs));
-      c->set_output(2, c->Vector(2));
-      c->set_output(3, c->Matrix(batch_size, 1));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			DimensionHandle total_decoded_outputs = c->UnknownDim();
+			c->set_output(0, c->Matrix(total_decoded_outputs, 2));
+			c->set_output(1, c->Vector(total_decoded_outputs));
+			c->set_output(2, c->Vector(2));
+			c->set_output(3, c->Matrix(batch_size, 1));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Performs greedy decoding on the logits given in inputs.
 
 A note about the attribute merge_repeated: if enabled, when
@@ -134,46 +134,46 @@ log_probability: Matrix, size `(batch_size x 1)`, containing sequence
 )doc");
 
 REGISTER_OP("CTCBeamSearchDecoder")
-    .Input("inputs: float")
-    .Input("sequence_length: int32")
-    .Attr("beam_width: int >= 1")
-    .Attr("top_paths: int >= 1")
-    .Attr("merge_repeated: bool = true")
-    .Output("decoded_indices: top_paths * int64")
-    .Output("decoded_values: top_paths * int64")
-    .Output("decoded_shape: top_paths * int64")
-    .Output("log_probability: float")
-    .SetShapeFn([](InferenceContext* c) {
-      ShapeHandle inputs;
-      ShapeHandle sequence_length;
+.Input("inputs: float")
+.Input("sequence_length: int32")
+.Attr("beam_width: int >= 1")
+.Attr("top_paths: int >= 1")
+.Attr("merge_repeated: bool = true")
+.Output("decoded_indices: top_paths * int64")
+.Output("decoded_values: top_paths * int64")
+.Output("decoded_shape: top_paths * int64")
+.Output("log_probability: float")
+.SetShapeFn([](InferenceContext* c) {
+			ShapeHandle inputs;
+			ShapeHandle sequence_length;
 
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
-      TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &sequence_length));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(0), 3, &inputs));
+			TF_RETURN_IF_ERROR(c->WithRank(c->input(1), 1, &sequence_length));
 
-      // Get batch size from inputs and sequence_length.
-      DimensionHandle batch_size;
-      TF_RETURN_IF_ERROR(
-          c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
+			// Get batch size from inputs and sequence_length.
+			DimensionHandle batch_size;
+			TF_RETURN_IF_ERROR(
+					c->Merge(c->Dim(inputs, 1), c->Dim(sequence_length, 0), &batch_size));
 
-      int32 top_paths;
-      TF_RETURN_IF_ERROR(c->GetAttr("top_paths", &top_paths));
+			int32 top_paths;
+			TF_RETURN_IF_ERROR(c->GetAttr("top_paths", &top_paths));
 
-      // Outputs.
-      int out_idx = 0;
-      for (int i = 0; i < top_paths; ++i) {  // decoded_indices
-        c->set_output(out_idx++, c->Matrix(InferenceContext::kUnknownDim, 2));
-      }
-      for (int i = 0; i < top_paths; ++i) {  // decoded_values
-        c->set_output(out_idx++, c->Vector(InferenceContext::kUnknownDim));
-      }
-      ShapeHandle shape_v = c->Vector(2);
-      for (int i = 0; i < top_paths; ++i) {  // decoded_shape
-        c->set_output(out_idx++, shape_v);
-      }
-      c->set_output(out_idx++, c->Matrix(batch_size, top_paths));
-      return Status::OK();
-    })
-    .Doc(R"doc(
+			// Outputs.
+			int out_idx = 0;
+			for (int i = 0; i < top_paths; ++i) {  // decoded_indices
+				c->set_output(out_idx++, c->Matrix(InferenceContext::kUnknownDim, 2));
+			}
+			for (int i = 0; i < top_paths; ++i) {  // decoded_values
+				c->set_output(out_idx++, c->Vector(InferenceContext::kUnknownDim));
+			}
+			ShapeHandle shape_v = c->Vector(2);
+			for (int i = 0; i < top_paths; ++i) {  // decoded_shape
+				c->set_output(out_idx++, shape_v);
+			}
+			c->set_output(out_idx++, c->Matrix(batch_size, top_paths));
+			return Status::OK();
+		})
+.Doc(R"doc(
 Performs beam search decoding on the logits given in input.
 
 A note about the attribute merge_repeated: For the beam search decoder,
@@ -200,4 +200,5 @@ log_probability: A matrix, shaped: `(batch_size x top_paths)`.  The
   sequence log-probabilities.
 )doc");
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

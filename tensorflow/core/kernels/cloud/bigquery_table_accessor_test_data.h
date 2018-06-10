@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_KERNELS_CLOUD_BIGQUERY_TABLE_ACCESSOR_TEST_DATA_H_
 #define THIRD_PARTY_TENSORFLOW_CORE_KERNELS_CLOUD_BIGQUERY_TABLE_ACCESSOR_TEST_DATA_H_
@@ -21,7 +21,8 @@ limitations under the License.
 namespace tensorflow {
 namespace {
 
-const string kSampleSchema = R"({
+const string kSampleSchema =
+		R"({
   "kind": "bigquery#table",
   "etag": "\"4zcX32ezvFoFzxHoG04qJqKZk6c/MTQ1Nzk3NTgwNzE4Mw\"",
   "id": "test-project:test-dataset.test-table",
@@ -73,7 +74,8 @@ const string kSampleSchema = R"({
   "numRows": "4"
 })";
 
-const string kTestRow = R"({
+const string kTestRow =
+		R"({
   "kind": "bigquery#table",
   "etag": "\"4zcX32ezvFoFzxHoG04qJqKZk6c/MTQ1Nzk3NTgwNzE4Mw\"",
   "id": "test-project:test-dataset.test-table",
@@ -105,7 +107,8 @@ const string kTestRow = R"({
       "v": "datetime"
     }]}]})";
 
-const string kBrokenTestRow = R"({
+const string kBrokenTestRow =
+		R"({
   "kind": "bigquery#table",
   "etag": "\"4zcX32ezvFoFzxHoG04qJqKZk6c/MTQ1Nzk3NTgwNzE4Mw\"",
   "id": "test-project:test-dataset.test-table",
@@ -131,7 +134,8 @@ const string kBrokenTestRow = R"({
       "v": "datetime"
     }]}]})";
 
-const string kTestRowWithNulls = R"({
+const string kTestRowWithNulls =
+		R"({
   "kind": "bigquery#table",
   "etag": "\"4zcX32ezvFoFzxHoG04qJqKZk6c/MTQ1Nzk3NTgwNzE4Mw\"",
   "id": "test-project:test-dataset.test-table",
@@ -159,7 +163,8 @@ const string kTestRowWithNulls = R"({
     }]}]})";
 
 // Example proto corresponding to kTestRow.
-const string kTestExampleProto = R"(features {
+const string kTestExampleProto =
+		R"(features {
   feature {
     key: "bool_field"
     value {
@@ -236,7 +241,8 @@ const string kTestExampleProto = R"(features {
 )";
 
 // Example proto corresponding to kTestRowWithNulls.
-const string kTestExampleProtoWithNulls = R"(features {
+const string kTestExampleProtoWithNulls =
+		R"(features {
   feature {
     key: "bool_field"
     value {
@@ -289,7 +295,8 @@ const string kTestExampleProtoWithNulls = R"(features {
 )";
 
 // Example proto corresponding to part of kTestRow.
-const string kTestPartialExampleProto = R"(features {
+const string kTestPartialExampleProto =
+		R"(features {
   feature {
     key: "bool_field"
     value {
@@ -309,7 +316,8 @@ const string kTestPartialExampleProto = R"(features {
 }
 )";
 
-const string kTestTwoRows = R"({
+const string kTestTwoRows =
+		R"({
   "kind": "bigquery#table",
   "etag": "\"4zcX32ezvFoFzxHoG04qJqKZk6c/MTQ1Nzk3NTgwNzE4Mw\"",
   "pageToken": "next_page",

@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SERVICE_GPU_KERNEL_THUNK_H_
 #define TENSORFLOW_COMPILER_XLA_SERVICE_GPU_KERNEL_THUNK_H_
@@ -41,43 +41,46 @@ class GpuExecutable;
 // invoke the corresponding kernel.
 //
 // This is thread-compatible.
-class KernelThunk : public Thunk {
- public:
-  // Constructs a thunk for the given kernel.
-  //
-  // `hlo_instruction` is as in Thunk. Other arguments are as the class members.
-  KernelThunk(tensorflow::gtl::ArraySlice<BufferAllocation::Index> io_buffers,
-              const string& kernel_name, const HloInstruction* hlo_instruction);
-  KernelThunk(const KernelThunk&) = delete;
-  KernelThunk& operator=(const KernelThunk&) = delete;
-  ~KernelThunk() override = default;
+class KernelThunk: public Thunk {
+public:
+	// Constructs a thunk for the given kernel.
+	//
+	// `hlo_instruction` is as in Thunk. Other arguments are as the class members.
+	KernelThunk(tensorflow::gtl::ArraySlice<BufferAllocation::Index> io_buffers,
+			const string& kernel_name, const HloInstruction* hlo_instruction);
+	KernelThunk(const KernelThunk&) = delete;
+	KernelThunk& operator=(const KernelThunk&) = delete;
+	~KernelThunk() override = default;
 
-  const string& kernel_name() const { return kernel_name_; }
-  void SetLaunchDimensions(const LaunchDimensions& launch_dims);
+	const string& kernel_name() const
+	{
+		return kernel_name_;
+	}
+	void SetLaunchDimensions(const LaunchDimensions& launch_dims);
 
-  tensorflow::Status Initialize(const GpuExecutable& executable) override;
+	tensorflow::Status Initialize(const GpuExecutable& executable) override;
 
-  // Executes the kernel for the thunk on "stream", which must be non-null.
-  tensorflow::Status ExecuteOnStream(
-      const BufferAllocations& buffer_allocations,
-      perftools::gputools::Stream* stream) override;
+	// Executes the kernel for the thunk on "stream", which must be non-null.
+	tensorflow::Status ExecuteOnStream(
+			const BufferAllocations& buffer_allocations,
+			perftools::gputools::Stream* stream) override;
 
- private:
-  // The indices of the input/output buffers.
-  const std::vector<BufferAllocation::Index> io_buffers_;
+private:
+	// The indices of the input/output buffers.
+	const std::vector<BufferAllocation::Index> io_buffers_;
 
-  // Entry kernel name for the computation.
-  const string kernel_name_;
+	// Entry kernel name for the computation.
+	const string kernel_name_;
 
-  // The thread and block dimension used to launch the kernel.
-  // Will be set by IrEmitterUnnested.
-  LaunchDimensions launch_dimensions_;
+	// The thread and block dimension used to launch the kernel.
+	// Will be set by IrEmitterUnnested.
+	LaunchDimensions launch_dimensions_;
 
-  // Describes how to load this kernel. ExecuteOnStream reuses this loader
-  // specification for all executions.
-  mutable tensorflow::mutex mutex_;
-  std::unique_ptr<perftools::gputools::MultiKernelLoaderSpec> loader_spec_
-      GUARDED_BY(mutex_);
+	// Describes how to load this kernel. ExecuteOnStream reuses this loader
+	// specification for all executions.
+	mutable tensorflow::mutex mutex_;
+	std::unique_ptr<perftools::gputools::MultiKernelLoaderSpec> loader_spec_
+	GUARDED_BY (mutex_);
 };
 
 }  // namespace gpu

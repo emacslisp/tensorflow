@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_AOT_COMPILE_H_
 #define TENSORFLOW_COMPILER_AOT_COMPILE_H_
@@ -56,18 +56,18 @@ extern const char* const kDebugNameAttr;
 // compute the outputs.  If dump_graphs is true, graph rewrites will be dumped
 // for debugging.
 Status InitGraph(const GraphDef& graph_def, const Config& config,
-                 const MainFlags& flags, const FunctionLibraryDefinition* flib,
-                 std::unique_ptr<Graph>* graph);
+		const MainFlags& flags, const FunctionLibraryDefinition* flib,
+		std::unique_ptr<Graph>* graph);
 
 // CompileResult describes the output of CompileGraph, where the object file
 // data and meta-information is available in aot.
 struct CompileResult {
-  // Contains object file and meta-info.
-  std::unique_ptr<xla::cpu::CpuAotCompilationResult> aot;
-  xla::ProgramShape program_shape;  // Static shape of args and results.
-  bool has_context_arg = false;     // Is last arg XlaLocalRuntimeContext?
-  string entry_point;               // Name of generated function.
-  int pointer_size = 0;             // Size of a pointer in bytes.
+	// Contains object file and meta-info.
+	std::unique_ptr<xla::cpu::CpuAotCompilationResult> aot;
+	xla::ProgramShape program_shape;  // Static shape of args and results.
+	bool has_context_arg = false;     // Is last arg XlaLocalRuntimeContext?
+	string entry_point;               // Name of generated function.
+	int pointer_size = 0;             // Size of a pointer in bytes.
 };
 
 // CompileGraph compiles the graph into an object file containing a function
@@ -83,8 +83,7 @@ struct CompileResult {
 //
 // The XLA compilation options are specified in the flags.
 Status CompileGraph(std::unique_ptr<Graph> graph, const MainFlags& flags,
-                    const FunctionLibraryDefinition* flib,
-                    CompileResult* result);
+		const FunctionLibraryDefinition* flib, CompileResult* result);
 
 }  // namespace tfcompile
 }  // namespace tensorflow

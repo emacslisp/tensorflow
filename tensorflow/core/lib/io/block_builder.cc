@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // BlockBuilder generates blocks where keys are prefix-compressed:
 //
@@ -36,7 +36,6 @@ limitations under the License.
 //     restarts: uint32[num_restarts]
 //     num_restarts: uint32
 // restarts[i] contains the offset within the block of the ith restart point.
-
 #include "tensorflow/core/lib/io/block_builder.h"
 
 #include <assert.h>
@@ -47,71 +46,76 @@ limitations under the License.
 namespace tensorflow {
 namespace table {
 
-BlockBuilder::BlockBuilder(const Options* options)
-    : options_(options), restarts_(), counter_(0), finished_(false) {
-  assert(options->block_restart_interval >= 1);
-  restarts_.push_back(0);  // First restart point is at offset 0
+BlockBuilder::BlockBuilder(const Options* options) :
+		options_(options), restarts_(), counter_(0), finished_(false)
+{
+	assert(options->block_restart_interval >= 1);
+	restarts_.push_back(0);  // First restart point is at offset 0
 }
 
-void BlockBuilder::Reset() {
-  buffer_.clear();
-  restarts_.clear();
-  restarts_.push_back(0);  // First restart point is at offset 0
-  counter_ = 0;
-  finished_ = false;
-  last_key_.clear();
+void BlockBuilder::Reset()
+{
+	buffer_.clear();
+	restarts_.clear();
+	restarts_.push_back(0);  // First restart point is at offset 0
+	counter_ = 0;
+	finished_ = false;
+	last_key_.clear();
 }
 
-size_t BlockBuilder::CurrentSizeEstimate() const {
-  return (buffer_.size() +                     // Raw data buffer
-          restarts_.size() * sizeof(uint32) +  // Restart array
-          sizeof(uint32));                     // Restart array length
+size_t BlockBuilder::CurrentSizeEstimate() const
+{
+	return (buffer_.size() +                     // Raw data buffer
+			restarts_.size() * sizeof(uint32) +  // Restart array
+			sizeof(uint32));                     // Restart array length
 }
 
-StringPiece BlockBuilder::Finish() {
-  // Append restart array
-  for (size_t i = 0; i < restarts_.size(); i++) {
-    core::PutFixed32(&buffer_, restarts_[i]);
-  }
-  core::PutFixed32(&buffer_, restarts_.size());
-  finished_ = true;
-  return StringPiece(buffer_);
+StringPiece BlockBuilder::Finish()
+{
+	// Append restart array
+	for (size_t i = 0; i < restarts_.size(); i++) {
+		core::PutFixed32(&buffer_, restarts_[i]);
+	}
+	core::PutFixed32(&buffer_, restarts_.size());
+	finished_ = true;
+	return StringPiece(buffer_);
 }
 
-void BlockBuilder::Add(const StringPiece& key, const StringPiece& value) {
-  StringPiece last_key_piece(last_key_);
-  assert(!finished_);
-  assert(counter_ <= options_->block_restart_interval);
-  assert(buffer_.empty()  // No values yet?
-         || key.compare(last_key_piece) > 0);
-  size_t shared = 0;
-  if (counter_ < options_->block_restart_interval) {
-    // See how much sharing to do with previous string
-    const size_t min_length = std::min(last_key_piece.size(), key.size());
-    while ((shared < min_length) && (last_key_piece[shared] == key[shared])) {
-      shared++;
-    }
-  } else {
-    // Restart compression
-    restarts_.push_back(buffer_.size());
-    counter_ = 0;
-  }
-  const size_t non_shared = key.size() - shared;
+void BlockBuilder::Add(const StringPiece& key, const StringPiece& value)
+{
+	StringPiece last_key_piece(last_key_);
+	assert(!finished_);
+	assert(counter_ <= options_->block_restart_interval);
+	assert(buffer_.empty()  // No values yet?
+	|| key.compare(last_key_piece) > 0);
+	size_t shared = 0;
+	if (counter_ < options_->block_restart_interval) {
+		// See how much sharing to do with previous string
+		const size_t min_length = std::min(last_key_piece.size(), key.size());
+		while ((shared < min_length) && (last_key_piece[shared] == key[shared])) {
+			shared++;
+		}
+	} else {
+		// Restart compression
+		restarts_.push_back(buffer_.size());
+		counter_ = 0;
+	}
+	const size_t non_shared = key.size() - shared;
 
-  // Add "<shared><non_shared><value_size>" to buffer_
-  core::PutVarint32(&buffer_, shared);
-  core::PutVarint32(&buffer_, non_shared);
-  core::PutVarint32(&buffer_, value.size());
+	// Add "<shared><non_shared><value_size>" to buffer_
+	core::PutVarint32(&buffer_, shared);
+	core::PutVarint32(&buffer_, non_shared);
+	core::PutVarint32(&buffer_, value.size());
 
-  // Add string delta to buffer_ followed by value
-  buffer_.append(key.data() + shared, non_shared);
-  buffer_.append(value.data(), value.size());
+	// Add string delta to buffer_ followed by value
+	buffer_.append(key.data() + shared, non_shared);
+	buffer_.append(value.data(), value.size());
 
-  // Update state
-  last_key_.resize(shared);
-  last_key_.append(key.data() + shared, non_shared);
-  assert(StringPiece(last_key_) == key);
-  counter_++;
+	// Update state
+	last_key_.resize(shared);
+	last_key_.append(key.data() + shared, non_shared);
+	assert(StringPiece(last_key_) == key);
+	counter_++;
 }
 
 }  // namespace table

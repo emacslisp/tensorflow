@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_FRAMEWORK_TYPE_INDEX_H_
 #define TENSORFLOW_FRAMEWORK_TYPE_INDEX_H_
@@ -39,36 +39,36 @@ namespace tensorflow {
 // generated at runtime so this hash code should not be serialized - the value
 // for the same type can change from run to run.
 class TypeIndex {
- public:
-  TypeIndex(const TypeIndex& src) : hash_(src.hash_) {}
-  TypeIndex& operator=(const TypeIndex& src) {
-    hash_ = src.hash_;
-    return *this;
-  }
-  bool operator==(const TypeIndex& rhs) const { return (hash_ == rhs.hash_); }
-  bool operator!=(const TypeIndex& rhs) const { return (hash_ != rhs.hash_); }
-  ~TypeIndex() {}
+public:
+	TypeIndex(const TypeIndex& src) : hash_(src.hash_) {}
+	TypeIndex& operator=(const TypeIndex& src) {
+		hash_ = src.hash_;
+		return *this;
+	}
+	bool operator==(const TypeIndex& rhs) const {return (hash_ == rhs.hash_);}
+	bool operator!=(const TypeIndex& rhs) const {return (hash_ != rhs.hash_);}
+	~TypeIndex() {}
 
-  const char* name() const { return "[RTTI disabled for Android]"; }
-  uint64 hash_code() const { return hash_; }
+	const char* name() const {return "[RTTI disabled for Android]";}
+	uint64 hash_code() const {return hash_;}
 
-  // Returns a TypeIndex object that corresponds to a typename.
-  template <typename T>
-  static TypeIndex Make() {
-    static bool hash_bit[1];
-    return TypeIndex(static_cast<uint64>(reinterpret_cast<intptr_t>(hash_bit)));
-  }
+	// Returns a TypeIndex object that corresponds to a typename.
+	template <typename T>
+	static TypeIndex Make() {
+		static bool hash_bit[1];
+		return TypeIndex(static_cast<uint64>(reinterpret_cast<intptr_t>(hash_bit)));
+	}
 
- private:
-  // We hide the constructor of the TypeIndex class. Use the templated
-  // Make<T>() function to create a TypeIndex object.
-  TypeIndex(const uint64 hash) : hash_(hash) {}
-  uint64 hash_;
+private:
+	// We hide the constructor of the TypeIndex class. Use the templated
+	// Make<T>() function to create a TypeIndex object.
+	TypeIndex(const uint64 hash) : hash_(hash) {}
+	uint64 hash_;
 };
 
 template <typename T>
 inline TypeIndex MakeTypeIndex() {
-  return TypeIndex::Make<T>();
+	return TypeIndex::Make<T>();
 }
 
 #else  // __GXX_RTTI
@@ -76,9 +76,10 @@ inline TypeIndex MakeTypeIndex() {
 // In the presence of RTTI, we will simply delegate to std::type_index for
 // runtime type inference.
 typedef std::type_index TypeIndex;
-template <typename T>
-inline TypeIndex MakeTypeIndex() {
-  return TypeIndex(typeid(T));
+template<typename T>
+inline TypeIndex MakeTypeIndex()
+{
+	return TypeIndex(typeid(T));
 }
 
 #endif  // __GXX_RTTI

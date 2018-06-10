@@ -30,109 +30,159 @@ using tensorflow::strings::safe_strto32;
 // DataColumn holds information about one feature of the original data.
 // A feature could be dense or sparse, and be of any size.
 class DataColumn {
- public:
-  DataColumn() {}
+public:
+	DataColumn()
+	{
+	}
 
-  // Parses a serialized DataColumn produced from the SerializeToString()
-  // function of a python data_ops.DataColumn object.
-  // It should look like a proto ASCII format, i.e.
-  // name: <name> original_type: <type> size: <size>
-  void ParseFromString(const string& serialized) {
-    std::vector<string> tokens = tensorflow::str_util::Split(serialized, ' ');
-    CHECK_EQ(tokens.size(), 6);
-    name_ = tokens[1];
-    safe_strto32(tokens[3], &original_type_);
-    safe_strto32(tokens[5], &size_);
-  }
+	// Parses a serialized DataColumn produced from the SerializeToString()
+	// function of a python data_ops.DataColumn object.
+	// It should look like a proto ASCII format, i.e.
+	// name: <name> original_type: <type> size: <size>
+	void ParseFromString(const string& serialized)
+	{
+		std::vector<string> tokens = tensorflow::str_util::Split(serialized,
+				' ');
+		CHECK_EQ(tokens.size(), 6);
+		name_ = tokens[1];
+		safe_strto32(tokens[3], &original_type_);
+		safe_strto32(tokens[5], &size_);
+	}
 
-  const string& name() const { return name_; }
+	const string& name() const
+	{
+		return name_;
+	}
 
-  int original_type() const { return original_type_; }
+	int original_type() const
+	{
+		return original_type_;
+	}
 
-  int size() const { return size_; }
+	int size() const
+	{
+		return size_;
+	}
 
-  void set_name(const string& n) { name_ = n; }
+	void set_name(const string& n)
+	{
+		name_ = n;
+	}
 
-  void set_original_type(int o) { original_type_ = o; }
+	void set_original_type(int o)
+	{
+		original_type_ = o;
+	}
 
-  void set_size(int s) { size_ = s; }
+	void set_size(int s)
+	{
+		size_ = s;
+	}
 
- private:
-  string name_;
-  int original_type_;
-  int size_;
+private:
+	string name_;
+	int original_type_;
+	int size_;
 };
 
 // TensorForestDataSpec holds information about the original features of the
 // data set, which were flattened to a single dense float tensor and/or a
 // single sparse float tensor.
 class TensorForestDataSpec {
- public:
-  TensorForestDataSpec() {}
+public:
+	TensorForestDataSpec()
+	{
+	}
 
-  // Parses a serialized DataColumn produced from the SerializeToString()
-  // function of a python data_ops.TensorForestDataSpec object.
-  // It should look something like:
-  // dense_features_size: <size> dense: [{<col1>}{<col2>}] sparse: [{<col3>}]
-  void ParseFromString(const string& serialized) {
-    std::vector<string> tokens = tensorflow::str_util::Split(serialized, "[]");
-    std::vector<string> first_part =
-        tensorflow::str_util::Split(tokens[0], ' ');
-    safe_strto32(first_part[1], &dense_features_size_);
-    ParseColumns(tokens[1], &dense_);
-    ParseColumns(tokens[3], &sparse_);
+	// Parses a serialized DataColumn produced from the SerializeToString()
+	// function of a python data_ops.TensorForestDataSpec object.
+	// It should look something like:
+	// dense_features_size: <size> dense: [{<col1>}{<col2>}] sparse: [{<col3>}]
+	void ParseFromString(const string& serialized)
+	{
+		std::vector<string> tokens = tensorflow::str_util::Split(serialized,
+				"[]");
+		std::vector<string> first_part = tensorflow::str_util::Split(tokens[0],
+				' ');
+		safe_strto32(first_part[1], &dense_features_size_);
+		ParseColumns(tokens[1], &dense_);
+		ParseColumns(tokens[3], &sparse_);
 
-    int total = 0;
-    for (const DataColumn& col : dense_) {
-      for (int i = 0; i < col.size(); ++i) {
-        feature_to_type_[total] = col.original_type();
-        ++total;
-      }
-    }
-  }
+		int total = 0;
+		for (const DataColumn& col : dense_) {
+			for (int i = 0; i < col.size(); ++i) {
+				feature_to_type_[total] = col.original_type();
+				++total;
+			}
+		}
+	}
 
-  const DataColumn& dense(int i) const { return dense_.at(i); }
+	const DataColumn& dense(int i) const
+	{
+		return dense_.at(i);
+	}
 
-  const DataColumn& sparse(int i) const { return sparse_.at(i); }
+	const DataColumn& sparse(int i) const
+	{
+		return sparse_.at(i);
+	}
 
-  DataColumn* mutable_sparse(int i) { return &sparse_[i]; }
+	DataColumn* mutable_sparse(int i)
+	{
+		return &sparse_[i];
+	}
 
-  int dense_size() const { return dense_.size(); }
+	int dense_size() const
+	{
+		return dense_.size();
+	}
 
-  int sparse_size() const { return sparse_.size(); }
+	int sparse_size() const
+	{
+		return sparse_.size();
+	}
 
-  int dense_features_size() const { return dense_features_size_; }
+	int dense_features_size() const
+	{
+		return dense_features_size_;
+	}
 
-  void set_dense_features_size(int s) { dense_features_size_ = s; }
+	void set_dense_features_size(int s)
+	{
+		dense_features_size_ = s;
+	}
 
-  DataColumn* add_dense() {
-    dense_.push_back(DataColumn());
-    return &dense_[dense_.size() - 1];
-  }
+	DataColumn* add_dense()
+	{
+		dense_.push_back(DataColumn());
+		return &dense_[dense_.size() - 1];
+	}
 
-  int GetDenseFeatureType(int feature) const {
-    return feature_to_type_.at(feature);
-  }
+	int GetDenseFeatureType(int feature) const
+	{
+		return feature_to_type_.at(feature);
+	}
 
- private:
-  void ParseColumns(const string& cols, std::vector<DataColumn>* vec) {
-    std::vector<string> tokens = tensorflow::str_util::Split(cols, "{}");
-    for (const string& tok : tokens) {
-      if (!tok.empty()) {
-        DataColumn col;
-        col.ParseFromString(tok);
-        vec->push_back(col);
-      }
-    }
-  }
+private:
+	void ParseColumns(const string& cols, std::vector<DataColumn>* vec)
+	{
+		std::vector<string> tokens = tensorflow::str_util::Split(cols, "{}");
+		for (const string& tok : tokens) {
+			if (!tok.empty()) {
+				DataColumn col;
+				col.ParseFromString(tok);
+				vec->push_back(col);
+			}
+		}
+	}
 
-  std::vector<DataColumn> dense_;
-  std::vector<DataColumn> sparse_;
-  int dense_features_size_;
+	std::vector<DataColumn> dense_;
+	std::vector<DataColumn> sparse_;
+	int dense_features_size_;
 
-  // This map tracks features in the total dense feature space to their
-  // original type for fast lookup.
-  std::unordered_map<int, int> feature_to_type_;
+	// This map tracks features in the total dense feature space to their
+	// original type for fast lookup.
+	std::unordered_map<int, int> feature_to_type_;
 };
 
 }  // namespace tensorforest

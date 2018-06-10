@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_SHAPE_LAYOUT_H_
 #define TENSORFLOW_COMPILER_XLA_SHAPE_LAYOUT_H_
@@ -32,55 +32,64 @@ namespace xla {
 // trivially holds a single Layout. Logically, ShapeLayout holds a nonmutable
 // shape with mutable layouts.
 class ShapeLayout {
- public:
-  // Constructs a ShapeLayout of the given shape. Layouts are copied from the
-  // shape parameter.
-  explicit ShapeLayout(const Shape& shape) : shape_(shape) {}
+public:
+	// Constructs a ShapeLayout of the given shape. Layouts are copied from the
+	// shape parameter.
+	explicit ShapeLayout(const Shape& shape) :
+			shape_(shape)
+	{
+	}
 
-  // Assigns the layouts in this ShapeLayout to the Layout fields of the given
-  // shape. 'shape' and the shape of the ShapeLayout object must be compatible.
-  tensorflow::Status AssignLayoutToShape(Shape* shape) const;
+	// Assigns the layouts in this ShapeLayout to the Layout fields of the given
+	// shape. 'shape' and the shape of the ShapeLayout object must be compatible.
+	tensorflow::Status AssignLayoutToShape(Shape* shape) const;
 
-  // Returns true if the Layouts in this ShapeLayout match the layouts in the
-  // given shape. Returns false otherwise. If the given shape is not compatible
-  // with the ShapeLayout's shape, then false is returned.
-  bool MatchesLayoutInShape(const Shape& shape) const;
+	// Returns true if the Layouts in this ShapeLayout match the layouts in the
+	// given shape. Returns false otherwise. If the given shape is not compatible
+	// with the ShapeLayout's shape, then false is returned.
+	bool MatchesLayoutInShape(const Shape& shape) const;
 
-  // Copies the layout from the given shape into this ShapeLayout. 'shape' must
-  // be compatible with the ShapeLayout's shape, and 'shape' must have a layout
-  // (LayoutUtil::HasLayout).
-  tensorflow::Status CopyLayoutFromShape(const Shape& shape);
+	// Copies the layout from the given shape into this ShapeLayout. 'shape' must
+	// be compatible with the ShapeLayout's shape, and 'shape' must have a layout
+	// (LayoutUtil::HasLayout).
+	tensorflow::Status CopyLayoutFromShape(const Shape& shape);
 
-  // Clears (Layout::Clear) all the Layouts stored in this object.
-  void Clear();
+	// Clears (Layout::Clear) all the Layouts stored in this object.
+	void Clear();
 
-  // Sets all Layouts stored in this object to the default layout.
-  void SetToDefaultLayout();
+	// Sets all Layouts stored in this object to the default layout.
+	void SetToDefaultLayout();
 
-  // Returns the shape (with layouts).
-  const Shape& shape() const { return shape_; }
+	// Returns the shape (with layouts).
+	const Shape& shape() const
+	{
+		return shape_;
+	}
 
-  // Checks that a layout is set for the shape, and returns a reference to the
-  // layout directly on the shape. Shape must not be a tuple.
-  const Layout& layout() const;
+	// Checks that a layout is set for the shape, and returns a reference to the
+	// layout directly on the shape. Shape must not be a tuple.
+	const Layout& layout() const;
 
-  // Returns true if all layouts have been set for this ShapeLayout object. That
-  // is, every array has a layout.
-  bool LayoutIsSet() const;
+	// Returns true if all layouts have been set for this ShapeLayout object. That
+	// is, every array has a layout.
+	bool LayoutIsSet() const;
 
-  // Resets the layout on the shape to the provided layout. Shape must not be a
-  // tuple.
-  void ResetLayout(const Layout& layout);
+	// Resets the layout on the shape to the provided layout. Shape must not be a
+	// tuple.
+	void ResetLayout(const Layout& layout);
 
-  // Returns a string representation of this object.
-  string ToString() const { return ShapeUtil::HumanStringWithLayout(shape_); }
+	// Returns a string representation of this object.
+	string ToString() const
+	{
+		return ShapeUtil::HumanStringWithLayout(shape_);
+	}
 
-  // Tests for equality of both shape and layout (ShapeUtil::Equal).
-  bool operator==(const ShapeLayout& other) const;
-  bool operator!=(const ShapeLayout& other) const;
+	// Tests for equality of both shape and layout (ShapeUtil::Equal).
+	bool operator==(const ShapeLayout& other) const;
+	bool operator!=(const ShapeLayout& other) const;
 
- private:
-  Shape shape_;
+private:
+	Shape shape_;
 };
 
 }  // namespace xla

@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // A minimal library exposing the naming logic used in tensor_bundle.
 //
@@ -30,7 +30,6 @@ limitations under the License.
 //   Env::Default()->GetMatchingFiles(metadata_file, &path);
 //
 // Regexp can also be used: e.g. R"<prefix>.data-\d{5}-of-\d{5}" for data files.
-
 #ifndef TENSORFLOW_UTIL_TENSOR_BUNDLE_NAMING_H_
 #define TENSORFLOW_UTIL_TENSOR_BUNDLE_NAMING_H_
 

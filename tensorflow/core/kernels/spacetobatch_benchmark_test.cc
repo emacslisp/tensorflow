@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/common_runtime/kernel_benchmark_testlib.h"
 #include "tensorflow/core/framework/tensor.h"
@@ -21,37 +21,36 @@ limitations under the License.
 
 namespace tensorflow {
 
-static Graph* ConstructSpaceToBatchGraph(
-    const char* op_name, const TensorShape& input_shape, const int block_size,
-    DataType dtype, const std::vector<std::pair<int, int>>& paddings) {
-  const int num_block_dims = 2;
-  CHECK_EQ(num_block_dims, paddings.size());
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor paddings_tensor(DT_INT32, TensorShape({num_block_dims, 2}));
-  auto paddings_eigen_tensor = paddings_tensor.matrix<int32>();
-  for (int block_dim = 0; block_dim < num_block_dims; ++block_dim) {
-    paddings_eigen_tensor(block_dim, 0) = paddings[block_dim].first;
-    paddings_eigen_tensor(block_dim, 1) = paddings[block_dim].second;
-  }
-  Node* ret;
-  if (dtype == DT_FLOAT) {
-    Tensor input(DT_FLOAT, input_shape);
-    input.flat<float>().setRandom();
-    NodeBuilder(g->NewName("n"), op_name)
-        .Input(test::graph::Constant(g, input))
-        .Input(test::graph::Constant(g, paddings_tensor))
-        .Attr("block_size", block_size)
-        .Finalize(g, &ret);
-  } else if (dtype == DT_HALF) {
-    Tensor input(DT_HALF, input_shape);
-    input.flat<Eigen::half>().setRandom();
-    NodeBuilder(g->NewName("n"), op_name)
-        .Input(test::graph::Constant(g, input))
-        .Input(test::graph::Constant(g, paddings_tensor))
-        .Attr("block_size", block_size)
-        .Finalize(g, &ret);
-  }
-  return g;
+static Graph* ConstructSpaceToBatchGraph(const char* op_name,
+		const TensorShape& input_shape, const int block_size, DataType dtype,
+		const std::vector<std::pair<int, int>>& paddings)
+{
+	const int num_block_dims = 2;
+	CHECK_EQ(num_block_dims, paddings.size());
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor paddings_tensor(DT_INT32, TensorShape( { num_block_dims, 2 }));
+	auto paddings_eigen_tensor = paddings_tensor.matrix<int32>();
+	for (int block_dim = 0; block_dim < num_block_dims; ++block_dim) {
+		paddings_eigen_tensor(block_dim, 0) = paddings[block_dim].first;
+		paddings_eigen_tensor(block_dim, 1) = paddings[block_dim].second;
+	}
+	Node* ret;
+	if (dtype == DT_FLOAT) {
+		Tensor input(DT_FLOAT, input_shape);
+		input.flat<float>().setRandom();
+		NodeBuilder(g->NewName("n"), op_name).Input(
+				test::graph::Constant(g, input)).Input(
+				test::graph::Constant(g, paddings_tensor)).Attr("block_size",
+				block_size).Finalize(g, &ret);
+	} else if (dtype == DT_HALF) {
+		Tensor input(DT_HALF, input_shape);
+		input.flat<Eigen::half>().setRandom();
+		NodeBuilder(g->NewName("n"), op_name).Input(
+				test::graph::Constant(g, input)).Input(
+				test::graph::Constant(g, paddings_tensor)).Attr("block_size",
+				block_size).Finalize(g, &ret);
+	}
+	return g;
 }
 
 // The BM_Expand macro is needed for this to build with VC++.

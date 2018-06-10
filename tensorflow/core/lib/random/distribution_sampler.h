@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // DistributionSampler allows generating a discrete random variable with a given
 // distribution.
@@ -27,7 +27,6 @@ limitations under the License.
 // dynamically, while DistributionSampler doesn't allow weight adjustment.
 //
 // The algorithm used is Walker's Aliasing algorithm, described in Knuth, Vol 2.
-
 #ifndef TENSORFLOW_LIB_RANDOM_DISTRIBUTION_SAMPLER_H_
 #define TENSORFLOW_LIB_RANDOM_DISTRIBUTION_SAMPLER_H_
 
@@ -44,48 +43,59 @@ namespace tensorflow {
 namespace random {
 
 class DistributionSampler {
- public:
-  explicit DistributionSampler(const gtl::ArraySlice<float>& weights);
+public:
+	explicit DistributionSampler(const gtl::ArraySlice<float>& weights);
 
-  ~DistributionSampler() {}
+	~DistributionSampler()
+	{
+	}
 
-  int Sample(SimplePhilox* rand) const {
-    float r = rand->RandFloat();
-    // Since n is typically low, we don't bother with UnbiasedUniform.
-    int idx = rand->Uniform(num_);
-    if (r < prob(idx)) return idx;
-    // else pick alt from that bucket.
-    DCHECK_NE(-1, alt(idx));
-    return alt(idx);
-  }
+	int Sample(SimplePhilox* rand) const
+	{
+		float r = rand->RandFloat();
+		// Since n is typically low, we don't bother with UnbiasedUniform.
+		int idx = rand->Uniform(num_);
+		if (r < prob(idx))
+			return idx;
+		// else pick alt from that bucket.
+		DCHECK_NE(-1, alt(idx));
+		return alt(idx);
+	}
 
-  int num() const { return num_; }
+	int num() const
+	{
+		return num_;
+	}
 
- private:
-  float prob(int idx) const {
-    DCHECK_LT(idx, num_);
-    return data_[idx].first;
-  }
+private:
+	float prob(int idx) const
+	{
+		DCHECK_LT(idx, num_);
+		return data_[idx].first;
+	}
 
-  int alt(int idx) const {
-    DCHECK_LT(idx, num_);
-    return data_[idx].second;
-  }
+	int alt(int idx) const
+	{
+		DCHECK_LT(idx, num_);
+		return data_[idx].second;
+	}
 
-  void set_prob(int idx, float f) {
-    DCHECK_LT(idx, num_);
-    data_[idx].first = f;
-  }
+	void set_prob(int idx, float f)
+	{
+		DCHECK_LT(idx, num_);
+		data_[idx].first = f;
+	}
 
-  void set_alt(int idx, int val) {
-    DCHECK_LT(idx, num_);
-    data_[idx].second = val;
-  }
+	void set_alt(int idx, int val)
+	{
+		DCHECK_LT(idx, num_);
+		data_[idx].second = val;
+	}
 
-  int num_;
-  std::unique_ptr<std::pair<float, int>[]> data_;
+	int num_;
+	std::unique_ptr<std::pair<float, int>[]> data_;
 
-  TF_DISALLOW_COPY_AND_ASSIGN(DistributionSampler);
+	TF_DISALLOW_COPY_AND_ASSIGN (DistributionSampler);
 };
 
 }  // namespace random

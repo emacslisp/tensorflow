@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // This file defines the StreamExecutor trace listener, used for inserting
 // non-device-specific instrumentation into the StreamExecutor.
@@ -44,28 +44,41 @@ class Stream;
 // convention (see SCOPED_TRACE in stream_executor_pimpl.cc), synchronous
 // tracepoints should be named NameBegin and NameComplete.
 class TraceListener {
- public:
-  virtual ~TraceListener() {}
+public:
+	virtual ~TraceListener()
+	{
+	}
 
-  virtual void LaunchSubmit(Stream* stream, const ThreadDim& thread_dims,
-                            const BlockDim& block_dims,
-                            const KernelBase& kernel,
-                            const KernelArgsArrayBase& args) {}
+	virtual void LaunchSubmit(Stream* stream, const ThreadDim& thread_dims,
+			const BlockDim& block_dims, const KernelBase& kernel,
+			const KernelArgsArrayBase& args)
+	{
+	}
 
-  virtual void SynchronousMemcpyH2DBegin(int64 correlation_id,
-                                         const void* host_src, int64 size,
-                                         DeviceMemoryBase* gpu_dst) {}
-  virtual void SynchronousMemcpyH2DComplete(int64 correlation_id,
-                                            const port::Status* result) {}
+	virtual void SynchronousMemcpyH2DBegin(int64 correlation_id,
+			const void* host_src, int64 size, DeviceMemoryBase* gpu_dst)
+	{
+	}
+	virtual void SynchronousMemcpyH2DComplete(int64 correlation_id,
+			const port::Status* result)
+	{
+	}
 
-  virtual void SynchronousMemcpyD2HBegin(int64 correlation_id,
-                                         const DeviceMemoryBase& gpu_src,
-                                         int64 size, void* host_dst) {}
-  virtual void SynchronousMemcpyD2HComplete(int64 correlation_id,
-                                            const port::Status* result) {}
+	virtual void SynchronousMemcpyD2HBegin(int64 correlation_id,
+			const DeviceMemoryBase& gpu_src, int64 size, void* host_dst)
+	{
+	}
+	virtual void SynchronousMemcpyD2HComplete(int64 correlation_id,
+			const port::Status* result)
+	{
+	}
 
-  virtual void BlockHostUntilDoneBegin(int64 correlation_id, Stream* stream) {}
-  virtual void BlockHostUntilDoneComplete(int64 correlation_id, bool result) {}
+	virtual void BlockHostUntilDoneBegin(int64 correlation_id, Stream* stream)
+	{
+	}
+	virtual void BlockHostUntilDoneComplete(int64 correlation_id, bool result)
+	{
+	}
 };
 
 }  // namespace gputools

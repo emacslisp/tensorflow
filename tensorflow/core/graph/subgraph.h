@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_GRAPH_SUBGRAPH_H_
 #define TENSORFLOW_GRAPH_SUBGRAPH_H_
@@ -52,11 +52,11 @@ namespace subgraph {
 //    - fed output "node:output_index" does not exist in "*g"
 //    - fetch output "node:output_index" does not exist in "*g"
 //    - target node "node" does not exist in "*g"
-Status RewriteGraphForExecution(
-    Graph* g, const gtl::ArraySlice<string>& fed_outputs,
-    const gtl::ArraySlice<string>& fetch_outputs,
-    const gtl::ArraySlice<string>& target_node_names,
-    const DeviceAttributes& device_info);
+Status RewriteGraphForExecution(Graph* g,
+		const gtl::ArraySlice<string>& fed_outputs,
+		const gtl::ArraySlice<string>& fetch_outputs,
+		const gtl::ArraySlice<string>& target_node_names,
+		const DeviceAttributes& device_info);
 
 typedef std::unordered_map<StringPiece, Node*, StringPiece::Hasher> NameIndex;
 
@@ -69,8 +69,8 @@ typedef std::unordered_map<StringPiece, Node*, StringPiece::Hasher> NameIndex;
 // an appropriate error message (and *g is left in an indeterminate
 // state).
 Status FetchOutputs(Graph* g, const DeviceAttributes& device_info,
-                    const gtl::ArraySlice<string>& fetch_outputs,
-                    NameIndex* name_index, std::vector<Node*>* fetch_nodes);
+		const gtl::ArraySlice<string>& fetch_outputs, NameIndex* name_index,
+		std::vector<Node*>* fetch_nodes);
 
 }  // namespace subgraph
 }  // namespace tensorflow

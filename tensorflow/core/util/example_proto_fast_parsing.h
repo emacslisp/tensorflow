@@ -1,17 +1,17 @@
 /* Copyright 2016 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_UTIL_EXAMPLE_PROTO_FAST_PARSING_H_
 #define THIRD_PARTY_TENSORFLOW_CORE_UTIL_EXAMPLE_PROTO_FAST_PARSING_H_
@@ -39,32 +39,32 @@ namespace example {
 // dtype identifies the type of output vector and the kind of Feature expected
 // in Example.
 struct FastParseExampleConfig {
-  struct Dense {
-    string feature_name;
-    DataType dtype;
-    // These 2 fields correspond exactly to dense_shapes and dense_defaults in
-    // ParseExample op.
-    // Documentation is avaliable in: tensorflow/core/ops/parsing_ops.cc
-    TensorShape shape;
-    Tensor default_value;
-  };
+	struct Dense {
+		string feature_name;
+		DataType dtype;
+		// These 2 fields correspond exactly to dense_shapes and dense_defaults in
+		// ParseExample op.
+		// Documentation is avaliable in: tensorflow/core/ops/parsing_ops.cc
+		TensorShape shape;
+		Tensor default_value;
+	};
 
-  struct Sparse {
-    string feature_name;
-    DataType dtype;
-  };
+	struct Sparse {
+		string feature_name;
+		DataType dtype;
+	};
 
-  std::vector<Dense> dense;
-  std::vector<Sparse> sparse;
+	std::vector<Dense> dense;
+	std::vector<Sparse> sparse;
 };
 
 // This is exactly the output of TF's ParseExample Op.
 // Documentation is avaliable in: tensorflow/core/ops/parsing_ops.cc
 struct Result {
-  std::vector<Tensor> sparse_indices;
-  std::vector<Tensor> sparse_values;
-  std::vector<Tensor> sparse_shapes;
-  std::vector<Tensor> dense_values;
+	std::vector<Tensor> sparse_indices;
+	std::vector<Tensor> sparse_values;
+	std::vector<Tensor> sparse_shapes;
+	std::vector<Tensor> dense_values;
 };
 
 // Parses a batch of serialized Example protos and converts them into result
@@ -72,9 +72,9 @@ struct Result {
 // Given example names have to either be empty or the same size as serialized.
 // example_names are used only for error messages.
 Status FastParseExample(const FastParseExampleConfig& config,
-                        gtl::ArraySlice<string> serialized,
-                        gtl::ArraySlice<string> example_names,
-                        thread::ThreadPool* thread_pool, Result* result);
+		gtl::ArraySlice<string> serialized,
+		gtl::ArraySlice<string> example_names, thread::ThreadPool* thread_pool,
+		Result* result);
 
 // This function parses serialized Example and populates given example.
 // It uses the same specialized parser as FastParseExample which is efficient.

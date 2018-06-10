@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include <functional>
 #include <memory>
@@ -42,13 +42,13 @@ namespace tensorflow {
 namespace test {
 namespace graph {
 
-class Node* GatherNd(Graph* g, class Node* in0, class Node* in1) {
-  class Node* ret;
-  TF_CHECK_OK(NodeBuilder(g->NewName("n"), "GatherNd")
-                  .Input(in0)
-                  .Input(in1)
-                  .Finalize(g, &ret));
-  return ret;
+class Node* GatherNd(Graph* g, class Node* in0, class Node* in1)
+{
+	class Node* ret;
+	TF_CHECK_OK(
+			NodeBuilder(g->NewName("n"), "GatherNd").Input(in0).Input(in1).Finalize(
+					g, &ret));
+	return ret;
 }
 
 }  // namespace graph
@@ -56,55 +56,56 @@ class Node* GatherNd(Graph* g, class Node* in0, class Node* in1) {
 
 namespace {
 
-class GatherNdOpTest : public OpsTestBase {
- protected:
-  void MakeOp(DataType index_type) {
-    TF_ASSERT_OK(NodeDefBuilder("myop", "GatherNd")
-                     .Input(FakeInput(DT_FLOAT))
-                     .Input(FakeInput(index_type))
-                     .Finalize(node_def()));
-    TF_ASSERT_OK(InitOp());
-  }
+class GatherNdOpTest: public OpsTestBase {
+protected:
+	void MakeOp(DataType index_type)
+	{
+		TF_ASSERT_OK(
+				NodeDefBuilder("myop", "GatherNd").Input(FakeInput(DT_FLOAT)).Input(
+						FakeInput(index_type)).Finalize(node_def()));
+		TF_ASSERT_OK(InitOp());
+	}
 };
 
 TEST_F(GatherNdOpTest, Simple) {
-  MakeOp(DT_INT32);
+	MakeOp(DT_INT32);
 
-  // Feed and run
-  AddInputFromArray<float>(TensorShape({5}), {0, 1, 2, 8, 4});
-  AddInputFromArray<int32>(TensorShape({2, 1}), {3, 4});
-  TF_ASSERT_OK(RunOpKernel());
+	// Feed and run
+	AddInputFromArray<float>(TensorShape( {5}), {0, 1, 2, 8, 4});
+	AddInputFromArray<int32>(TensorShape( {2, 1}), {3, 4});
+	TF_ASSERT_OK(RunOpKernel());
 
-  // Check the output.
-  Tensor expected(allocator(), DT_FLOAT, TensorShape({2}));
-  test::FillValues<float>(&expected, {8, 4});
-  test::ExpectTensorEqual<float>(expected, *GetOutput(0));
+	// Check the output.
+	Tensor expected(allocator(), DT_FLOAT, TensorShape( {2}));
+	test::FillValues<float>(&expected, {8, 4});
+	test::ExpectTensorEqual<float>(expected, *GetOutput(0));
 }
 
 constexpr int kLookups = 2000;
 
-template <typename Index>
-static Graph* GatherNd(int dim) {
-  Graph* g = new Graph(OpRegistry::Global());
-  // Always use a 512MB buffer.
-  // const int kRows = ((512 << 20) / sizeof(float)) / dim;
-  Tensor params(DT_FLOAT, TensorShape({dim, 8, 16, 32}));
-  params.flat<float>().setRandom();
+template<typename Index>
+static Graph* GatherNd(int dim)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	// Always use a 512MB buffer.
+	// const int kRows = ((512 << 20) / sizeof(float)) / dim;
+	Tensor params(DT_FLOAT, TensorShape( { dim, 8, 16, 32 }));
+	params.flat<float>().setRandom();
 
-  random::PhiloxRandom philox(301, 17);
-  random::SimplePhilox rnd(&philox);
-  Tensor indices(DataTypeToEnum<Index>::value, TensorShape({kLookups, 4}));
-  auto indices_mat = indices.matrix<Index>();
-  for (int i = 0; i < kLookups; i++) {
-    indices_mat(i, 0) = rnd.Uniform(dim);
-    indices_mat(i, 1) = rnd.Uniform(8);
-    indices_mat(i, 2) = rnd.Uniform(16);
-    indices_mat(i, 3) = rnd.Uniform(32);
-  }
+	random::PhiloxRandom philox(301, 17);
+	random::SimplePhilox rnd(&philox);
+	Tensor indices(DataTypeToEnum<Index>::value, TensorShape( { kLookups, 4 }));
+	auto indices_mat = indices.matrix<Index>();
+	for (int i = 0; i < kLookups; i++) {
+		indices_mat(i, 0) = rnd.Uniform(dim);
+		indices_mat(i, 1) = rnd.Uniform(8);
+		indices_mat(i, 2) = rnd.Uniform(16);
+		indices_mat(i, 3) = rnd.Uniform(32);
+	}
 
-  test::graph::GatherNd(g, test::graph::Constant(g, params),
-                        test::graph::Constant(g, indices));
-  return g;
+	test::graph::GatherNd(g, test::graph::Constant(g, params),
+			test::graph::Constant(g, indices));
+	return g;
 }
 
 #define BM_GATHER_ND(DEVICE, INDEX)                                 \

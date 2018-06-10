@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_FRAMEWORK_READER_INTERFACE_H_
 #define TENSORFLOW_FRAMEWORK_READER_INTERFACE_H_
@@ -41,45 +41,50 @@ class ReaderInterface;
 // so see ../ops/io_ops.cc for detailed descriptions.
 //
 // All descendants of this class must be thread-safe.
-class ReaderInterface : public ResourceBase {
- public:
-  // Read a single record into *key / *value.  May get more work from
-  // *queue if the current work is complete.  Sets the status on
-  // *context with an OutOfRange Status if the current work is
-  // complete and the queue is done (closed and empty).
-  // This method may block.
-  virtual void Read(QueueInterface* queue, string* key, string* value,
-                    OpKernelContext* context) = 0;
+class ReaderInterface: public ResourceBase {
+public:
+	// Read a single record into *key / *value.  May get more work from
+	// *queue if the current work is complete.  Sets the status on
+	// *context with an OutOfRange Status if the current work is
+	// complete and the queue is done (closed and empty).
+	// This method may block.
+	virtual void Read(QueueInterface* queue, string* key, string* value,
+			OpKernelContext* context) = 0;
 
-  // Read up to num_records records into keys / values. May get more work from
-  // *queue if the current work is complete.  Sets the status on
-  // *context with an OutOfRange Status if the current work is
-  // complete and the queue is done (closed and empty).
-  // This method may block.
-  // The std::vector keys/value pointers are assumed to point to empty
-  // structures (that have most likely been reserve(num_records)).
-  // Returns how many records were actually read.
-  virtual int64 ReadUpTo(const int64 num_records, QueueInterface* queue,
-                         std::vector<string>* keys, std::vector<string>* value,
-                         OpKernelContext* context) = 0;
+	// Read up to num_records records into keys / values. May get more work from
+	// *queue if the current work is complete.  Sets the status on
+	// *context with an OutOfRange Status if the current work is
+	// complete and the queue is done (closed and empty).
+	// This method may block.
+	// The std::vector keys/value pointers are assumed to point to empty
+	// structures (that have most likely been reserve(num_records)).
+	// Returns how many records were actually read.
+	virtual int64 ReadUpTo(const int64 num_records, QueueInterface* queue,
+			std::vector<string>* keys, std::vector<string>* value,
+			OpKernelContext* context) = 0;
 
-  // Restore this reader to its newly-constructed state.
-  virtual Status Reset() = 0;
+	// Restore this reader to its newly-constructed state.
+	virtual Status Reset() = 0;
 
-  // Accessors
-  virtual int64 NumRecordsProduced() = 0;
-  virtual int64 NumWorkUnitsCompleted() = 0;
+	// Accessors
+	virtual int64 NumRecordsProduced() = 0;
+	virtual int64 NumWorkUnitsCompleted() = 0;
 
-  // -- Serialization/Restoration support --
-  // Not all readers will support saving and restoring state.
-  virtual Status SerializeState(string* state) = 0;
-  // Note: Must Reset on error.
-  virtual Status RestoreState(const string& state) = 0;
+	// -- Serialization/Restoration support --
+	// Not all readers will support saving and restoring state.
+	virtual Status SerializeState(string* state) = 0;
+	// Note: Must Reset on error.
+	virtual Status RestoreState(const string& state) = 0;
 
-  string DebugString() override { return "a reader"; }
+	string DebugString() override
+	{
+		return "a reader";
+	}
 
- protected:
-  virtual ~ReaderInterface() {}
+protected:
+	virtual ~ReaderInterface()
+	{
+	}
 };
 
 }  // namespace tensorflow

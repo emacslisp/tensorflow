@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // Functions to read and write images in PNG format.
 //
@@ -27,7 +27,6 @@ limitations under the License.
 // returning StringPieces (e.g., Bigtable Scanner) or Cords (e.g., IOBuffer;
 // only when they're flat, though) or protocol buffer fields typed to either of
 // these can be decoded without copying the data into a C++ string.
-
 #ifndef TENSORFLOW_LIB_PNG_PNG_IO_H_
 #define TENSORFLOW_LIB_PNG_PNG_IO_H_
 
@@ -43,23 +42,26 @@ namespace png {
 
 // Handy container for decoding informations and struct pointers
 struct DecodeContext {
-  const uint8* data;
-  int data_left;
-  png_structp png_ptr;
-  png_infop info_ptr;
-  png_uint_32 width, height;
-  int num_passes;
-  int color_type;
-  int bit_depth;
-  int channels;
-  bool need_to_synthesize_16;
-  bool error_condition;
-  DecodeContext() : png_ptr(NULL), info_ptr(NULL) {}
+	const uint8* data;
+	int data_left;
+	png_structp png_ptr;
+	png_infop info_ptr;
+	png_uint_32 width, height;
+	int num_passes;
+	int color_type;
+	int bit_depth;
+	int channels;
+	bool need_to_synthesize_16;
+	bool error_condition;
+	DecodeContext() :
+			png_ptr(NULL), info_ptr(NULL)
+	{
+	}
 };
 
 bool DecodeHeader(StringPiece png_string, int* width, int* height,
-                  int* components, int* channel_bit_depth,
-                  std::vector<std::pair<string, string> >* metadata);
+		int* components, int* channel_bit_depth,
+		std::vector<std::pair<string, string> >* metadata);
 
 // Sample usage for reading PNG:
 //
@@ -73,7 +75,7 @@ bool DecodeHeader(StringPiece png_string, int* width, int* height,
 // desired_channels may be 0 to detected it from the input.
 
 bool CommonInitDecode(StringPiece png_string, int desired_channels,
-                      int desired_channel_bits, DecodeContext* context);
+		int desired_channel_bits, DecodeContext* context);
 
 bool CommonFinishDecode(png_bytep data, int row_bytes, DecodeContext* context);
 
@@ -92,10 +94,9 @@ void CommonFreeDecode(DecodeContext* context);
 // compression is in [-1,9], where 0 is fast and weak compression, 9 is slow
 // and strong, and -1 is the zlib default.
 
-bool WriteImageToBuffer(
-    const void* image, int width, int height, int row_bytes, int num_channels,
-    int channel_bits, int compression, string* png_string,
-    const std::vector<std::pair<string, string> >* metadata);
+bool WriteImageToBuffer(const void* image, int width, int height, int row_bytes,
+		int num_channels, int channel_bits, int compression, string* png_string,
+		const std::vector<std::pair<string, string> >* metadata);
 
 }  // namespace png
 }  // namespace tensorflow

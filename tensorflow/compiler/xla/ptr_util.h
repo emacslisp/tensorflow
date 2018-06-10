@@ -1,17 +1,17 @@
 /* Copyright 2017 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef TENSORFLOW_COMPILER_XLA_PTR_UTIL_H_
 #define TENSORFLOW_COMPILER_XLA_PTR_UTIL_H_
@@ -29,17 +29,17 @@ namespace xla {
 namespace internal {
 
 // Trait to select overloads and return types for MakeUnique.
-template <typename T>
+template<typename T>
 struct MakeUniqueResult {
-  using scalar = std::unique_ptr<T>;
+	using scalar = std::unique_ptr<T>;
 };
-template <typename T>
+template<typename T>
 struct MakeUniqueResult<T[]> {
-  using array = std::unique_ptr<T[]>;
+	using array = std::unique_ptr<T[]>;
 };
-template <typename T, size_t N>
+template<typename T, size_t N>
 struct MakeUniqueResult<T[N]> {
-  using invalid = void;
+	using invalid = void;
 };
 
 }  // namespace internal
@@ -55,24 +55,27 @@ struct MakeUniqueResult<T[N]> {
 //   auto x = MakeUnique<X>(1, 2);  // safer, standard, avoids raw 'new'.
 //
 // Note: Cannot wrap pointers to array of unknown bound (i.e. U(*)[]).
-template <typename T>
-std::unique_ptr<T> WrapUnique(T* ptr) {
-  static_assert(!std::is_array<T>::value || std::extent<T>::value != 0,
-                "types T[0] or T[] are unsupported");
-  return std::unique_ptr<T>(ptr);
+template<typename T>
+std::unique_ptr<T> WrapUnique(T* ptr)
+{
+	static_assert(!std::is_array<T>::value || std::extent<T>::value != 0,
+			"types T[0] or T[] are unsupported");
+	return std::unique_ptr<T>(ptr);
 }
 
-template <typename T, typename... Args>
-typename internal::MakeUniqueResult<T>::scalar MakeUnique(Args&&... args) {
-  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+template<typename T, typename ... Args>
+typename internal::MakeUniqueResult<T>::scalar MakeUnique(Args&&... args)
+{
+	return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
 }
 
 // Overload for array of unknown bound.
 // The allocation of arrays needs to use the array form of new,
 // and cannot take element constructor arguments.
-template <typename T>
-typename internal::MakeUniqueResult<T>::array MakeUnique(size_t n) {
-  return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]());
+template<typename T>
+typename internal::MakeUniqueResult<T>::array MakeUnique(size_t n)
+{
+	return std::unique_ptr<T>(new typename std::remove_extent<T>::type[n]());
 }
 
 }  // namespace xla

@@ -1,20 +1,19 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // See docs in ../ops/array_ops.cc.
-
 #define EIGEN_USE_THREADS
 
 #if GOOGLE_CUDA
@@ -40,80 +39,90 @@ namespace tensorflow {
 typedef Eigen::ThreadPoolDevice CPUDevice;
 typedef Eigen::GpuDevice GPUDevice;
 
-template <typename Device, typename T>
-class MatrixDiagPartOp : public OpKernel {
- public:
-  explicit MatrixDiagPartOp(OpKernelConstruction* context)
-      : OpKernel(context) {}
+template<typename Device, typename T>
+class MatrixDiagPartOp: public OpKernel {
+public:
+	explicit MatrixDiagPartOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+	}
 
-  void Compute(OpKernelContext* context) override {
-    const Tensor& input = context->input(0);
+	void Compute(OpKernelContext* context) override
+	{
+		const Tensor& input = context->input(0);
 
-    const TensorShape& input_shape = input.shape();
-    const int rank = input_shape.dims();
+		const TensorShape& input_shape = input.shape();
+		const int rank = input_shape.dims();
 
-    // Preliminary validation of sizes.
-    OP_REQUIRES(context, TensorShapeUtils::IsMatrixOrHigher(input_shape),
-                errors::InvalidArgument(
-                    "input must be at least 2-dim, received shape: ",
-                    input.shape().DebugString()));
+		// Preliminary validation of sizes.
+		OP_REQUIRES(context, TensorShapeUtils::IsMatrixOrHigher(input_shape),
+				errors::InvalidArgument(
+						"input must be at least 2-dim, received shape: ",
+						input.shape().DebugString()));
 
-    TensorShape output_shape;
-    for (int i = 0; i < rank - 2; ++i) {
-      output_shape.AddDim(input_shape.dim_size(i));
-    }
-    const int64 min_dim = std::min(input_shape.dim_size(rank - 2),
-                                   input_shape.dim_size(rank - 1));
-    output_shape.AddDim(min_dim);
+		TensorShape output_shape;
+		for (int i = 0; i < rank - 2; ++i) {
+			output_shape.AddDim(input_shape.dim_size(i));
+		}
+		const int64 min_dim = std::min(input_shape.dim_size(rank - 2),
+				input_shape.dim_size(rank - 1));
+		output_shape.AddDim(min_dim);
 
-    Tensor* output = nullptr;
-    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+		Tensor* output = nullptr;
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, output_shape, &output));
 
-    auto output_reshaped = output->flat_inner_dims<T, 2>();
-    auto input_reshaped = input.flat_inner_dims<T, 3>();
+		auto output_reshaped = output->flat_inner_dims<T, 2>();
+		auto input_reshaped = input.flat_inner_dims<T, 3>();
 
-    functor::MatrixDiagPart<Device, T>::Compute(
-        context->eigen_device<Device>(), input_reshaped, output_reshaped);
-  }
+		functor::MatrixDiagPart<Device, T>::Compute(
+				context->eigen_device<Device>(), input_reshaped,
+				output_reshaped);
+	}
 
- private:
-  TF_DISALLOW_COPY_AND_ASSIGN(MatrixDiagPartOp);
+private:
+	TF_DISALLOW_COPY_AND_ASSIGN (MatrixDiagPartOp);
 };
 
-template <typename Device, typename T>
-class MatrixDiagOp : public OpKernel {
- public:
-  explicit MatrixDiagOp(OpKernelConstruction* context) : OpKernel(context) {}
+template<typename Device, typename T>
+class MatrixDiagOp: public OpKernel {
+public:
+	explicit MatrixDiagOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+	}
 
-  void Compute(OpKernelContext* context) override {
-    const Tensor& input = context->input(0);
+	void Compute(OpKernelContext* context) override
+	{
+		const Tensor& input = context->input(0);
 
-    const TensorShape& input_shape = input.shape();
-    const int rank = input_shape.dims();
+		const TensorShape& input_shape = input.shape();
+		const int rank = input_shape.dims();
 
-    // Preliminary validation of sizes.
-    OP_REQUIRES(context, TensorShapeUtils::IsVectorOrHigher(input_shape),
-                errors::InvalidArgument(
-                    "input must be at least 1-dim, received shape: ",
-                    input.shape().DebugString()));
+		// Preliminary validation of sizes.
+		OP_REQUIRES(context, TensorShapeUtils::IsVectorOrHigher(input_shape),
+				errors::InvalidArgument(
+						"input must be at least 1-dim, received shape: ",
+						input.shape().DebugString()));
 
-    const int64 k = input_shape.dim_size(rank - 1);
-    auto input_reshaped = input.flat_inner_dims<T, 2>();
+		const int64 k = input_shape.dim_size(rank - 1);
+		auto input_reshaped = input.flat_inner_dims<T, 2>();
 
-    TensorShape output_shape = input_shape;
-    output_shape.AddDim(k);
+		TensorShape output_shape = input_shape;
+		output_shape.AddDim(k);
 
-    Tensor* output = nullptr;
-    OP_REQUIRES_OK(context, context->allocate_output(0, output_shape, &output));
+		Tensor* output = nullptr;
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, output_shape, &output));
 
-    auto output_reshaped = output->flat_inner_dims<T, 3>();
+		auto output_reshaped = output->flat_inner_dims<T, 3>();
 
-    functor::MatrixDiag<Device, T>::Compute(context->eigen_device<Device>(),
-                                            input_reshaped, output_reshaped);
-  }
+		functor::MatrixDiag<Device, T>::Compute(context->eigen_device<Device>(),
+				input_reshaped, output_reshaped);
+	}
 
- private:
-  TF_DISALLOW_COPY_AND_ASSIGN(MatrixDiagOp);
+private:
+	TF_DISALLOW_COPY_AND_ASSIGN (MatrixDiagOp);
 };
 
 #define REGISTER_MATRIX_DIAG(type)                                         \
@@ -123,7 +132,7 @@ class MatrixDiagOp : public OpKernel {
   REGISTER_KERNEL_BUILDER(                                                 \
       Name("MatrixDiagPart").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       MatrixDiagPartOp<CPUDevice, type>);
-TF_CALL_NUMBER_TYPES(REGISTER_MATRIX_DIAG);
+TF_CALL_NUMBER_TYPES (REGISTER_MATRIX_DIAG);
 #undef REGISTER_MATRIX_DIAG
 
 // Registration of the deprecated kernel.
@@ -136,36 +145,38 @@ TF_CALL_NUMBER_TYPES(REGISTER_MATRIX_DIAG);
                               .Device(DEVICE_CPU)                           \
                               .TypeConstraint<type>("T"),                   \
                           MatrixDiagPartOp<CPUDevice, type>);
-TF_CALL_NUMBER_TYPES(REGISTER_BATCH_MATRIX_DIAG);
+TF_CALL_NUMBER_TYPES (REGISTER_BATCH_MATRIX_DIAG);
 #undef REGISTER_BATCH_MATRIX_DIAG
 
 // Implementation of the functor specialization for CPU.
 namespace functor {
-template <typename T>
+template<typename T>
 struct MatrixDiag<CPUDevice, T> {
-  static void Compute(const CPUDevice& d,
-                      typename TTypes<T, 2>::ConstTensor input,
-                      typename TTypes<T, 3>::Tensor output) {
-    output.device(d) = output.constant(T());
-    for (int64 r = 0; r < output.dimension(0); ++r) {
-      for (int64 d = 0; d < output.dimension(1); ++d) {
-        output(r, d, d) = input(r, d);
-      }
-    }
-  }
+	static void Compute(const CPUDevice& d,
+			typename TTypes<T, 2>::ConstTensor input,
+			typename TTypes<T, 3>::Tensor output)
+	{
+		output.device(d) = output.constant(T());
+		for (int64 r = 0; r < output.dimension(0); ++r) {
+			for (int64 d = 0; d < output.dimension(1); ++d) {
+				output(r, d, d) = input(r, d);
+			}
+		}
+	}
 };
 
-template <typename T>
+template<typename T>
 struct MatrixDiagPart<CPUDevice, T> {
-  static void Compute(const CPUDevice& d,
-                      typename TTypes<T, 3>::ConstTensor input,
-                      typename TTypes<T, 2>::Tensor output) {
-    for (int64 r = 0; r < output.dimension(0); ++r) {
-      for (int64 d = 0; d < output.dimension(1); ++d) {
-        output(r, d) = input(r, d, d);
-      }
-    }
-  }
+	static void Compute(const CPUDevice& d,
+			typename TTypes<T, 3>::ConstTensor input,
+			typename TTypes<T, 2>::Tensor output)
+	{
+		for (int64 r = 0; r < output.dimension(0); ++r) {
+			for (int64 d = 0; d < output.dimension(1); ++d) {
+				output(r, d) = input(r, d, d);
+			}
+		}
+	}
 };
 
 }  // namespace functor
@@ -186,7 +197,7 @@ namespace functor {
       typename TTypes<T, 2>::Tensor output);                        \
   extern template struct MatrixDiagPart<GPUDevice, T>;
 
-TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
+	TF_CALL_GPU_NUMBER_TYPES(DECLARE_GPU_SPEC);
 
 }  // namespace functor
 
@@ -216,4 +227,5 @@ TF_CALL_GPU_NUMBER_TYPES(REGISTER_BATCH_MATRIX_DIAG_GPU);
 
 #endif  // GOOGLE_CUDA
 
-}  // namespace tensorflow
+}
+  // namespace tensorflow

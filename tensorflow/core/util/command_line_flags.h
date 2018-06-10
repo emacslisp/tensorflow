@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #ifndef THIRD_PARTY_TENSORFLOW_CORE_UTIL_COMMAND_LINE_FLAGS_H
 #define THIRD_PARTY_TENSORFLOW_CORE_UTIL_COMMAND_LINE_FLAGS_H
@@ -60,39 +60,42 @@ namespace tensorflow {
 // A description of a single command line flag, holding its name, type, usage
 // text, and a pointer to the corresponding variable.
 class Flag {
- public:
-  Flag(const char* name, int32* dst1, const string& usage_text);
-  Flag(const char* name, int64* dst1, const string& usage_text);
-  Flag(const char* name, bool* dst, const string& usage_text);
-  Flag(const char* name, string* dst, const string& usage_text);
+public:
+	Flag(const char* name, int32* dst1, const string& usage_text);
+	Flag(const char* name, int64* dst1, const string& usage_text);
+	Flag(const char* name, bool* dst, const string& usage_text);
+	Flag(const char* name, string* dst, const string& usage_text);
 
- private:
-  friend class Flags;
+private:
+	friend class Flags;
 
-  bool Parse(string arg, bool* value_parsing_ok) const;
+	bool Parse(string arg, bool* value_parsing_ok) const;
 
-  string name_;
-  enum { TYPE_INT, TYPE_INT64, TYPE_BOOL, TYPE_STRING } type_;
-  int* int_value_;
-  int64* int64_value_;
-  bool* bool_value_;
-  string* string_value_;
-  string usage_text_;
+	string name_;
+	enum {
+		TYPE_INT, TYPE_INT64, TYPE_BOOL, TYPE_STRING
+	} type_;
+	int* int_value_;
+	int64* int64_value_;
+	bool* bool_value_;
+	string* string_value_;
+	string usage_text_;
 };
 
 class Flags {
- public:
-  // Parse the command line represented by argv[0, ..., (*argc)-1] to find flag
-  // instances matching flags in flaglist[].  Update the variables associated
-  // with matching flags, and remove the matching arguments from (*argc, argv).
-  // Return true iff all recognized flag values were parsed correctly, and the
-  // first remaining argument is not "--help".
-  static bool Parse(int* argc, char** argv, const std::vector<Flag>& flag_list);
+public:
+	// Parse the command line represented by argv[0, ..., (*argc)-1] to find flag
+	// instances matching flags in flaglist[].  Update the variables associated
+	// with matching flags, and remove the matching arguments from (*argc, argv).
+	// Return true iff all recognized flag values were parsed correctly, and the
+	// first remaining argument is not "--help".
+	static bool Parse(int* argc, char** argv,
+			const std::vector<Flag>& flag_list);
 
-  // Return a usage message with command line cmdline, and the
-  // usage_text strings in flag_list[].
-  static string Usage(const string& cmdline,
-                      const std::vector<Flag>& flag_list);
+	// Return a usage message with command line cmdline, and the
+	// usage_text strings in flag_list[].
+	static string Usage(const string& cmdline,
+			const std::vector<Flag>& flag_list);
 };
 
 }  // namespace tensorflow

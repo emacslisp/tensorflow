@@ -48,39 +48,40 @@ constexpr int k0RetriesPerSample = 0;
 constexpr int k3RetriesPerSample = 3;
 
 Graph* SetUpKmeansPlusPlusInitialization(int num_dims, int num_points,
-                                         int num_to_sample,
-                                         int retries_per_sample) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor points(DT_FLOAT, TensorShape({num_points, num_dims}));
-  Tensor sample_size(DT_INT64, TensorShape({}));
-  Tensor seed(DT_INT64, TensorShape({}));
-  Tensor num_retries_per_sample(DT_INT64, TensorShape({}));
-  points.flat<float>().setRandom();
-  sample_size.flat<int64>().setConstant(num_to_sample);
-  seed.flat<int64>().setConstant(12345);
-  num_retries_per_sample.flat<int64>().setConstant(retries_per_sample);
+		int num_to_sample, int retries_per_sample)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor points(DT_FLOAT, TensorShape( { num_points, num_dims }));
+	Tensor sample_size(DT_INT64, TensorShape( { }));
+	Tensor seed(DT_INT64, TensorShape( { }));
+	Tensor num_retries_per_sample(DT_INT64, TensorShape( { }));
+	points.flat<float>().setRandom();
+	sample_size.flat<int64>().setConstant(num_to_sample);
+	seed.flat<int64>().setConstant(12345);
+	num_retries_per_sample.flat<int64>().setConstant(retries_per_sample);
 
-  TF_CHECK_OK(NodeBuilder("kmeans_plus_plus_initialization_op",
-                          "KmeansPlusPlusInitialization")
-                  .Input(test::graph::Constant(g, points))
-                  .Input(test::graph::Constant(g, sample_size))
-                  .Input(test::graph::Constant(g, seed))
-                  .Input(test::graph::Constant(g, num_retries_per_sample))
-                  .Finalize(g, nullptr /* node */));
-  return g;
+	TF_CHECK_OK(
+			NodeBuilder("kmeans_plus_plus_initialization_op",
+					"KmeansPlusPlusInitialization").Input(
+					test::graph::Constant(g, points)).Input(
+					test::graph::Constant(g, sample_size)).Input(
+					test::graph::Constant(g, seed)).Input(
+					test::graph::Constant(g, num_retries_per_sample)).Finalize(
+					g, nullptr /* node */));
+	return g;
 }
 
-template <int num_points, int num_to_sample, int num_dims,
-          int retries_per_sample>
-void BM_KmeansPlusPlusInitialization(int iters) {
-  testing::StopTiming();
-  testing::ItemsProcessed(static_cast<int64>(iters) * num_points * num_dims *
-                          num_to_sample);
-  testing::UseRealTime();
-  Graph* g = SetUpKmeansPlusPlusInitialization(
-      num_dims, num_points, num_to_sample, retries_per_sample);
-  testing::StartTiming();
-  test::Benchmark("cpu", g).Run(iters);
+template<int num_points, int num_to_sample, int num_dims, int retries_per_sample>
+void BM_KmeansPlusPlusInitialization(int iters)
+{
+	testing::StopTiming();
+	testing::ItemsProcessed(
+			static_cast<int64>(iters) * num_points * num_dims * num_to_sample);
+	testing::UseRealTime();
+	Graph* g = SetUpKmeansPlusPlusInitialization(num_dims, num_points,
+			num_to_sample, retries_per_sample);
+	testing::StartTiming();
+	test::Benchmark("cpu", g).Run(iters);
 }
 
 #define BENCHMARK_KMEANS_PLUS_PLUS(p, c, d, r)                            \
@@ -117,32 +118,35 @@ RUN_BM_KmeansPlusPlusInitialization(k3RetriesPerSample);
 #undef BENCHMARK_KMEANS_PLUS_PLUS
 
 Graph* SetUpNearestNeighbors(int num_dims, int num_points, int num_centers,
-                             int k) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor points(DT_FLOAT, TensorShape({num_points, num_dims}));
-  Tensor centers(DT_FLOAT, TensorShape({num_centers, num_dims}));
-  Tensor top(DT_INT64, TensorShape({}));
-  points.flat<float>().setRandom();
-  centers.flat<float>().setRandom();
-  top.flat<int64>().setConstant(k);
+		int k)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor points(DT_FLOAT, TensorShape( { num_points, num_dims }));
+	Tensor centers(DT_FLOAT, TensorShape( { num_centers, num_dims }));
+	Tensor top(DT_INT64, TensorShape( { }));
+	points.flat<float>().setRandom();
+	centers.flat<float>().setRandom();
+	top.flat<int64>().setConstant(k);
 
-  TF_CHECK_OK(NodeBuilder("nearest_centers_op", "NearestNeighbors")
-                  .Input(test::graph::Constant(g, points))
-                  .Input(test::graph::Constant(g, centers))
-                  .Input(test::graph::Constant(g, top))
-                  .Finalize(g, nullptr /* node */));
-  return g;
+	TF_CHECK_OK(
+			NodeBuilder("nearest_centers_op", "NearestNeighbors").Input(
+					test::graph::Constant(g, points)).Input(
+					test::graph::Constant(g, centers)).Input(
+					test::graph::Constant(g, top)).Finalize(g,
+					nullptr /* node */));
+	return g;
 }
 
-template <int num_dims, int num_points, int num_centers, int k>
-void BM_NearestNeighbors(int iters) {
-  testing::StopTiming();
-  testing::ItemsProcessed(static_cast<int64>(iters) * num_points * num_dims *
-                          num_centers);
-  testing::UseRealTime();
-  Graph* g = SetUpNearestNeighbors(num_dims, num_points, num_centers, k);
-  testing::StartTiming();
-  test::Benchmark("cpu", g).Run(iters);
+template<int num_dims, int num_points, int num_centers, int k>
+void BM_NearestNeighbors(int iters)
+{
+	testing::StopTiming();
+	testing::ItemsProcessed(
+			static_cast<int64>(iters) * num_points * num_dims * num_centers);
+	testing::UseRealTime();
+	Graph* g = SetUpNearestNeighbors(num_dims, num_points, num_centers, k);
+	testing::StartTiming();
+	test::Benchmark("cpu", g).Run(iters);
 }
 
 constexpr int kTop1 = 1;

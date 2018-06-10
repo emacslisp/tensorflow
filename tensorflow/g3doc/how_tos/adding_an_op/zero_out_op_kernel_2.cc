@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/framework/common_shape_fns.h"
 #include "tensorflow/core/framework/op_kernel.h"
@@ -21,11 +21,11 @@ limitations under the License.
 using namespace tensorflow;
 
 REGISTER_OP("ZeroOut")
-    .Attr("T: realnumbertype")
-    .Input("to_zero: T")
-    .Output("zeroed: T")
-    .SetShapeFn(shape_inference::UnchangedShape)
-    .Doc(R"doc(
+.Attr("T: realnumbertype")
+.Input("to_zero: T")
+.Output("zeroed: T")
+.SetShapeFn(shape_inference::UnchangedShape)
+.Doc(R"doc(
 Zeros out all but the first value of a Tensor.
 
 zeroed: A Tensor whose first value is identical to `to_zero`, and 0
@@ -33,10 +33,10 @@ zeroed: A Tensor whose first value is identical to `to_zero`, and 0
 )doc");
 
 REGISTER_OP("ZeroOut2")
-    .Attr("T: realnumbertype")
-    .Input("to_zero: T")
-    .Output("zeroed: T")
-    .Doc(R"doc(
+.Attr("T: realnumbertype")
+.Input("to_zero: T")
+.Output("zeroed: T")
+.Doc(R"doc(
 Zeros out all but the first value of a Tensor.
 
 zeroed: A Tensor whose first value is identical to `to_zero`, and 0
@@ -44,41 +44,46 @@ zeroed: A Tensor whose first value is identical to `to_zero`, and 0
 )doc");
 
 REGISTER_OP("ZeroOut3")
-    .Attr("T: realnumbertype")
-    .Input("to_zero: T")
-    .Output("zeroed: T")
-    .Doc(R"doc(
+.Attr("T: realnumbertype")
+.Input("to_zero: T")
+.Output("zeroed: T")
+.Doc(R"doc(
 Zeros out all but the first value of a Tensor.
 
 zeroed: A Tensor whose first value is identical to `to_zero`, and 0
   otherwise.
 )doc");
 
-template <typename T>
-class ZeroOutOp : public OpKernel {
- public:
-  explicit ZeroOutOp(OpKernelConstruction* context) : OpKernel(context) {}
+template<typename T>
+class ZeroOutOp: public OpKernel {
+public:
+	explicit ZeroOutOp(OpKernelConstruction* context) :
+			OpKernel(context)
+	{
+	}
 
-  void Compute(OpKernelContext* context) override {
-    // Grab the input tensor
-    const Tensor& input_tensor = context->input(0);
-    auto input = input_tensor.flat<T>();
+	void Compute(OpKernelContext* context) override
+	{
+		// Grab the input tensor
+		const Tensor& input_tensor = context->input(0);
+		auto input = input_tensor.flat<T>();
 
-    // Create an output tensor
-    Tensor* output = NULL;
-    OP_REQUIRES_OK(context,
-                   context->allocate_output(0, input_tensor.shape(), &output));
-    auto output_flat = output->template flat<T>();
+		// Create an output tensor
+		Tensor* output = NULL;
+		OP_REQUIRES_OK(context,
+				context->allocate_output(0, input_tensor.shape(), &output));
+		auto output_flat = output->template flat<T>();
 
-    // Set all the elements of the output tensor to 0
-    const int N = input.size();
-    for (int i = 0; i < N; i++) {
-      output_flat(i) = T(0);
-    }
+		// Set all the elements of the output tensor to 0
+		const int N = input.size();
+		for (int i = 0; i < N; i++) {
+			output_flat(i) = T(0);
+		}
 
-    // Preserve the first input value
-    if (N > 0) output_flat(0) = input(0);
-  }
+		// Preserve the first input value
+		if (N > 0)
+			output_flat(0) = input(0);
+	}
 };
 
 REGISTER_KERNEL_BUILDER(Name("ZeroOut")
@@ -110,6 +115,6 @@ REGISTER_KERNEL(int32);
       Name("ZeroOut3").Device(DEVICE_CPU).TypeConstraint<type>("T"), \
       ZeroOutOp<type>)
 
-TF_CALL_REAL_NUMBER_TYPES(REGISTER_KERNEL);
+TF_CALL_REAL_NUMBER_TYPES (REGISTER_KERNEL);
 
 #undef REGISTER_KERNEL

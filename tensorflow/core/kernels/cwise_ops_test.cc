@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 #include "tensorflow/core/common_runtime/kernel_benchmark_testlib.h"
 #include "tensorflow/core/framework/tensor.h"
@@ -25,21 +25,31 @@ namespace tensorflow {
 
 // Creates a Graph which applies a unary "func" on a 3D tensor of
 // type T with "num" elements.
-template <typename T>
-static Graph* Unary(const string& func, int num, DataType dtype) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor data(dtype, TensorShape({64, 64, num / (64 * 64)}));
-  CHECK_GT(data.NumElements(), 0);
-  data.flat<T>().setRandom();
-  test::graph::Unary(g, func, test::graph::Constant(g, data), 0);
-  return g;
+template<typename T>
+static Graph* Unary(const string& func, int num, DataType dtype)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor data(dtype, TensorShape( { 64, 64, num / (64 * 64) }));
+	CHECK_GT(data.NumElements(), 0);
+	data.flat<T>().setRandom();
+	test::graph::Unary(g, func, test::graph::Constant(g, data), 0);
+	return g;
 }
 
 static int kRows = 100000;
 
-static int RowsAndColsArg(int r, int c) { return r * kRows + c; }
-static int RowsFromArg(int arg) { return (arg / kRows); }
-static int ColsFromArg(int arg) { return (arg % kRows); }
+static int RowsAndColsArg(int r, int c)
+{
+	return r * kRows + c;
+}
+static int RowsFromArg(int arg)
+{
+	return (arg / kRows);
+}
+static int ColsFromArg(int arg)
+{
+	return (arg % kRows);
+}
 
 #define BM_UNARY(DEVICE, FUNC, T, TYPE)                              \
   static void BM_##DEVICE##_##FUNC##_##TYPE(int iters, int num) {    \
@@ -65,15 +75,16 @@ BM_UNARY(cpu, Rint, float, DT_FLOAT);
 BM_UNARY(gpu, Rint, float, DT_FLOAT);
 
 // data func scalar.
-static Graph* BinaryScalar(int num, const string& func) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor lhs(DT_FLOAT, TensorShape({64, 64, num / (64 * 64)}));
-  lhs.flat<float>().setRandom();
-  Tensor rhs(DT_FLOAT, TensorShape({}));
-  rhs.flat<float>().setRandom();
-  test::graph::Binary(g, func, test::graph::Constant(g, lhs),
-                      test::graph::Constant(g, rhs));
-  return g;
+static Graph* BinaryScalar(int num, const string& func)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor lhs(DT_FLOAT, TensorShape( { 64, 64, num / (64 * 64) }));
+	lhs.flat<float>().setRandom();
+	Tensor rhs(DT_FLOAT, TensorShape( { }));
+	rhs.flat<float>().setRandom();
+	test::graph::Binary(g, func, test::graph::Constant(g, lhs),
+			test::graph::Constant(g, rhs));
+	return g;
 }
 
 #define BM_BINARY_SCALAR(DEVICE, FUNC)                             \
@@ -95,18 +106,19 @@ BM_BINARY_SCALAR(cpu, Add);
 BM_BINARY_SCALAR(gpu, Add);
 #undef BM_BINARY_SCALAR
 
-template <class T>
-static Graph* BiasAdd(int rows, int cols, DataType type) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor lhs(type, TensorShape({rows, cols}));
-  lhs.template flat<T>().setRandom();
-  TensorShape rhs_shape;
-  rhs_shape = TensorShape({cols});
-  Tensor rhs(type, rhs_shape);
-  rhs.template flat<T>().setRandom();
-  test::graph::Binary(g, "BiasAdd", test::graph::Constant(g, lhs),
-                      test::graph::Constant(g, rhs));
-  return g;
+template<class T>
+static Graph* BiasAdd(int rows, int cols, DataType type)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor lhs(type, TensorShape( { rows, cols }));
+	lhs.template flat<T>().setRandom();
+	TensorShape rhs_shape;
+	rhs_shape = TensorShape( { cols });
+	Tensor rhs(type, rhs_shape);
+	rhs.template flat<T>().setRandom();
+	test::graph::Binary(g, "BiasAdd", test::graph::Constant(g, lhs),
+			test::graph::Constant(g, rhs));
+	return g;
 }
 
 #define BM_BIAS_ADD(DEVICE, C_TYPE, TF_TYPE, R, C)                             \
@@ -136,24 +148,25 @@ BM_BIAS_ADD_ALL(gpu, half, DT_HALF);
 #undef BM_BIAS_ADD_ALL
 #undef BM_BIAS_ADD
 
-template <class T>
+template<class T>
 static Graph* BiasAddGrad(int rows, int cols, int channels, DataType type,
-                          TensorFormat format) {
-  Graph* g = new Graph(OpRegistry::Global());
-  TensorShape lhs_shape;
-  if (format == FORMAT_NCHW) {
-    lhs_shape = TensorShape({channels, rows, cols});
-  } else {
-    lhs_shape = TensorShape({rows, cols, channels});
-  }
-  Tensor lhs(type, lhs_shape);
-  lhs.template flat<T>().setRandom();
-  Node* n;
-  TF_CHECK_OK(NodeBuilder(g->NewName("n"), "BiasAddGrad")
-                  .Attr("data_format", ToString(format))
-                  .Input(test::graph::Constant(g, lhs), /*index=*/0)
-                  .Finalize(g, &n));
-  return g;
+		TensorFormat format)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	TensorShape lhs_shape;
+	if (format == FORMAT_NCHW) {
+		lhs_shape = TensorShape( { channels, rows, cols });
+	} else {
+		lhs_shape = TensorShape( { rows, cols, channels });
+	}
+	Tensor lhs(type, lhs_shape);
+	lhs.template flat<T>().setRandom();
+	Node* n;
+	TF_CHECK_OK(
+			NodeBuilder(g->NewName("n"), "BiasAddGrad").Attr("data_format",
+					ToString(format)).Input(test::graph::Constant(g, lhs), /*index=*/
+					0).Finalize(g, &n));
+	return g;
 }
 
 #define BM_BIAS_ADD_GRAD(DEVICE, FMT, C_TYPE, TF_TYPE, R, C, CH)               \
@@ -189,21 +202,22 @@ BM_BIAS_ADD_GRAD_ALL(gpu, NHWC, half, DT_HALF);
 #undef BM_BIAS_ADD_GRAD_ALL
 #undef BM_BIAS_ADD_GRAD
 
-static Graph* BcastAdd(int rows, int cols, int dim) {
-  Graph* g = new Graph(OpRegistry::Global());
-  Tensor lhs(DT_FLOAT, TensorShape({rows, cols}));
-  lhs.flat<float>().setRandom();
-  TensorShape rhs_shape;
-  if (dim == 0) {
-    rhs_shape = TensorShape({rows, 1});
-  } else {
-    rhs_shape = TensorShape({cols});
-  }
-  Tensor rhs(DT_FLOAT, rhs_shape);
-  rhs.flat<float>().setRandom();
-  test::graph::Binary(g, "Add", test::graph::Constant(g, lhs),
-                      test::graph::Constant(g, rhs));
-  return g;
+static Graph* BcastAdd(int rows, int cols, int dim)
+{
+	Graph* g = new Graph(OpRegistry::Global());
+	Tensor lhs(DT_FLOAT, TensorShape( { rows, cols }));
+	lhs.flat<float>().setRandom();
+	TensorShape rhs_shape;
+	if (dim == 0) {
+		rhs_shape = TensorShape( { rows, 1 });
+	} else {
+		rhs_shape = TensorShape( { cols });
+	}
+	Tensor rhs(DT_FLOAT, rhs_shape);
+	rhs.flat<float>().setRandom();
+	test::graph::Binary(g, "Add", test::graph::Constant(g, lhs),
+			test::graph::Constant(g, rhs));
+	return g;
 }
 
 #define BM_BCAST_ADD_ROW(DEVICE, R, C)                                    \

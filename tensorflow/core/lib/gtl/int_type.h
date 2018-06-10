@@ -1,17 +1,17 @@
 /* Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+ http://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-==============================================================================*/
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ ==============================================================================*/
 
 // #status: LEGACY
 // #category: Miscellaneous
@@ -148,7 +148,6 @@ limitations under the License.
 //
 //  void GetGlobalDoc(int64 global) { ...
 //  GetGlobalDoc(local.value());                  <-- Compiles fine.
-
 #ifndef TENSORFLOW_LIB_GTL_INT_TYPE_H_
 #define TENSORFLOW_LIB_GTL_INT_TYPE_H_
 
@@ -164,7 +163,7 @@ limitations under the License.
 namespace tensorflow {
 namespace gtl {
 
-template <typename IntTypeName, typename _ValueType>
+template<typename IntTypeName, typename _ValueType>
 class IntType;
 
 // Defines the IntType using value_type and typedefs it to int_type_name.
@@ -184,64 +183,91 @@ class IntType;
 // the integer type value (see supported list above).
 //
 // This class is NOT thread-safe.
-template <typename IntTypeName, typename _ValueType>
+template<typename IntTypeName, typename _ValueType>
 class IntType {
- public:
-  typedef _ValueType ValueType;                      // for non-member operators
-  typedef IntType<IntTypeName, ValueType> ThisType;  // Syntactic sugar.
+public:
+	typedef _ValueType ValueType;                    // for non-member operators
+	typedef IntType<IntTypeName, ValueType> ThisType;  // Syntactic sugar.
 
-  // Note that this may change from time to time without notice.
-  struct Hasher {
-    size_t operator()(const IntType& arg) const {
-      return static_cast<size_t>(arg.value());
-    }
-  };
+	// Note that this may change from time to time without notice.
+	struct Hasher {
+		size_t operator()(const IntType& arg) const
+		{
+			return static_cast<size_t>(arg.value());
+		}
+	};
 
- public:
-  // Default c'tor initializing value_ to 0.
-  constexpr IntType() : value_(0) {}
-  // C'tor explicitly initializing from a ValueType.
-  constexpr explicit IntType(ValueType value) : value_(value) {}
+public:
+	// Default c'tor initializing value_ to 0.
+	constexpr IntType() :
+			value_(0)
+	{
+	}
+	// C'tor explicitly initializing from a ValueType.
+	constexpr explicit IntType(ValueType value) :
+			value_(value)
+	{
+	}
 
-  // IntType uses the default copy constructor, destructor and assign operator.
-  // The defaults are sufficient and omitting them allows the compiler to add
-  // the move constructor/assignment.
+	// IntType uses the default copy constructor, destructor and assign operator.
+	// The defaults are sufficient and omitting them allows the compiler to add
+	// the move constructor/assignment.
 
-  // -- ACCESSORS --------------------------------------------------------------
-  // The class provides a value() accessor returning the stored ValueType value_
-  // as well as a templatized accessor that is just a syntactic sugar for
-  // static_cast<T>(var.value());
-  constexpr ValueType value() const { return value_; }
+	// -- ACCESSORS --------------------------------------------------------------
+	// The class provides a value() accessor returning the stored ValueType value_
+	// as well as a templatized accessor that is just a syntactic sugar for
+	// static_cast<T>(var.value());
+	constexpr ValueType value() const
+	{
+		return value_;
+	}
 
-  template <typename ValType>
-  constexpr ValType value() const {
-    return static_cast<ValType>(value_);
-  }
+	template<typename ValType>
+	constexpr ValType value() const
+	{
+		return static_cast<ValType>(value_);
+	}
 
-  // -- UNARY OPERATORS --------------------------------------------------------
-  ThisType& operator++() {  // prefix ++
-    ++value_;
-    return *this;
-  }
-  const ThisType operator++(int v) {  // postfix ++
-    ThisType temp(*this);
-    ++value_;
-    return temp;
-  }
-  ThisType& operator--() {  // prefix --
-    --value_;
-    return *this;
-  }
-  const ThisType operator--(int v) {  // postfix --
-    ThisType temp(*this);
-    --value_;
-    return temp;
-  }
+	// -- UNARY OPERATORS --------------------------------------------------------
+	ThisType& operator++()
+	{  // prefix ++
+		++value_;
+		return *this;
+	}
+	const ThisType operator++(int v)
+	{  // postfix ++
+		ThisType temp(*this);
+		++value_;
+		return temp;
+	}
+	ThisType& operator--()
+	{  // prefix --
+		--value_;
+		return *this;
+	}
+	const ThisType operator--(int v)
+	{  // postfix --
+		ThisType temp(*this);
+		--value_;
+		return temp;
+	}
 
-  constexpr bool operator!() const { return value_ == 0; }
-  constexpr const ThisType operator+() const { return ThisType(value_); }
-  constexpr const ThisType operator-() const { return ThisType(-value_); }
-  constexpr const ThisType operator~() const { return ThisType(~value_); }
+	constexpr bool operator!() const
+	{
+		return value_ == 0;
+	}
+	constexpr const ThisType operator+() const
+	{
+		return ThisType(value_);
+	}
+	constexpr const ThisType operator-() const
+	{
+		return ThisType(-value_);
+	}
+	constexpr const ThisType operator~() const
+	{
+		return ThisType(~value_);
+	}
 
 // -- ASSIGNMENT OPERATORS ---------------------------------------------------
 // We support the following assignment operators: =, +=, -=, *=, /=, <<=, >>=
@@ -255,34 +281,39 @@ class IntType {
     value_ op arg_value;                             \
     return *this;                                    \
   }
-  INT_TYPE_ASSIGNMENT_OP(+= );
-  INT_TYPE_ASSIGNMENT_OP(-= );
-  INT_TYPE_ASSIGNMENT_OP(*= );
-  INT_TYPE_ASSIGNMENT_OP(/= );
-  INT_TYPE_ASSIGNMENT_OP(<<= );  // NOLINT
-  INT_TYPE_ASSIGNMENT_OP(>>= );  // NOLINT
-  INT_TYPE_ASSIGNMENT_OP(%= );
+	INT_TYPE_ASSIGNMENT_OP(+= )
+	;INT_TYPE_ASSIGNMENT_OP(-= )
+	;INT_TYPE_ASSIGNMENT_OP(*= )
+	;INT_TYPE_ASSIGNMENT_OP(/= )
+	;INT_TYPE_ASSIGNMENT_OP(<<= )
+	;  // NOLINT
+	INT_TYPE_ASSIGNMENT_OP(>>= )
+	;  // NOLINT
+	INT_TYPE_ASSIGNMENT_OP(%= )
+	;
 #undef INT_TYPE_ASSIGNMENT_OP
 
-  ThisType& operator=(ValueType arg_value) {
-    value_ = arg_value;
-    return *this;
-  }
+	ThisType& operator=(ValueType arg_value)
+	{
+		value_ = arg_value;
+		return *this;
+	}
 
- private:
-  // The integer value of type ValueType.
-  ValueType value_;
+private:
+	// The integer value of type ValueType.
+	ValueType value_;
 
-  static_assert(std::is_integral<ValueType>::value, "invalid integer type");
+	static_assert(std::is_integral<ValueType>::value, "invalid integer type");
 } TF_PACKED;
 
 // -- NON-MEMBER STREAM OPERATORS ----------------------------------------------
 // We provide the << operator, primarily for logging purposes.  Currently, there
 // seems to be no need for an >> operator.
-template <typename IntTypeName, typename ValueType>
+template<typename IntTypeName, typename ValueType>
 std::ostream& operator<<(std::ostream& os,  // NOLINT
-                         IntType<IntTypeName, ValueType> arg) {
-  return os << arg.value();
+		IntType<IntTypeName, ValueType> arg)
+{
+	return os << arg.value();
 }
 
 // -- NON-MEMBER ARITHMETIC OPERATORS ------------------------------------------
@@ -314,10 +345,10 @@ std::ostream& operator<<(std::ostream& os,  // NOLINT
 INT_TYPE_ARITHMETIC_OP(+);
 INT_TYPE_ARITHMETIC_OP(-);
 INT_TYPE_ARITHMETIC_OP(*);
-INT_TYPE_ARITHMETIC_OP(/ );
-INT_TYPE_ARITHMETIC_OP(<< );  // NOLINT
-INT_TYPE_ARITHMETIC_OP(>> );  // NOLINT
-INT_TYPE_ARITHMETIC_OP(% );
+INT_TYPE_ARITHMETIC_OP(/);
+INT_TYPE_ARITHMETIC_OP(<<);  // NOLINT
+INT_TYPE_ARITHMETIC_OP(>>);// NOLINT
+INT_TYPE_ARITHMETIC_OP(%);
 #undef INT_TYPE_ARITHMETIC_OP
 
 // -- NON-MEMBER COMPARISON OPERATORS ------------------------------------------
@@ -345,12 +376,12 @@ INT_TYPE_ARITHMETIC_OP(% );
       IntType<IntTypeName, ValueType> id) {                      \
     return val op id.value();                                    \
   }
-INT_TYPE_COMPARISON_OP(== );  // NOLINT
-INT_TYPE_COMPARISON_OP(!= );  // NOLINT
-INT_TYPE_COMPARISON_OP(< );   // NOLINT
-INT_TYPE_COMPARISON_OP(<= );  // NOLINT
-INT_TYPE_COMPARISON_OP(> );   // NOLINT
-INT_TYPE_COMPARISON_OP(>= );  // NOLINT
+INT_TYPE_COMPARISON_OP(==);  // NOLINT
+INT_TYPE_COMPARISON_OP(!=);// NOLINT
+INT_TYPE_COMPARISON_OP(<);// NOLINT
+INT_TYPE_COMPARISON_OP(<=);// NOLINT
+INT_TYPE_COMPARISON_OP(>);// NOLINT
+INT_TYPE_COMPARISON_OP(>=);// NOLINT
 #undef INT_TYPE_COMPARISON_OP
 
 }  // namespace gtl
